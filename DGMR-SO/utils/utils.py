@@ -7,12 +7,9 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 import io
 import os
-#from pysteps.visualization import plot_spectrum1d
-
 
 def get_project_root() -> Path:
     return Path(__file__).parent
-
 
 def read_yaml(file_path) -> str:
     with open(file_path, "r") as f:
@@ -33,7 +30,6 @@ def split_time_xy_1(time):
     y = time[4:20]
     return x, y
 
-
 def split_data_xy(data):
     x = data[:,0:4, :, :, :]
     y = data[:,4:20,:, :, :]
@@ -48,12 +44,10 @@ def make_dirs(list_dir: list) -> None:
     for l in list_dir:
         l.mkdir(parents=True, exist_ok=True)
 
-
 def read_date(date):
     date = date.numpy()[0].decode('utf-8')
     decoded_date = datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
     return decoded_date
-
 
 def date_to_name(date):
     decoded_date = date.strftime('%Y-%m-%d-%H-%M-%S')
@@ -90,7 +84,6 @@ def plot_to_image(figure):
     image = tf.expand_dims(image, 0)
     return image
 
-
 def crop_middle(tensor):
     # Prepare the frames for temporal discriminator: choose the offset of a
     # random crop of size 128x128 out of 256x256 and pick full sequence samples.
@@ -105,7 +98,6 @@ def crop_middle(tensor):
     frames_for_eval = tf.slice(tensor, begin_tensor, size_tensor)
     frames_for_eval.set_shape([b, t, h // cr, w // cr, c])
     return frames_for_eval
-
 
 def crop_middle_ensemble(tensor):
     # Prepare the frames for temporal discriminator: choose the offset of a
@@ -293,57 +285,3 @@ def plot_avg_pool_crps_score(score1, score4, score16):
     ax[2].set_xlim(0, time_ax)
 
     return plot_to_image(fig)
-
-
-# def psd_score(score30, score60, score90, freqs):
-#     fig, ax = plt.subplots(nrows=1, ncols=3, sharex=True,
-#                            sharey=True, figsize=(1, 3))
-#
-#     #fig.text(0.5, 0., 'Prediction interval [min]', ha='center')
-#     fig.text(0.08, 0.5, 'PSD', va='center', rotation='vertical')
-#     fig.subplots_adjust(bottom=0.15)
-#
-#     fig.set_figheight(2.5)
-#     fig.set_figwidth(11)
-#
-#     plot_scales = [1024, 256, 64, 16, 4]
-#     plot_spectrum1d(
-#         freqs,
-#         score30,
-#         x_units="km",
-#         # y_units="PSD",
-#         color="k",
-#         ax=ax[0],
-#         # label="Observed",
-#         wavelength_ticks=plot_scales,
-#     )
-#     #ax[0].set_ylim(-20, 50)
-#     ax[0].set_ylabel("")
-#
-#     plot_spectrum1d(
-#         freqs,
-#         score60,
-#         x_units="km",
-#         # y_units="PSD",
-#         color="k",
-#         ax=ax[1],
-#         # label="Observed",
-#         wavelength_ticks=plot_scales,
-#     )
-#     #ax[1].set_ylim(-40, 60)
-#     ax[1].set_ylabel("")
-#
-#     plot_spectrum1d(
-#         freqs,
-#         score90,
-#         x_units="km",
-#         # y_units="PSD",
-#         color="k",
-#         ax=ax[2],
-#         # label="Observed",
-#         wavelength_ticks=plot_scales,
-#     )
-#     #ax[2].set_ylim(-20, 50)
-#     ax[2].set_ylabel("")
-#
-#     return plot_to_image(fig)

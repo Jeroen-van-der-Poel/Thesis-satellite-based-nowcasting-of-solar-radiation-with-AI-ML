@@ -1,11 +1,15 @@
 import h5py
-import argparse
 import os
 import numpy as np
 import datetime
-from tfrecord_shards_single import Nowcasting_tfrecord
+from tfrecord_shards_for_nowcasting import Nowcasting_tfrecord
 from pathlib import Path
 
+all_file_full_path_list = []
+all_file_name_list = []
+label_list = []
+
+# Split the dataset into 4 past frames (X) and 16 future frames (Y)
 def split_data_xy_1(data):
     x = data[0:4, :, :, :]
     y = data[4:20,:, :, :]
@@ -17,9 +21,6 @@ def get_all_keys_from_h5(h5_file):
         res.append(key)
     return res
 
-all_file_full_path_list = []
-all_file_name_list = []
-label_list = []
 def get_all_files(path):
     """
     Get all the files from the path with muti-folders
@@ -52,11 +53,11 @@ def write_tfrecord(INPUT_PATH, batches, windows, height, width):
     while id < length:
         print(id)
         print(label_list[id], ', Progress: ' + str(id) + '/' + str(length))
-        # in case some data is missing, then skip this window and expand the window
-        # make sure there are 20 data in each sample
+        # In case some data is missing, then skip this window and expand the window
+        # Make sure there are 20 data in each sample
         if id + windows >= length:
             break
-        # loop for samples in each tfrecord
+        # Loop for samples in each tfrecord
         for i in range(batches):
             if id + i + windows >= length:
                 break
@@ -69,6 +70,7 @@ def write_tfrecord(INPUT_PATH, batches, windows, height, width):
             h5_file_end = h5py.File(all_file_full_path_list[id + i + windows])
             start_time = label_list[id + i]
             end_time = label_list[id + i + 3]
+            # Remove night time data
             if start_time.hour < 5 or start_time.hour > 17:
                 continue
             if np.any(h5_file_start['sds'][:] <= 0):
@@ -78,12 +80,11 @@ def write_tfrecord(INPUT_PATH, batches, windows, height, width):
                 # print('remove end ' + str(label_list[id + i + windows]))
                 continue
 
+            # Nomralize SDS using SDS_CS
             for j in range(windows):
                 h5_file = h5py.File(all_file_full_path_list[id + i + j])
                 ele = h5_file['sds'][:]
-                  # sds
                 ele_sds = h5_file['sds'][:]
-                # sds_cs
                 ele_cs = h5_file['sds_cs'][:]
                 ele_cs[ele_cs < 0] = 0
                 ele = ele_sds / ele_cs
@@ -94,20 +95,23 @@ def write_tfrecord(INPUT_PATH, batches, windows, height, width):
                     print('Data is partly 0: ' + str(label_list[id + i + j]) + 'window is: ' + str(j))
                 if np.all(ele <= 0):
                     print('Attention!!!: ' + str(label_list[id + i + j]) + 'window is: ' + str(j))
-                # note that here it is (width, heigh) while in the tensor is in (rows = height, cols = width)
+                # Note that here it is (width, heigh) while in the tensor is in (rows = height, cols = width)
                 dataset[j] = np.array(ele.T)
                 
-            # windows, height, width, depth
+            # Convert data to tensot format
+            # Windows, height, width, depth
             dataset_3D = np.expand_dims(dataset, axis=-1) 
             dataset = np.zeros(shape=(windows, height, width))
             dataset_x, dataset_y = split_data_xy_1(dataset_3D)
-            # current time:forecast start time
+
+            # Current time:forecast start time
             date_y = label_list[id + i + 4: id + i + windows]
             total_data = total_data + 1
             print("total valid sample by far is: " + str(total_data))
-            # rolling 10 steps in each .tfrecord file
-            tf_record_train.write_images_to_tfr_long(dataset_x.astype('float32'), dataset_y.astype('float32'),
-                                                     str(date_y))
+
+            # Rolling 10 steps in each .tfrecord file
+            tf_record_train.write_images_to_tfr_long(dataset_x.astype('float32'), dataset_y.astype('float32'), str(date_y))
+            
         tf_record_train = Nowcasting_tfrecord(OUTPUT_PATH_train, str(id) + "_train", batches, 0)
         id = id + batches
 

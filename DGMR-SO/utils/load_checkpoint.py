@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow.keras.optimizers import Adam
 from losses import Loss_hing_disc, Loss_hing_gen
-from dgmr import DGMR
+from model.dgmr import DGMR
 from utils import *
 import numpy as np
 import h5py

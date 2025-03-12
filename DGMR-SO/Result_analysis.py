@@ -1,5 +1,5 @@
 import numpy as np
-import metrics
+import utils.metrics
 import plot_images
 import matplotlib.pyplot as plt
 #from pysteps.visualization import plot_precip_field

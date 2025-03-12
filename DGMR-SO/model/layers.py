@@ -4,16 +4,13 @@ import functools
 from keras import layers
 from sonnet.src.conv import ConvND
 
-
 def downsample_avg_pool(x):
     """Utility function for downsampling by 2x2 average pooling."""
     return layers.AveragePooling2D(2, 2, data_format='channels_last')(x)
 
-
 def downsample_avg_pool3d(x):
     """Utility function for downsampling by 2x2 average pooling."""
     return layers.AveragePooling3D(2, 2, data_format='channels_last')(x)
-
 
 def upsample_nearest_neighbor(inputs, upsample_size):
     """Nearest neighbor upsampling.
@@ -27,12 +24,10 @@ def upsample_nearest_neighbor(inputs, upsample_size):
     """
     return tf.image.resize(inputs, [upsample_size*inputs.shape[1], upsample_size*inputs.shape[2]], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
 
-
 class Conv2D(snt.Module):
     """2D convolution."""
 
-    def __init__(self, output_channels, kernel_size, stride=1, rate=1,
-                 padding='SAME', use_bias=True):
+    def __init__(self, output_channels, kernel_size, stride=1, rate=1, padding='SAME', use_bias=True):
         """Constructor."""
 
         super().__init__(name=None)
@@ -63,8 +58,7 @@ class Conv2D(snt.Module):
 class SNConv2D(ConvND):
     """2D convolution with spectral normalisation."""
 
-    def __init__(self, output_channels, kernel_size, stride=1, rate=1,
-                 padding='SAME', sn_eps=0.0001, use_bias=True):
+    def __init__(self, output_channels, kernel_size, stride=1, rate=1, padding='SAME', sn_eps=0.0001, use_bias=True):
         """Constructor."""
         super().__init__(
             num_spatial_dims=2,
@@ -103,12 +97,10 @@ class SNConv2D(ConvND):
 
         return outputs
 
-
 class SNConv3D(ConvND):
     """2D convolution with spectral normalisation."""
 
-    def __init__(self, output_channels, kernel_size, stride=1, rate=1,
-                 padding='SAME', sn_eps=0.0001, use_bias=True):
+    def __init__(self, output_channels, kernel_size, stride=1, rate=1, padding='SAME', sn_eps=0.0001, use_bias=True):
         """Constructor."""
         super().__init__(
             num_spatial_dims=3,
@@ -147,7 +139,6 @@ class SNConv3D(ConvND):
 
         return outputs
 
-
 class Linear(snt.Module):
     """Simple linear layer.
 
@@ -163,7 +154,6 @@ class Linear(snt.Module):
     def __call__(self, tensor):
         return self._linear(tensor)
 
-
 class BatchNorm(snt.Module):
     """Batch normalization."""
 
@@ -176,7 +166,6 @@ class BatchNorm(snt.Module):
 
     def __call__(self, tensor, is_training=True):
         return self._batch_norm(tensor, is_training=is_training)
-
 
 class ApplyAlongAxis(snt.Module):
     """Layer for applying an operation on each element, along a specified axis."""
@@ -193,7 +182,6 @@ class ApplyAlongAxis(snt.Module):
         res = [self._operation(x) for x in zip(*split_inputs)]
         return tf.stack(res, axis=self._axis)
 
-
 class ApplyAlongAxis2(snt.Module):
     """Layer for applying an operation on each element, along a specified axis."""
 
@@ -208,7 +196,6 @@ class ApplyAlongAxis2(snt.Module):
         split_inputs = tf.unstack(inputs, axis=self._axis)
         res = [self._operation(x) for x in split_inputs]
         return tf.stack(res, axis=self._axis)
-
 
 class SpectralNormalizer(snt.Module):
 
