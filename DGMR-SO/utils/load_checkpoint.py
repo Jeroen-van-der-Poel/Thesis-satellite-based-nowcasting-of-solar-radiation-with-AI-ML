@@ -9,30 +9,23 @@ import matplotlib
 import datetime
 from Result_analysis import *
 
+all_file_full_path_list = []
+all_file_name_list = []
+label_list = []
+
 def get_all_keys_from_h5(h5_file):
     res = []
     for key in h5_file.keys():
         res.append(key)
     return res
 
-all_file_full_path_list = []
-all_file_name_list = []
-label_list = []
 def get_all_files(path):
-    """
-    获取指定路径下多层目录内的所有文件全路径及文件名称
-    :param path: 需获取文件的指定路径
-    :return: 结果1 类型：list<str> ：多层目录下的，全部文件全路径；结果2 类型：list<str> ：多层目录下的，全部文件名称
-    """
     all_file_list = os.listdir(path)
     all_file_list.sort()
-    # 遍历该文件夹下的所有目录或文件
     for file in all_file_list:
         file_path = os.path.join(path, file)
-        # 如果是文件夹，递归调用当前函数
         if os.path.isdir(file_path):
             get_all_files(file_path)
-        # 如果不是文件夹，保存文件路径及文件名
         elif os.path.isfile(file_path) and file.startswith(('.')) == False:
             all_file_full_path_list.append(file_path)
             all_file_name_list.append(file)

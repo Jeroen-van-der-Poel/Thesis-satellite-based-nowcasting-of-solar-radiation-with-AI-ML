@@ -20,7 +20,6 @@ def plot_csi(csi_4,label,index,imagesavefile,imagename):
     plt.show()
     plt.close()
 
-
 def plot_acc(csi_4,label,index,imagesavefile,imagename):
     # plot result
     x = np.arange(15,255,15)
@@ -129,7 +128,6 @@ def plot_rrmse_double(value1, value2,label_ins,label_acc,index,imagesavefile,ima
     plt.show()
     plt.close()
 
-
 def plot_rmse(value,label,index,imagesavefile,imagename):
     # plot result
     x = np.arange(15,255,15)
@@ -143,7 +141,6 @@ def plot_rmse(value,label,index,imagesavefile,imagename):
     plt.savefig(os.path.join(imagesavefile, index + '-' + imagename))
     plt.show()
     plt.close()
-
 
 def plot_mae(value,label,index,imagesavefile,imagename):
     # plot result
@@ -189,6 +186,3 @@ def plot_triple(value1, value2,value3, label_1,label_2, label_3, metric_name, in
     plt.savefig(os.path.join(imagesavefile, index + '-' + imagename))
     plt.show()
     plt.close()
-
-
-

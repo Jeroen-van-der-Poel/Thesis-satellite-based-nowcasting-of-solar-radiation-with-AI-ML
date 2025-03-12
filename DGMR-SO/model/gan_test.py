@@ -6,14 +6,12 @@ import matplotlib.pyplot as plt
 import time
 import datetime
 
-
 class DGMR(tf.keras.Model):
     def __init__(self, lead_time=240, time_delta=15) -> None:
         super(DGMR, self).__init__()
         self.strategy = None
         self.global_step = 0
-        self.generator_obj = Generator(
-            lead_time=lead_time, time_delta=time_delta)
+        self.generator_obj = Generator(lead_time=lead_time, time_delta=time_delta)
         self.discriminator_obj = Discriminator()
 
     @tf.function
@@ -31,8 +29,6 @@ class DGMR(tf.keras.Model):
         train_writer = callbacks[0]
         ckpt_manager = callbacks[1]
         ckpt = callbacks[2]
-        # tf.profiler.experimental.start(callbacks[3])
-
         disc_loss_l = []
         gen_loss_l = []
 
@@ -58,8 +54,7 @@ class DGMR(tf.keras.Model):
 
             temp_time = time.time()
             # self.train_step( batch_inputs, batch_targets)
-            gen_loss, disc_loss = self.distributed_train_step(
-                batch_inputs1, batch_targets1, targ_mask1, batch_inputs2, batch_targets2, targ_mask2)
+            gen_loss, disc_loss = self.distributed_train_step(batch_inputs1, batch_targets1, targ_mask1, batch_inputs2, batch_targets2, targ_mask2)
 
             if num_batches < 50:
                 tf.print("Time per epoch: ", time.time() - temp_time)
@@ -93,17 +88,14 @@ class DGMR(tf.keras.Model):
     @tf.function
     def distributed_train_step(self, batch_inputs1, batch_targets1, targ_mask1,  batch_inputs2, batch_targets2, targ_mask2):
         #tf.print("Debugging: before run")
-        per_replica_g_losses, per_replica_d_losses = self.strategy.run(self.train_step,
-                                                                       args=(batch_inputs1, batch_targets1, targ_mask1, batch_inputs2, batch_targets2, targ_mask2))
+        per_replica_g_losses, per_replica_d_losses = self.strategy.run(self.train_step, args=(batch_inputs1, batch_targets1, targ_mask1, batch_inputs2, batch_targets2, targ_mask2))
         #tf.print("Debugging: after run")
 
         #tf.print("Debugging: per_replica_g_losses -> ", per_replica_g_losses)
         #tf.print("Debugging: per_replica_d_losses -> ",per_replica_d_losses)
 
-        total_g_loss = self.strategy.reduce(
-            tf.distribute.ReduceOp.MEAN, per_replica_g_losses, axis=0)
-        total_d_loss = self.strategy.reduce(
-            tf.distribute.ReduceOp.MEAN, per_replica_d_losses, axis=0)
+        total_g_loss = self.strategy.reduce(tf.distribute.ReduceOp.MEAN, per_replica_g_losses, axis=0)
+        total_d_loss = self.strategy.reduce(tf.distribute.ReduceOp.MEAN, per_replica_d_losses, axis=0)
 
         #tf.print("Debugging: total_g_loss -> ", total_g_loss)
         #tf.print("Debugging: total_d_loss -> ", total_d_loss)
@@ -123,35 +115,26 @@ class DGMR(tf.keras.Model):
     def disc_step(self, batch_inputs, batch_targets, targ_mask, is_training=True):
         #tf.print("Debugging: disc_step: ", "Disc step has started", str(datetime.datetime.now()))
         with tf.GradientTape() as disc_tape:
-            batch_predictions = self.generator_obj(
-                batch_inputs, is_training=is_training)
+            batch_predictions = self.generator_obj(batch_inputs, is_training=is_training)
             '''batch_predictions = tf.where(
                 tf.equal(targ_mask, True), batch_predictions, -1)'''
-            gen_sequence = tf.concat(
-                [batch_inputs[..., :1], batch_predictions], axis=1)
-            real_sequence = tf.concat(
-                [batch_inputs[..., :1], batch_targets], axis=1)
-            concat_inputs = tf.concat(
-                [real_sequence, gen_sequence], axis=0)
+            gen_sequence = tf.concat([batch_inputs[..., :1], batch_predictions], axis=1)
+            real_sequence = tf.concat([batch_inputs[..., :1], batch_targets], axis=1)
+            concat_inputs = tf.concat([real_sequence, gen_sequence], axis=0)
 
-            #
-            concat_outputs = self.discriminator_obj(
-                concat_inputs, is_training=is_training)
+            concat_outputs = self.discriminator_obj(concat_inputs, is_training=is_training)
 
-            score_real, score_generated = tf.split(
-                concat_outputs, 2, axis=0)
+            score_real, score_generated = tf.split(concat_outputs, 2, axis=0)
             disc_loss = self.disc_loss(score_generated, score_real)
 
-        disc_grads = disc_tape.gradient(
-            disc_loss, self.discriminator_obj.trainable_variables)
+        disc_grads = disc_tape.gradient(disc_loss, self.discriminator_obj.trainable_variables)
 
         # Aggregate the gradients from the full batch.
         '''replica_ctx_disc = tf.distribute.get_replica_context()
         disc_grads = replica_ctx_disc.all_reduce(
             tf.distribute.ReduceOp.MEAN, disc_grads)'''
 
-        self.disc_optimizer.apply_gradients(
-            zip(disc_grads, self.discriminator_obj.trainable_variables))
+        self.disc_optimizer.apply_gradients(zip(disc_grads, self.discriminator_obj.trainable_variables))
 
         #tf.print("Debugging: disc_loss -> ", disc_loss)
         #tf.print("Debugging: disc_step: ", "Disc step ended", str(datetime.datetime.now()))
@@ -164,14 +147,12 @@ class DGMR(tf.keras.Model):
             gen_samples = [self.generator_obj(batch_inputs, is_training=is_training)
                            for _ in range(num_samples_per_input)]
             
-            grid_cell_reg = grid_cell_regularizer(tf.stack(gen_samples, axis=0),
-                                                  batch_targets)
+            grid_cell_reg = grid_cell_regularizer(tf.stack(gen_samples, axis=0), batch_targets)
             '''gen_samples = [tf.where(
                 tf.equal(targ_mask, True), gen_sample, -1) for gen_sample in gen_samples]'''
             gen_sequences = [tf.concat([batch_inputs[..., :1], x], axis=1)
                              for x in gen_samples]
-            real_sequence = tf.concat(
-                [batch_inputs[..., :1], batch_targets], axis=1)
+            real_sequence = tf.concat([batch_inputs[..., :1], batch_targets], axis=1)
 
             generated_scores = []
             for g_seq in gen_sequences:
@@ -185,19 +166,16 @@ class DGMR(tf.keras.Model):
             gen_disc_loss = self.gen_loss(tf.concat(generated_scores, axis=0))
             gen_loss = gen_disc_loss + 15. * grid_cell_reg
 
-        gen_grads = gen_tape.gradient(
-            gen_loss, self.generator_obj.trainable_variables)
+        gen_grads = gen_tape.gradient(gen_loss, self.generator_obj.trainable_variables)
 
         # Aggregate the gradients from the full batch.
         '''replica_ctx_disc = tf.distribute.get_replica_context()
         disc_grads = replica_ctx_disc.all_reduce(
             tf.distribute.ReduceOp.MEAN, disc_grads)'''
 
-        self.gen_optimizer.apply_gradients(
-            zip(gen_grads, self.generator_obj.trainable_variables))
+        self.gen_optimizer.apply_gradients(zip(gen_grads, self.generator_obj.trainable_variables))
 
         #tf.print("Debugging: gen_loss -> ", gen_loss)
-
         #tf.print("Debugging: gen_step: ", "Gen step has ended", str(datetime.datetime.now()))
         return gen_loss
 

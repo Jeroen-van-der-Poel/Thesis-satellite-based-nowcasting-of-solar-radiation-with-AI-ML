@@ -1,5 +1,5 @@
 import numpy as np
-import utils.metrics
+import utils.metrics as metrics
 import plot_images
 import matplotlib.pyplot as plt
 #from pysteps.visualization import plot_precip_field
@@ -74,52 +74,17 @@ def ResultAnalysis_cph(forecast,observed,index):
     for i in range(16):
         csi_value = np.append(csi_value, metrics.CSI(observed[i, :, :], forecast[i, :, :],index, 0.1))
         acc_value = np.append(acc_value, metrics.ACC(observed[i, :, :], forecast[i, :, :],index, 0.1))
-        #pod_value = np.append(pod_value, metrics.POD(observed[i, :, :], forecast[0, :, :],index, 0.1))
     return csi_value,acc_value
-
-# def RadiationAnalysis_image(rad_obv_16,sds_acc_crop,sds_inst_crop,title,step,imagesavefile,image_output_filename):
-#     plt.figure(figsize=(15, 5))
-#     plt.suptitle(title, fontsize=24)
-#     plt.subplot(1, 3, 1)
-#     plot_precip_field(
-#         rad_obv_16[step, :, :],
-#         units="w/m2",
-#         title=f"Radiation observation",
-#         colorscale="pysteps",
-#     )
-#     plt.subplot(1, 3, 2)
-#     plot_precip_field(
-#         sds_acc_crop[step, :, :],
-#         units="w/m2",
-#         title=f"accumulated radiation forecast",
-#         colorscale="pysteps",
-#     )
-#     plt.subplot(1, 3, 3)
-#     plot_precip_field(
-#         sds_inst_crop[step, :, :],
-#         units="w/m2",
-#         title=f"instant radiation forecast",
-#         colorscale="pysteps",
-#     )
-#     plt.tight_layout()
-#     plt.savefig(os.path.join(imagesavefile + image_output_filename, title + '.png'))
-#     plt.show()
 
 def RadiationAnalysis_metrics(rad_obv_16,sds_acc_crop,sds_inst_crop,label_ins,label_acc,imagesavefile,metrics_output_filename,metrics_index):
     image_file = imagesavefile + metrics_output_filename
     if not os.path.exists(image_file):
       os.makedirs(image_file)
-    #r2_acc, rmse_acc, mae_acc, rrmse_acc = ResultAnalysis_cot(sds_acc_crop, rad_obv_16)
     r2_ins, rmse_ins, mae_ins, rrmse_ins = ResultAnalysis_cot(sds_inst_crop, rad_obv_16,metrics_index)
-    # plot_images.plot_r2_double(r2_acc, r2_ins,label_ins,label_acc,'Forecast_radiation', image_file, 'r.png')
-    # plot_images.plot_rmse_double(rmse_acc,rmse_ins,label_ins,label_acc, 'Forecast_radiation', image_file, 'rmse.png')
-    # plot_images.plot_mae_double(mae_acc,mae_ins,label_ins,label_acc, 'Forecast_radiation', image_file, 'mae.png')
-    # plot_images.plot_rrmse_double(rrmse_acc,rrmse_ins,label_ins,label_acc, 'Forecast_radiation', image_file, 'rrmse.png')
     plot_images.plot_r2(r2_ins[:-4],label_ins, 'Forecast_radiation', image_file, 'r.png')
     plot_images.plot_rmse(rmse_ins[:-4],label_ins,'Forecast_radiation', image_file, 'rmse.png')
     plot_images.plot_mae(mae_ins[:-4],label_ins, 'Forecast_radiation', image_file, 'mae.png')
-    plot_images.plot_rrmse( rrmse_ins[:-4],label_ins,'Forecast_radiation', image_file,
-                                  'rrmse.png')
+    plot_images.plot_rrmse( rrmse_ins[:-4],label_ins,'Forecast_radiation', image_file, 'rrmse.png')
 
 def RadiationForecast_analysis_metrics(rad_obv_16, radiation_forecast, sds_inst_crop,sds_cpp, label_forecast,label_ins, label_cpp, imagesavefile,
                               metrics_output_filename,metrics_index):
@@ -134,43 +99,3 @@ def RadiationForecast_analysis_metrics(rad_obv_16, radiation_forecast, sds_inst_
     plot_images.plot_triple(rmse_rf, rmse_ins, rmse_cpp,  label_forecast, label_ins, label_cpp,"RMSE(w/m2)", 'Forecast_radiation', image_file, 'rmse.png')
     plot_images.plot_triple(mae_rf, mae_ins, mae_cpp, label_forecast, label_ins, label_cpp, "MAE(w/m2)",'Forecast_radiation', image_file, 'mae.png')
     plot_images.plot_triple(rrmse_rf, rrmse_ins,rrmse_cpp, label_forecast, label_ins, label_cpp, "rRMSE(%)", 'Forecast_radiation', image_file,'rrmse.png')
-
-
-# def RadiationForecast_analysis_image(rad_obv_16_crop,radiation_forecast_crop,sds_inst_crop,sds_cpp,title,step,imagesavefile,metrics_output_filename):
-#     image_file = imagesavefile + metrics_output_filename
-#     if not os.path.exists(image_file):
-#       os.makedirs(image_file)
-#     fig = plt.figure(figsize=(20, 5))
-#     plt.suptitle(title)
-#     plt.subplot(1, 4, 1)
-#     plot_precip_field(
-#         rad_obv_16_crop[step, :, :],
-#         units="w/m2",
-#         title=f"Radiation observation",
-#         colorscale="pysteps",
-#     )
-#     plt.subplot(1, 4, 2)
-#     plot_precip_field(
-#         radiation_forecast_crop[step, :, :],
-#         units="w/m2",
-#         title=f"Radiation blending forecast",
-#         colorscale="pysteps",
-#     )
-#     plt.subplot(1, 4, 3)
-#     plot_precip_field(
-#         sds_inst_crop[step, :, :],
-#         units="w/m2",
-#         title=f"NWP instant forecast",
-#         colorscale="pysteps",
-#     )
-#     plt.subplot(1, 4, 4)
-#     plot_precip_field(
-#         sds_cpp[step, :, :],
-#         units="w/m2",
-#         title=f"CPP forecast",
-#         colorscale="pysteps",
-#     )
-#     plt.suptitle(title, fontsize=24)
-#     plt.savefig(os.path.join(image_file, title + '.png'))
-#     plt.tight_layout()
-#     plt.show()
