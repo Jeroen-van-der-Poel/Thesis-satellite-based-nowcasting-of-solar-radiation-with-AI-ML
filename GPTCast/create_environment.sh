@@ -4,7 +4,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd $DIR
 
 # set python executable
-PYTHON=python3.10.12
+PYTHON=python3.12
 
 # create and activate virtual environment
 $PYTHON -m venv .venv
