@@ -10,6 +10,7 @@
 #SBATCH --error=myjob-%j.err
 
 # Create env
+bash install_python_ubuntu.sh
 bash create_environment.sh
 source .venv/bin/activate
 
