@@ -10,6 +10,7 @@
 #SBATCH --error=myjob-%j.err
 
 # Create env
+bash create_environment.sh
 source .venv/bin/activate
 
 # Download the dataset
