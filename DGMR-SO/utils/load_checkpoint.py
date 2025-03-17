@@ -7,7 +7,7 @@ import numpy as np
 import h5py
 import matplotlib
 import datetime
-from Result_analysis import *
+from analyse_results import *
 
 all_file_full_path_list = []
 all_file_name_list = []

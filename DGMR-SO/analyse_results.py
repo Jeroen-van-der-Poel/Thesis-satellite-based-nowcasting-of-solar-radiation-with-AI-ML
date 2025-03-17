@@ -2,7 +2,6 @@ import numpy as np
 import utils.metrics as metrics
 import plot_images
 import matplotlib.pyplot as plt
-#from pysteps.visualization import plot_precip_field
 import os
 
  # Analysis the cloud forecastresult

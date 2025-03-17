@@ -38,15 +38,13 @@ class Discriminator(snt.Module):
         h_offset = tf.random_uniform([], 0, (cr - 1) * (h // cr), tf.int32)
         w_offset = tf.random_uniform([], 0, (cr - 1) * (w // cr), tf.int32)
         zero_offset = tf.zeros_like(w_offset)
-        begin_tensor = tf.stack(
-            [zero_offset, zero_offset, h_offset, w_offset, zero_offset], -1)
+        begin_tensor = tf.stack([zero_offset, zero_offset, h_offset, w_offset, zero_offset], -1)
         size_tensor = tf.constant([b, t, h // cr, w // cr, c])
         frames_for_td = tf.slice(frames, begin_tensor, size_tensor)
         frames_for_td.set_shape([b, t, h // cr, w // cr, c])
 
         # Compute the average temporal discriminator score over length 5 sequences.
-        td_out = self._temporal_discriminator(
-            frames_for_td, is_training=is_training)
+        td_out = self._temporal_discriminator(frames_for_td, is_training=is_training)
 
         return tf.concat([sd_out, td_out], 1)
 
@@ -170,11 +168,8 @@ class TemporalDiscriminator(snt.Module):
 
     def __init__(self):
         super().__init__(name=None)
-        self._block1 = DBlock(output_channels=48, conv=layers.SNConv3D,
-                              pooling=layers.downsample_avg_pool3d,
-                              pre_activation=False)
-        self._block2 = DBlock(output_channels=96, conv=layers.SNConv3D,
-                              pooling=layers.downsample_avg_pool3d)
+        self._block1 = DBlock(output_channels=48, conv=layers.SNConv3D, pooling=layers.downsample_avg_pool3d, pre_activation=False)
+        self._block2 = DBlock(output_channels=96, conv=layers.SNConv3D, pooling=layers.downsample_avg_pool3d)
         self._block3 = DBlock(output_channels=192)
         self._block4 = DBlock(output_channels=384)
         self._block5 = DBlock(output_channels=768)

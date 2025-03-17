@@ -115,9 +115,6 @@ def write_tfrecord(INPUT_PATH, batches, windows, height, width):
         tf_record_train = Nowcasting_tfrecord(OUTPUT_PATH_train, str(id) + "_train", batches, 0)
         id = id + batches
 
-
-
-
 if __name__ == "__main__":
     # test data are for prediction,train data are for establishing the model
     INPUT_PATH = '/data1/cui/data/MSGCPP_extract_csc_val/'
@@ -131,16 +128,3 @@ if __name__ == "__main__":
     width = 126
 
     write_tfrecord(INPUT_PATH, batches,windows,height,width)
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -14,7 +14,6 @@ def downsample_avg_pool3d(x):
 
 def upsample_nearest_neighbor(inputs, upsample_size):
     """Nearest neighbor upsampling.
-
     Args:
       inputs: inputs of size [b, h, w, c] where b is the batch size, h the height,
         w the width, and c the number of channels.

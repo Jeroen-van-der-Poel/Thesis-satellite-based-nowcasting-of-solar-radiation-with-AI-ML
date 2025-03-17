@@ -1,6 +1,6 @@
 # import tensorflow.compat.v1 as tf
 import tensorflow as tf
-from tensorflow.keras.optimizers import Adam
+from tensorflow.python.keras.optimizers import Adam
 from Data.data_pipeline import Dataset
 from pathlib import Path
 from model.dgmr import DGMR
@@ -9,6 +9,7 @@ import os
 import matplotlib.pyplot as plt
 from utils.utils import *
 from tensorflow.python import debug as tfdbg
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 os.environ['TF_XLA_FLAGS'] = '--tf_xla_enable_xla_devices'
 print('GPU:', tf.config.list_physical_devices('GPU'))
@@ -30,7 +31,7 @@ training_steps = cfg['model_params']['steps']
 # gpu_devices_list = tf.config.list_physical_devices('GPU')
 
 batch_size = 16
-# the size of images need to be changed to (224,128), in order to march the model
+# The size of images need to be changed to (224,128), in order to march the model
 train_data,train_dataset_aug = Dataset(Path('/data1/cui/data/train_sds_single_day_opt_csc_20_21/'), batch_size=batch_size)
 val_data,val_data_val = Dataset(Path('/data1/cui/data/train_sds_single_day_opt_csc_20_21/'), batch_size=batch_size)
 
@@ -54,7 +55,7 @@ ckpt = tf.train.Checkpoint(generator=my_model.generator_obj,
                            discriminator=my_model.discriminator_obj,
                            generator_optimizer=my_model.gen_optimizer,
                            discriminator_optimizer=my_model.disc_optimizer)
-ckpt_manager = tf.train.CheckpointManager( ckpt, CHECKPOINT_DIR, max_to_keep=100)
+ckpt_manager = tf.train.CheckpointManager(ckpt, CHECKPOINT_DIR, max_to_keep=100)
 
 if ckpt_manager.latest_checkpoint:
     #ckpt.restore(ckpt_manager.latest_checkpoint)

@@ -11,8 +11,7 @@ class DGMR(tf.keras.Model):
         super(DGMR, self).__init__()
         self.strategy = None
         self.global_step = 0
-        self.generator_obj = Generator(
-            lead_time=lead_time, time_delta=time_delta)
+        self.generator_obj = Generator(lead_time=lead_time, time_delta=time_delta)
         self.discriminator_obj = Discriminator()
 
     @tf.function
