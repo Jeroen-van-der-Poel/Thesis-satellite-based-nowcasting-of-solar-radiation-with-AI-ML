@@ -9,6 +9,9 @@
 #SBATCH --output=myjob-%j.out
 #SBATCH --error=myjob-%j.err
 
+# Activate env
+source .venv/bin/activate
+
 # Download the dataset
 python data/download_data.py
 

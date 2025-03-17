@@ -9,13 +9,8 @@
 #SBATCH --output=myjob-%j.out
 #SBATCH --error=myjob-%j.err
 
-# Create env
-bash install_python_ubuntu.sh
-bash create_environment.sh
+# Activate env
 source .venv/bin/activate
-
-# Download the dataset
-python data/download_data.py
 
 # Train the model
 python gptcast/train.py trainer=gpu experiment=vaeganvq_mwae.yaml 
