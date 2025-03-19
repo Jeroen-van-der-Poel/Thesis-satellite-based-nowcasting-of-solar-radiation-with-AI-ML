@@ -14,4 +14,3 @@ source .venv/bin/activate
 
 # Train the model
 python gptcast/train.py trainer=gpu experiment=vaeganvq_mwae.yaml 
-# python gptcast/train.py trainer=gpu experiment=gptcast_16x16.yaml model.first_stage.ckpt_path=<path_to_vae_checkpoint>
