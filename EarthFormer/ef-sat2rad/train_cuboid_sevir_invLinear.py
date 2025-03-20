@@ -342,7 +342,7 @@ class CuboidSEVIRPLModule(pl.LightningModule):
     def get_optim_config():
         oc = OmegaConf.create()
         oc.seed = None
-        oc.total_batch_size = 16
+        oc.total_batch_size = 32
         oc.micro_batch_size = 8
 
         oc.method = "adamw"
