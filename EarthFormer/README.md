@@ -1,88 +1,199 @@
-# Earthformer for satellite-to-radar nowcasting (EF Sat2Rad)
+## Earthformer
+
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/earthformer-exploring-space-time-transformers/weather-forecasting-on-sevir)](https://paperswithcode.com/sota/weather-forecasting-on-sevir?p=earthformer-exploring-space-time-transformers)
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/earthformer-exploring-space-time-transformers/earth-surface-forecasting-on-earthnet2021-iid)](https://paperswithcode.com/sota/earth-surface-forecasting-on-earthnet2021-iid?p=earthformer-exploring-space-time-transformers)
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/earthformer-exploring-space-time-transformers/earth-surface-forecasting-on-earthnet2021-ood)](https://paperswithcode.com/sota/earth-surface-forecasting-on-earthnet2021-ood?p=earthformer-exploring-space-time-transformers)
+
+By [Zhihan Gao](https://scholar.google.com/citations?user=P6ACUAUAAAAJ&hl=en), [Xingjian Shi](https://github.com/sxjscience), [Hao Wang](http://www.wanghao.in/), [Yi Zhu](https://bryanyzhu.github.io/), [Yuyang Wang](https://scholar.google.com/citations?user=IKUm624AAAAJ&hl=en), [Mu Li](https://github.com/mli), [Dit-Yan Yeung](https://scholar.google.com/citations?user=nEsOOx8AAAAJ&hl=en).
+
+This repo is the official implementation of ["Earthformer: Exploring Space-Time Transformers for Earth System Forecasting"](https://www.amazon.science/publications/earthformer-exploring-space-time-transformers-for-earth-system-forecasting) that will appear in NeurIPS 2022. 
+
+Check our [poster](https://earthformer.s3.amazonaws.com/docs/Earthformer_poster_NeurIPS22.pdf).
+
+## Tutorials
+
+- [Inference Tutorial of Earthformer on EarthNet2021](./scripts/cuboid_transformer/earthnet_w_meso/inference_tutorial_earthformer_earthnet2021.ipynb). [![Open In Studio Lab](https://studiolab.sagemaker.aws/studiolab.svg)](https://studiolab.sagemaker.aws/import/github/amazon-science/earth-forecasting-transformer/blob/main/scripts/cuboid_transformer/earthnet_w_meso/inference_tutorial_earthformer_earthnet2021.ipynb) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/amazon-science/earth-forecasting-transformer/blob/main/scripts/cuboid_transformer/earthnet_w_meso/inference_tutorial_earthformer_earthnet2021.ipynb)
 
 ## Introduction
 
-Welcome to the Earthformer for satellite-to-radar nowcasting (EF Sat2Rad) repository, which is accompanying the paper [Transformer-based nowcasting of radar composites from satellite images for severe weather](https://doi.org/10.48550/arXiv.2310.19515)
+Conventionally, Earth system (e.g., weather and climate) forecasting relies on numerical simulation with complex physical models and are hence both 
+expensive in computation and demanding on domain expertise. With the explosive growth of the spatiotemporal Earth observation data in the past decade, 
+data-driven models that apply Deep Learning (DL) are demonstrating impressive potential for various Earth system forecasting tasks. 
+The Transformer as an emerging DL architecture, despite its broad success in other domains, has limited adoption in this area. 
+In this paper, we propose **Earthformer**, a space-time Transformer for Earth system forecasting. 
+Earthformer is based on a generic, flexible and efficient space-time attention block, named **Cuboid Attention**. 
+The idea is to decompose the data into cuboids and apply cuboid-level self-attention in parallel. These cuboids are further connected with a collection of global vectors.
 
-EF Sat2Rad is a modified version of the [Earthformer](https://github.com/amazon-science/earth-forecasting-transformer) package, tailored for radar nowcasting from satellite data by using [SEVIR](https://github.com/MIT-AI-Accelerator/neurips-2020-sevir) dataset. 
+Earthformer achieves strong results in synthetic datasets like MovingMNIST and N-body MNIST dataset, and also outperforms non-Transformer models (like ConvLSTM, CNN-U-Net) in SEVIR (precipitation nowcasting) and ICAR-ENSO2021 (El Nino/Southern Oscillation forecasting).
 
-## Installation and Setup
 
-Installation and setting up the data involves a couple of steps:
+![teaser](figures/teaser.png)
 
-### 0) Requirements and Versions
-- CUDA: To use GPU. CUDA 11.6 was available in the machines we ran the experiments with. 
-- AWS CLI: To download data from SEVIR buckets comfortably.
 
-### 1) Clone the repository and jump into the main directory
+### Cuboid Attention Illustration
+
+![cuboid_attention_illustration](figures/cuboid_illustration.gif)
+
+## Installation
+We recommend managing the environment through Anaconda. 
+
+First, find out where CUDA is installed on your machine. It is usually under `/usr/local/cuda` or `/opt/cuda`. 
+
+Next, check which version of CUDA you have installed on your machine:
+
 ```bash
-cd
-git clone https://github.com/caglarkucuk/earthformer-satellite-to-radar
-cd earthformer-satellite-to-radar
+nvcc --version
 ```
 
-### 2) Create the environment and start using it via:
-Once you're in the main directory:
+Then, create a new conda environment:
+
 ```bash
-conda create --name ef_sat2rad --file ef-sat2rad/Preprocess/ef_sat2rad.txt
-conda activate ef_sat2rad
+conda create -n earthformer python=3.9
+conda activate earthformer
 ```
 
-### 3) Download and preprocess the data:
-- It is possible to use sample data provided in [Zenodo](https://zenodo.org/doi/10.5281/zenodo.10033640), just unzip the archive and copy the content to `data/train` and `data/test`.
+Lastly, install dependencies. For example, if you have CUDA 11.6 installed under `/usr/local/cuda`, run:
 
-- For the full dataset, follow the steps below:
 ```bash
-# Download the bulk data from SEVIR buckets (careful with disk space)
-aws s3 sync --no-sign-request s3://sevir/data/lght bulk_data/lght # 1.7 GB
-aws s3 sync --no-sign-request s3://sevir/data/ir069 bulk_data/ir069 # 46 GB
-aws s3 sync --no-sign-request s3://sevir/data/ir107 bulk_data/ir107 # 46 GB
-aws s3 sync --no-sign-request s3://sevir/data/vil bulk_data/vil # 110 GB
-aws s3 cp --no-sign-request s3://sevir/CATALOG.csv bulk_data/CATALOG.csv
+python3 -m pip install torch==1.12.1+cu116 torchvision==0.13.1+cu116 -f https://download.pytorch.org/whl/torch_stable.html
+python3 -m pip install pytorch_lightning==1.6.4
+python3 -m pip install xarray netcdf4 opencv-python earthnet==0.3.9
+cd ROOT_DIR/earth-forecasting-transformer
+python3 -m pip install -U -e . --no-build-isolation
 
-# Process the bulk data and save events separately (~90 GB) via (will take take some time)
-python ef-sat2rad/Preprocess/save_oneByOne.py -dirBase bulk_data/ -dirOut data/ -dataMod test  # 23 GB
-python ef-sat2rad/Preprocess/save_oneByOne.py -dirBase bulk_data/ -dirOut data/ -dataMod train  # 64 GB
-
-# Consider removing the bulk data after preprocessing ;)
-# rm -r bulk_data/{lght,ir069,ir107,vil}
+# Install Apex
+CUDA_HOME=/usr/local/cuda python3 -m pip install -v --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" pytorch-extension git+https://github.com/NVIDIA/apex.git
 ```
 
-## Running the model
-In order to run the trained model right away, download the pretrained weights provided in [Zenodo](https://zenodo.org/doi/10.5281/zenodo.10033640) and copy the unzipped file `ef_sevir_sat2rad.pt` into `trained_ckpt`. 
+If you have CUDA 11.7 installed under `/opt/cuda`, run:
 
-Afterwards run the chunk below and it'll make prediction on the test samples available in `data/test`:
 ```bash
-cd ef-sat2rad
-python train_cuboid_sevir_invLinear.py --pretrained
+python3 -m pip install torch==1.13.1+cu117 torchvision==0.14.1+cu117 -f https://download.pytorch.org/whl/torch_stable.html
+python3 -m pip install pytorch_lightning==1.6.4
+python3 -m pip install xarray netcdf4 opencv-python earthnet==0.3.9
+cd ROOT_DIR/earth-forecasting-transformer
+python3 -m pip install -U -e . --no-build-isolation
+
+# Install Apex
+CUDA_HOME=/opt/cuda python3 -m pip install -v --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" pytorch-extension git+https://github.com/NVIDIA/apex.git
 ```
-It is possible to use the model for inference on machines without a GPU. It takes ~2 seconds to predict one sample on a CPU with 32 threads! Though, it is not advised to train the model without an accelarator, e.g., GPU.
 
-* To make model predictions for larger spatial domains, it is necessary to adjust the input data to match the shape of SEVIR input data. Subsequently, the model outputs, which will conform to the shape of VIL events in the SEVIR dataset, should be mosaicked (reassembled) back into the original shape of the studied large domain.
+## Dataset
+### MovingMNIST
+We follow [*Unsupervised Learning of Video Representations using LSTMs (ICML2015)*](http://www.cs.toronto.edu/~nitish/unsup_video.pdf) to use [MovingMNIST](https://github.com/mansimov/unsupervised-videos) that contains 10,000 sequences each of length 20 showing 2 digits moving in a $64\times 64$ frame.
 
-In order to train the model from scratch, run:
+Our [MovingMNIST DataModule](src/earthformer/datasets/moving_mnist/moving_mnist.py) automatically downloads it to [datasets/moving_mnist](./datasets/moving_mnist).
+
+### N-body MNIST
+The underlying dynamics in the N-body MNIST dataset is governed by the Newton's law of universal gravitation:
+
+$\frac{d^2\boldsymbol{x}\_{i}}{dt^2} = - \sum\_{j\neq i}\frac{G m\_j (\boldsymbol{x}\_{i}-\boldsymbol{x}\_{j})}{(\|\boldsymbol{x}\_i-\boldsymbol{x}\_j\|+d\_{\text{soft}})^r}$
+
+where $\boldsymbol{x}\_{i}$ is the spatial coordinates of the $i$-th digit, $G$ is the gravitational constant, $m\_j$ is the mass of the $j$-th digit, $r$ is a constant representing the power scale in the gravitational law, $d\_{\text{soft}}$ is a small softening distance that ensures numerical stability.
+
+The N-body MNIST dataset we used in the paper can be downloaded from https://earthformer.s3.amazonaws.com/nbody/nbody_paper.zip .
+
+In addition, you can also use the following script for downloading / extracting the data:
 ```bash
-cd ef-sat2rad
-python train_cuboid_sevir_invLinear.py
+cd ROOT_DIR/earth-forecasting-transformer
+python ./scripts/datasets/nbody/download_nbody_paper.py
 ```
-to train the model with default parameters and original structure described in the [paper](https://arxiv.org/abs/2310.19515). Alternating model structure by creating new config files is the best way to experiment further.
+
+Alternatively, run the following commands to generate N-body MNIST dataset.
+```bash
+cd ROOT_DIR/earth-forecasting-transformer
+python ./scripts/datasets/nbody/generate_nbody_dataset.py --cfg ./scripts/datasets/nbody/cfg.yaml
+```
+
+### SEVIR
+[Storm EVent ImageRy (SEVIR) dataset](https://sevir.mit.edu/) is a spatiotemporally aligned dataset containing over 10,000 weather events.
+We adopt NEXRAD Vertically Integrated Liquid (VIL) mosaics in SEVIR for benchmarking precipitation nowcasting, i.e., to predict the future VIL up to 60 minutes given 65 minutes context VIL. 
+The resolution is thus $13\times 384\times 384\rightarrow 12\times 384\times 384$.
+
+To download SEVIR dataset from AWS S3, run:
+```bash
+cd ROOT_DIR/earth-forecasting-transformer
+python ./scripts/datasets/sevir/download_sevir.py --dataset sevir
+```
+
+A visualization example of SEVIR VIL sequence:
+![Example_SEVIR_VIL_sequence](./figures/data/sevir/sevir_example.png)
+
+### ICAR-ENSO
+ICAR-ENSO consists of historical climate observation and stimulation data provided by Institute for Climate and Application Research (ICAR). 
+We forecast the SST anomalies up to 14 steps (2 steps more than one year for calculating three-month-moving-average),
+given a context of 12 steps (one year) of SST anomalies observations.
+
+To download the dataset, you need to follow the instructions on the [official website](https://tianchi.aliyun.com/dataset/dataDetail?dataId=98942). 
+You can download a zip-file named `enso_round1_train_20210201.zip`. Put it under `./datasets/` and extract the zip file with the following command:
+
+```bash
+unzip datasets/enso_round1_train_20210201.zip -d datasets/icar_enso_2021
+```
+
+### EarthNet2021
+
+You may follow the [official instructions](https://www.earthnet.tech/en21/ds-download/) for downloading [EarthNet2021 dataset](https://www.earthnet.tech/en21/ch-task/). 
+We recommend download it via the [earthnet_toolket](https://github.com/earthnet2021/earthnet-toolkit).
+```python
+import earthnet as en
+en.download(dataset="earthnet2021", splits="all", save_directory="./datasets/earthnet2021")
+```
+Alternatively, you may download [EarthNet2021x dataset](https://www.earthnet.tech/en21x/download/), which is the same as [EarthNet2021 dataset](https://www.earthnet.tech/en21/ch-task/) except for the file format (`.npz` for EarthNet2021 and `.nc` for EarthNet2021x).
+```python
+import earthnet as en
+en.download(dataset="earthnet2021x", splits="all", save_directory="./datasets/earthnet2021x")
+```
+
+It requires 455G disk space in total.
+
+## Earthformer Training
+Find detailed instructions in the corresponding training script folder
+- [N-body MNIST](./scripts/cuboid_transformer/nbody/README.md)
+- [SEVIR&SEVIR-LR](./scripts/cuboid_transformer/sevir/README.md)
+- [ENSO](./scripts/cuboid_transformer/enso/README.md)
+- [EarthNet2021](./scripts/cuboid_transformer/earthnet_w_meso/README.md)
+
+## Training Script and Pretrained Models
+
+Find detailed instructions in how to train the models or running inference with our pretrained models in the corresponding script folder.
+
+| Dataset       | Script Folder                                            | Pretrained Weights                                                                                                     | Config                                                                              |
+|---------------|----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|
+| SEVIR         | [scripts](./scripts/cuboid_transformer/sevir)            | [link](https://earthformer.s3.amazonaws.com/pretrained_checkpoints/earthformer_sevir.pt)        | [config](./scripts/cuboid_transformer/sevir/earthformer_sevir_v1.yaml)              |
+| ICAR-ENSO     | [scripts](./scripts/cuboid_transformer/enso)             | [link](https://earthformer.s3.amazonaws.com/pretrained_checkpoints/earthformer_icarenso2021.pt) | [config](./scripts/cuboid_transformer/enso/earthformer_enso_v1.yaml)                |
+| EarthNet2021  | [scripts](./scripts/cuboid_transformer/earthnet_w_meso)  | [link](https://earthformer.s3.amazonaws.com/pretrained_checkpoints/earthformer_earthnet2021.pt) | [config](./scripts/cuboid_transformer/earthnet_w_meso/earthformer_earthnet_v1.yaml) |
+| N-body MNIST  | [scripts](./scripts/cuboid_transformer/nbody)            | -                                                                                                                      | -                                                                                   |
+
+## Citing Earthformer
+
+```
+@inproceedings{gao2022earthformer,
+  title={Earthformer: Exploring Space-Time Transformers for Earth System Forecasting},
+  author={Gao, Zhihan and Shi, Xingjian and Wang, Hao and Zhu, Yi and Wang, Yuyang and Li, Mu and Yeung, Dit-Yan},
+  booktitle={NeurIPS},
+  year={2022}
+}
+```
+
+## Security
+
+See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
+
 
 ## Credits
-This repository is built on top of the great repositories:
-- [Earthformer](https://github.com/amazon-science/earth-forecasting-transformer) for the original Space-Time Transformer architecture. Most of the content in the `earthformer` directory is a simplified version of the original repository. New additions are highlighted with comments.  
-- [SEVIR](https://github.com/MIT-AI-Accelerator/neurips-2020-sevir) for downloading and preprocessing the data.
+Third-party libraries:
+- [PyTorch](https://pytorch.org/)
+- [PyTorch Lightning](https://www.pytorchlightning.ai/)
+- [Apex](https://github.com/NVIDIA/apex)
+- [OpenCV](https://opencv.org/)
+- [TensorBoard](https://www.tensorflow.org/tensorboard)
+- [OmegaConf](https://github.com/omry/omegaconf)
+- [YACS](https://github.com/rbgirshick/yacs)
+- [Pillow](https://python-pillow.org/)
+- [scikit-learn](https://scikit-learn.org/stable/)
 
-## Cite
-Please cite us if this repo helps your work!
-```
-@article{Kucuk2023,
-   title = {Transformer-based nowcasting of radar composites from satellite images for severe weather},
-   author = {K\"u\c{c}\"uk, {\c{C}}a\u{g}lar and Giannakos, Apostolos and Schneider, Stefan and Jann, Alexander},
-   month = {10},
-   doi = {10.48550/arXiv.2310.19515},
-   year = {2023},
-}
-``` 
+## License
 
-## Licence
-GNU General Public License v3.0
+This project is licensed under the Apache-2.0 License.
+
