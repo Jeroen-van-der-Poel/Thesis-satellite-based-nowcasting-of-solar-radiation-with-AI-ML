@@ -83,7 +83,7 @@ def write_tfrecord(INPUT_PATH, batches, windows, height, width):
             # Nomralize SDS using SDS_CS
             for j in range(windows):
                 h5_file = h5py.File(all_file_full_path_list[id + i + j])
-                ele = h5_file['sds'][:]
+                # ele = h5_file['sds'][:]
                 ele_sds = h5_file['sds'][:]
                 ele_cs = h5_file['sds_cs'][:]
                 ele_cs[ele_cs < 0] = 0
@@ -117,8 +117,8 @@ def write_tfrecord(INPUT_PATH, batches, windows, height, width):
 
 if __name__ == "__main__":
     # test data are for prediction,train data are for establishing the model
-    INPUT_PATH = '/data1/cui/data/MSGCPP_extract_csc_val/'
-    OUTPUT_PATH_train = Path('/data1/cui/data/val_sds_single_day_opt_csc_20_21')
+    INPUT_PATH = '/data1/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/MSGCPP_extract_csc_train/'
+    OUTPUT_PATH_train = Path('/data1/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/train_data')
     if not os.path.exists(OUTPUT_PATH_train):
         os.makedirs(OUTPUT_PATH_train)
     output_name_train = str(id) + "_train"
