@@ -1,4 +1,4 @@
-import h5py
+from netCDF4 import Dataset
 import os
 import numpy as np
 import datetime
@@ -14,12 +14,6 @@ def split_data_xy_1(data):
     x = data[0:4, :, :, :]
     y = data[4:20,:, :, :]
     return x, y
-
-def get_all_keys_from_h5(h5_file):
-    res = []
-    for key in h5_file.keys():
-        res.append(key)
-    return res
 
 def get_all_files(path):
     """
@@ -66,25 +60,25 @@ def write_tfrecord(INPUT_PATH, batches, windows, height, width, folder, output_p
                 id = id + 1
                 # print('Skip files start from: ' + str(label_list[id + i]))
                 continue
-            h5_file_start = h5py.File(all_file_full_path_list[id + i])
-            h5_file_end = h5py.File(all_file_full_path_list[id + i + windows])
+            nc_file_start = Dataset(all_file_full_path_list[id + i])
+            nc_file_end = Dataset(all_file_full_path_list[id + i + windows])
             start_time = label_list[id + i]
             end_time = label_list[id + i + 3]
             # Remove night time data
             if start_time.hour < 5 or start_time.hour > 17:
                 continue
-            if np.any(h5_file_start['sds'][:] <= 0):
+            if np.any(nc_file_start['sds'][:] <= 0):
                 # print('remove start ' + str(label_list[id + i]))
                 continue
-            if np.any(h5_file_end['sds'][:] <= 0):
+            if np.any(nc_file_end['sds'][:] <= 0):
                 # print('remove end ' + str(label_list[id + i + windows]))
                 continue
 
             # Nomralize SDS using SDS_CS
             for j in range(windows):
-                h5_file = h5py.File(all_file_full_path_list[id + i + j])
-                ele_sds = h5_file['sds'][:]
-                ele_cs = h5_file['sds_cs'][:]
+                nc_file = Dataset(all_file_full_path_list[id + i + j])
+                ele_sds = nc_file.variables['sds'][:]
+                ele_cs = nc_file.variables['sds_cs'][:]
                 ele_cs[ele_cs < 0] = 0
                 ele = ele_sds / ele_cs
                 ele[np.isnan(ele)] = 0
@@ -93,7 +87,7 @@ def write_tfrecord(INPUT_PATH, batches, windows, height, width, folder, output_p
                     print('Data is partly 0: ' + str(label_list[id + i + j]) + 'window is: ' + str(j))
                 if np.all(ele <= 0):
                     print('Attention!!!: ' + str(label_list[id + i + j]) + 'window is: ' + str(j))
-                # Note that here it is (width, heigh) while in the tensor is in (rows = height, cols = width)
+                # Note that here it is (width, heigh) while the tensor is in (rows = height, cols = width)
                 dataset[j] = np.array(ele.T)
                 
             # Convert data to tensot format
