@@ -32,13 +32,18 @@ def main():
 
     # Areas for input and output (defined with respect to full disk)
     areasel_in = [1467, 2681, 141, 763]     # region HKV+DXT (approx. Europe)
-    areasel_out = [1711, 2100, 260, 509]    # region covering Benelux and France
+    #areasel_out = [1711, 2100, 260, 509]    # region covering Benelux and France (adjusted to 390×250)
+    areasel_out = [1711, 2100, 257, 512]  # region covering Benelux and France (adjusted to 390×256)
 
     # Extraction 
     areasel = [areasel_out[0] - areasel_in[0], areasel_out[1] - areasel_in[0],
                areasel_out[2] - areasel_in[2], areasel_out[3] - areasel_in[2]]
     xsel = 'x,'+str(areasel[0])+','+str(areasel[1])
     ysel = 'y,'+str(areasel[2])+','+str(areasel[3])
+
+    width = areasel[1] - areasel[0] + 1
+    height = areasel[3] - areasel[2] + 1
+    print(f"{height}x{width}")
 
     dt = dt_s
     tstep = datetime.timedelta(minutes=15)

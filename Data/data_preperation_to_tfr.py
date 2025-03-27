@@ -42,13 +42,13 @@ def get_all_files(path):
     return all_file_full_path_list, all_file_name_list,label_list
 
 
-def write_tfrecord(INPUT_PATH, batches, windows, height, width):
+def write_tfrecord(INPUT_PATH, batches, windows, height, width, folder, output_path):
     all_file_full_path_list, all_file_name_list, label_list = get_all_files(INPUT_PATH)
     dataset = np.zeros(shape=(windows, height, width))
     length = len(label_list)
     id = 0
     exact_end_time = datetime.timedelta(minutes=(windows * 15))
-    tf_record_train = Nowcasting_tfrecord(OUTPUT_PATH_train, str(id) + "_train", batches, 0)
+    tf_record_var = Nowcasting_tfrecord(output_path, str(id) + folder, batches, 0)
     total_data = 0
     while id < length:
         print(id)
@@ -83,13 +83,11 @@ def write_tfrecord(INPUT_PATH, batches, windows, height, width):
             # Nomralize SDS using SDS_CS
             for j in range(windows):
                 h5_file = h5py.File(all_file_full_path_list[id + i + j])
-                # ele = h5_file['sds'][:]
                 ele_sds = h5_file['sds'][:]
                 ele_cs = h5_file['sds_cs'][:]
                 ele_cs[ele_cs < 0] = 0
                 ele = ele_sds / ele_cs
                 ele[np.isnan(ele)] = 0
-                # print('Normalization is nan' + str(label_list[id + i + j]))
 
                 if np.any(ele <= 0):
                     print('Data is partly 0: ' + str(label_list[id + i + j]) + 'window is: ' + str(j))
@@ -110,21 +108,32 @@ def write_tfrecord(INPUT_PATH, batches, windows, height, width):
             print("total valid sample by far is: " + str(total_data))
 
             # Rolling 10 steps in each .tfrecord file
-            tf_record_train.write_images_to_tfr_long(dataset_x.astype('float32'), dataset_y.astype('float32'), str(date_y))
+            tf_record_var.write_images_to_tfr_long(dataset_x.astype('float32'), dataset_y.astype('float32'), str(date_y))
             
-        tf_record_train = Nowcasting_tfrecord(OUTPUT_PATH_train, str(id) + "_train", batches, 0)
+        tf_record_var = Nowcasting_tfrecord(output_path, str(id) + folder, batches, 0)
         id = id + batches
 
 if __name__ == "__main__":
-    # test data are for prediction,train data are for establishing the model
-    INPUT_PATH = '/data1/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/MSGCPP_extract_csc_train/'
-    OUTPUT_PATH_train = Path('/data1/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/train_data')
-    if not os.path.exists(OUTPUT_PATH_train):
-        os.makedirs(OUTPUT_PATH_train)
-    output_name_train = str(id) + "_train"
+    TRAIN_INPUT_PATH = '/net/pc200258/nobackup_1/users/meirink/Jeroen/raw_train_data/'
+    VAL_INPUT_PATH = '/net/pc200258/nobackup_1/users/meirink/Jeroen/raw_val_data/'
+    TEST_INPUT_PATH = '/net/pc200258/nobackup_1/users/meirink/Jeroen/raw_test_data/'
+    OUTPUT_PATH_train = Path('./Data/train_data')
+    OUTPUT_PATH_val = Path('./Data/val_data')
+    OUTPUT_PATH_test = Path('./Data/test_data')
+
     batches = 200
     windows = 20
-    height = 208
-    width = 126
+    height = 256 # Matches the corresponding area
+    width = 390 # Matches the corresponding area
 
-    write_tfrecord(INPUT_PATH, batches,windows,height,width)
+    data_array = ['train', 'val', 'test']
+    for data in data_array:
+        if data == 'train':
+            folder = "_train"
+            write_tfrecord(TRAIN_INPUT_PATH, batches, windows, height, width, folder, OUTPUT_PATH_train)
+        elif data == 'val':
+            folder = "_val"
+            write_tfrecord(VAL_INPUT_PATH, batches, windows, height, width, folder, OUTPUT_PATH_val)
+        elif data == 'test':
+            folder = "_test"
+            write_tfrecord(TEST_INPUT_PATH, batches, windows, height, width, folder, OUTPUT_PATH_test)
