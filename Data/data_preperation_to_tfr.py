@@ -17,23 +17,28 @@ def split_data_xy_1(data):
 
 def get_all_files(path):
     """
-    Get all the files from the path with muti-folders
+    Get all the files from the path including subfolders.
     """
-    all_file_list = os.listdir(path)
-    all_file_list.sort()
-    # Go through all the folders
-    for file in all_file_list:
-        file_path = os.path.join(path, file)
-     
-        if os.path.isdir(file_path):
-            get_all_files(file_path)
-        elif os.path.isfile(file_path) and file.startswith(('.')) == False:
-            all_file_full_path_list.append(file_path)
-            all_file_name_list.append(file)
-            datestr = file.split('_')[2].split('.')[0]
-            startTime = datetime.datetime.strptime(datestr, "%Y%m%d%H%M")
-            label_list.append(startTime)
-    return all_file_full_path_list, all_file_name_list,label_list
+    all_file_full_path_list = []
+    all_file_name_list = []
+    label_list = []
+
+    for root, _, files in os.walk(path):
+        files.sort()
+        for file in files:
+            if not file.startswith('.'):
+                file_path = os.path.join(root, file)
+                all_file_full_path_list.append(file_path)
+                all_file_name_list.append(file)
+                try:
+                    datestr = file.split('_')[5]  # example: 20210101T061500
+                    startTime = datetime.datetime.strptime(datestr, "%Y%m%dT%H%M%S")
+                    label_list.append(startTime)
+                except Exception as e:
+                    print(f"Skipping file {file} due to error: {e}")
+
+    return all_file_full_path_list, all_file_name_list, label_list
+
 
 
 def write_tfrecord(INPUT_PATH, batches, windows, height, width, folder, output_path):
