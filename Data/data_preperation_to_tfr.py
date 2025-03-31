@@ -31,7 +31,7 @@ def get_all_files(path):
                 all_file_full_path_list.append(file_path)
                 all_file_name_list.append(file)
                 try:
-                    datestr = file.split('_')[5]  # example: 20210101T061500
+                    datestr = file.split('_')[8] 
                     startTime = datetime.datetime.strptime(datestr, "%Y%m%dT%H%M%S")
                     label_list.append(startTime)
                 except Exception as e:
@@ -39,10 +39,17 @@ def get_all_files(path):
 
     return all_file_full_path_list, all_file_name_list, label_list
 
-
-
 def write_tfrecord(INPUT_PATH, batches, windows, height, width, folder, output_path):
     all_file_full_path_list, all_file_name_list, label_list = get_all_files(INPUT_PATH)
+
+    # Sort the files based on the timestamp
+    full_list = list(zip(label_list, all_file_full_path_list, all_file_name_list))
+    full_list.sort(key=lambda x: x[0])
+    label_list, all_file_full_path_list, all_file_name_list = zip(*full_list)
+    label_list = list(label_list)
+    all_file_full_path_list = list(all_file_full_path_list)
+    all_file_name_list = list(all_file_name_list)
+
     dataset = np.zeros(shape=(windows, height, width))
     length = len(label_list)
     id = 0
@@ -82,8 +89,8 @@ def write_tfrecord(INPUT_PATH, batches, windows, height, width, folder, output_p
             # Nomralize SDS using SDS_CS
             for j in range(windows):
                 nc_file = Dataset(all_file_full_path_list[id + i + j])
-                ele_sds = nc_file.variables['sds'][:]
-                ele_cs = nc_file.variables['sds_cs'][:]
+                ele_sds = nc_file.variables['sds'][0,:,:]
+                ele_cs = nc_file.variables['sds_cs'][0,:,:]
                 ele_cs[ele_cs < 0] = 0
                 ele = ele_sds / ele_cs
                 ele[np.isnan(ele)] = 0
@@ -116,14 +123,14 @@ if __name__ == "__main__":
     TRAIN_INPUT_PATH = '/net/pc200258/nobackup_1/users/meirink/Jeroen/raw_train_data/'
     VAL_INPUT_PATH = '/net/pc200258/nobackup_1/users/meirink/Jeroen/raw_val_data/'
     TEST_INPUT_PATH = '/net/pc200258/nobackup_1/users/meirink/Jeroen/raw_test_data/'
-    OUTPUT_PATH_train = Path('./Data/train_data')
-    OUTPUT_PATH_val = Path('./Data/val_data')
-    OUTPUT_PATH_test = Path('./Data/test_data')
+    OUTPUT_PATH_train = Path('/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/train_data')
+    OUTPUT_PATH_val = Path('/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/val_data')
+    OUTPUT_PATH_test = Path('/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/test_data')
 
     batches = 200
     windows = 20
-    height = 256 # Matches the corresponding area
-    width = 390 # Matches the corresponding area
+    height = 390 # Matches the corresponding area
+    width = 256 # Matches the corresponding area
 
     data_array = ['train', 'val', 'test']
     for data in data_array:
