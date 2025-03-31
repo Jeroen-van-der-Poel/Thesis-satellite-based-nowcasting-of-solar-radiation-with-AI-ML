@@ -72,35 +72,38 @@ def write_tfrecord(INPUT_PATH, batches, windows, height, width, folder, output_p
                 id = id + 1
                 # print('Skip files start from: ' + str(label_list[id + i]))
                 continue
-            nc_file_start = Dataset(all_file_full_path_list[id + i])
-            nc_file_end = Dataset(all_file_full_path_list[id + i + windows])
+
             start_time = label_list[id + i]
             end_time = label_list[id + i + 3]
+
             # Remove night time data
             if start_time.hour < 5 or start_time.hour > 17:
-                continue
-            if np.any(nc_file_start['sds'][:] <= 0):
-                # print('remove start ' + str(label_list[id + i]))
-                continue
-            if np.any(nc_file_end['sds'][:] <= 0):
-                # print('remove end ' + str(label_list[id + i + windows]))
+                # print('remove night time ' + str(label_list[id + i]))
                 continue
 
-            # Nomralize SDS using SDS_CS
+            with Dataset(all_file_full_path_list[id + i]) as nc_file_start, Dataset(all_file_full_path_list[id + i + windows]) as nc_file_end:
+                if np.any(nc_file_start.variables['sds'][0,:,:] <= 0):
+                    # print('remove start ' + str(label_list[id + i]))
+                    continue
+                if np.any(nc_file_end.variables['sds'][0,:,:] <= 0):
+                    # print('remove end ' + str(label_list[id + i + windows]))
+                    continue
+
+            # Normalize SDS using SDS_CS
             for j in range(windows):
-                nc_file = Dataset(all_file_full_path_list[id + i + j])
-                ele_sds = nc_file.variables['sds'][0,:,:]
-                ele_cs = nc_file.variables['sds_cs'][0,:,:]
-                ele_cs[ele_cs < 0] = 0
-                ele = ele_sds / ele_cs
-                ele[np.isnan(ele)] = 0
+                with Dataset(all_file_full_path_list[id + i + j]) as nc_file:
+                    ele_sds = nc_file.variables['sds'][0,:,:]
+                    ele_cs = nc_file.variables['sds_cs'][0,:,:]
+                    ele_cs[ele_cs < 0] = 0
+                    ele = ele_sds / ele_cs
+                    ele[np.isnan(ele)] = 0
 
-                if np.any(ele <= 0):
-                    print('Data is partly 0: ' + str(label_list[id + i + j]) + 'window is: ' + str(j))
-                if np.all(ele <= 0):
-                    print('Attention!!!: ' + str(label_list[id + i + j]) + 'window is: ' + str(j))
-                # Note that here it is (width, heigh) while the tensor is in (rows = height, cols = width)
-                dataset[j] = np.array(ele.T)
+                    if np.any(ele <= 0):
+                        print('Data is partly 0: ' + str(label_list[id + i + j]) + 'window is: ' + str(j))
+                    if np.all(ele <= 0):
+                        print('Attention!!!: ' + str(label_list[id + i + j]) + 'window is: ' + str(j))
+                    # Note that here it is (width, heigh) while the tensor is in (rows = height, cols = width)
+                    dataset[j] = np.array(ele.T)
                 
             # Convert data to tensot format
             # Windows, height, width, depth
