@@ -111,7 +111,7 @@ def write_tfrecord(INPUT_PATH, batches, windows, height, width, folder, output_p
             # Current time:forecast start time
             date_y = label_list[id + i + 4: id + i + windows]
             total_data = total_data + 1
-            print("total valid sample by far is: " + str(total_data))
+            print("Total valid sample so far is: " + str(total_data))
 
             # Rolling 10 steps in each .tfrecord file
             tf_record_var.write_images_to_tfr_long(dataset_x.astype('float32'), dataset_y.astype('float32'), str(date_y))
