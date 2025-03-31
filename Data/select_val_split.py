@@ -22,7 +22,7 @@ for year in years:
     for f in files:
         try:
             filename = os.path.basename(f)
-            datestr = filename.split('_')[8]  # adjust if different format
+            datestr = filename.split('_')[8] 
             dt = datetime.datetime.strptime(datestr, "%Y%m%dT%H%M%S")
             file_timestamp_pairs.append((f, dt))
         except Exception as e:
@@ -40,7 +40,9 @@ valid_windows = []
 step = datetime.timedelta(minutes=15)
 window_len = 20
 
-for i in range(len(timestamps) - window_len + 1):
+valid_windows = []
+i = 0
+while i <= len(timestamps) - window_len:
     valid = True
     for j in range(1, window_len):
         if timestamps[i + j] - timestamps[i + j - 1] != step:
@@ -49,6 +51,9 @@ for i in range(len(timestamps) - window_len + 1):
     if valid:
         window = [file_dict[timestamps[i + k]] for k in range(window_len)]
         valid_windows.append(window)
+        i += window_len  # Skip past the current window
+    else:
+        i += 1
 
 print(f"Total valid 5-hour windows found: {len(valid_windows)}")
 
@@ -62,7 +67,7 @@ val_windows = valid_windows[:val_window_count]
 for window in val_windows:
     for f in window:
         try:
-            shutil.move(f, os.path.join(val_output_path, os.path.basename(f)))
+            shutil.move(f, val_output_path)
         except Exception as e:
             print(f"Error moving {f}: {e}")
 
