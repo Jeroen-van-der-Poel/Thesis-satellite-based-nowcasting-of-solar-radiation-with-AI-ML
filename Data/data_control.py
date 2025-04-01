@@ -14,7 +14,7 @@ def get_all_nc_files(path):
 
 def count_tfrecord_files(tfrecord_dir):
     total_samples = 0
-    tfrecord_files = [f for f in os.listdir(tfrecord_dir) if f.endswith('.tfrecord')]
+    tfrecord_files = [f for f in os.listdir(tfrecord_dir) if f.endswith('.tfrecords')]
 
     for tfrecord_file in tfrecord_files:
         path = os.path.join(tfrecord_dir, tfrecord_file)
@@ -34,13 +34,17 @@ if __name__ == "__main__":
     val_data = '/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/val_data'
     test_data = '/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/test_data'
 
+    # Takes a very long time to calculate
+    total_train_samples = count_tfrecord_files(train_data)
+    total_val_samples = count_tfrecord_files(val_data)
+    total_test_samples = count_tfrecord_files(test_data)
+
     total_raw_data = len(get_all_nc_files(raw_train_data)) + len(get_all_nc_files(raw_val_data)) + len(get_all_nc_files(raw_test_data))
     print(f"Total raw data: {total_raw_data}")
     print(f"Total raw train data: {len(get_all_nc_files(raw_train_data))}")
     print(f"Total raw val data: {len(get_all_nc_files(raw_val_data))}")
     print(f"Total raw test data: {len(get_all_nc_files(raw_test_data))}")
 
-    # Takes a very long time to calculate
-    print(f"Total new train data: {count_tfrecord_files(train_data)}")
-    print(f"Total new val data: {count_tfrecord_files(val_data)}")
-    print(f"Total new test data: {count_tfrecord_files(test_data)}")
+    print(f"Total new train data: {total_train_samples}")
+    print(f"Total new val data: {total_val_samples}")
+    print(f"Total new test data: {total_test_samples}")
