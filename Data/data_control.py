@@ -19,7 +19,7 @@ def count_tfrecord_files(tfrecord_dir):
     for tfrecord_file in tfrecord_files:
         path = os.path.join(tfrecord_dir, tfrecord_file)
         try:
-            for _ in tf.data.TFRecordDataset(path):
+            for _ in tf.data.TFRecordDataset([path], compression_type='GZIP', num_parallel_reads=tf.data.AUTOTUNE).prefetch(tf.data.AUTOTUNE):
                 total_samples += 1
         except tf.errors.DataLossError as e:
             print(f"Skipped corrupted file: {tfrecord_file} | Error: {e}")
@@ -40,6 +40,7 @@ if __name__ == "__main__":
     print(f"Total raw val data: {len(get_all_nc_files(raw_val_data))}")
     print(f"Total raw test data: {len(get_all_nc_files(raw_test_data))}")
 
+    # Takes a very long time to calculate
     print(f"Total new train data: {count_tfrecord_files(train_data)}")
     print(f"Total new val data: {count_tfrecord_files(val_data)}")
     print(f"Total new test data: {count_tfrecord_files(test_data)}")
