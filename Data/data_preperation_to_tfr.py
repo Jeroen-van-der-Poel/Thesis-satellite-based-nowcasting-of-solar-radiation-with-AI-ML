@@ -124,10 +124,8 @@ def write_tfrecord(INPUT_PATH, batches, windows, height, width, folder, output_p
 
 if __name__ == "__main__":
     TRAIN_INPUT_PATH = '/net/pc200258/nobackup_1/users/meirink/Jeroen/raw_train_data/'
-    VAL_INPUT_PATH = '/net/pc200258/nobackup_1/users/meirink/Jeroen/raw_val_data/'
     TEST_INPUT_PATH = '/net/pc200258/nobackup_1/users/meirink/Jeroen/raw_test_data/'
     OUTPUT_PATH_train = Path('/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/train_data')
-    OUTPUT_PATH_val = Path('/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/val_data')
     OUTPUT_PATH_test = Path('/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/test_data')
 
     batches = 200
@@ -135,14 +133,11 @@ if __name__ == "__main__":
     height = 390 # Matches the corresponding area
     width = 256 # Matches the corresponding area
 
-    data_array = ['train', 'val', 'test']
+    data_array = ['train', 'test']
     for data in data_array:
         if data == 'train':
             folder = "_train"
             write_tfrecord(TRAIN_INPUT_PATH, batches, windows, height, width, folder, OUTPUT_PATH_train)
-        elif data == 'val':
-            folder = "_val"
-            write_tfrecord(VAL_INPUT_PATH, batches, windows, height, width, folder, OUTPUT_PATH_val)
         elif data == 'test':
             folder = "_test"
             write_tfrecord(TEST_INPUT_PATH, batches, windows, height, width, folder, OUTPUT_PATH_test)
