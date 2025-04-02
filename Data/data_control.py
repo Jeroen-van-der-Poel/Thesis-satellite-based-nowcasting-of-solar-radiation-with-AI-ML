@@ -25,6 +25,15 @@ def count_tfrecord_files(tfrecord_dir):
             print(f"Skipped corrupted file: {tfrecord_file} | Error: {e}")
     return total_samples
 
+def get_directory_size_in_gb(path):
+    total_bytes = 0
+    for dirpath, _, filenames in os.walk(path):
+        for f in filenames:
+            fp = os.path.join(dirpath, f)
+            if os.path.isfile(fp):
+                total_bytes += os.path.getsize(fp)
+    return round(total_bytes / (1024**3), 2)  
+
 if __name__ == "__main__":
     raw_train_data = '/net/pc200258/nobackup_1/users/meirink/Jeroen/raw_train_data'
     raw_val_data = '/net/pc200258/nobackup_1/users/meirink/Jeroen/raw_val_data'
@@ -35,9 +44,9 @@ if __name__ == "__main__":
     test_data = '/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/test_data'
 
     # Takes a very long time to calculate
-    total_train_samples = count_tfrecord_files(train_data)
-    total_val_samples = count_tfrecord_files(val_data)
-    total_test_samples = count_tfrecord_files(test_data)
+    # total_train_samples = count_tfrecord_files(train_data)
+    # total_val_samples = count_tfrecord_files(val_data)
+    # total_test_samples = count_tfrecord_files(test_data)
 
     total_raw_data = len(get_all_nc_files(raw_train_data)) + len(get_all_nc_files(raw_val_data)) + len(get_all_nc_files(raw_test_data))
     print(f"Total raw data: {total_raw_data}")
@@ -45,6 +54,10 @@ if __name__ == "__main__":
     print(f"Total raw val data: {len(get_all_nc_files(raw_val_data))}")
     print(f"Total raw test data: {len(get_all_nc_files(raw_test_data))}")
 
-    print(f"Total new train data: {total_train_samples}")
-    print(f"Total new val data: {total_val_samples}")
-    print(f"Total new test data: {total_test_samples}")
+    # print(f"Total new train data: {total_train_samples}")
+    # print(f"Total new val data: {total_val_samples}")
+    # print(f"Total new test data: {total_test_samples}")
+
+    print(get_directory_size_in_gb(train_data))
+    print(get_directory_size_in_gb(val_data))
+    print(get_directory_size_in_gb(test_data))
