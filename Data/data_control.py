@@ -2,6 +2,9 @@ import os
 import glob
 import tensorflow as tf
 import datetime
+from tfrecord_shards_for_nowcasting import Nowcasting_tfrecord
+import matplotlib.pyplot as plt
+import random
 
 def get_all_nc_files(path):
     all_file_name_list = []
@@ -34,6 +37,32 @@ def get_directory_size_in_gb(path):
                 total_bytes += os.path.getsize(fp)
     return round(total_bytes / (1024**3), 2)  
 
+def visualize_random_sample(tfrecord_path, title):
+    parser = Nowcasting_tfrecord()
+    dataset = parser.get_dataset_large(tfrecord_path, pattern="*.tfrecords")
+
+    for cond, targ, _, _ in dataset.shuffle(10).take(1):  # Take one random example
+        cond = cond.numpy()
+        targ = targ.numpy()
+
+        plt.figure(figsize=(16, 4))
+        for i in range(4):  # Visualize 4 past frames
+            plt.subplot(2, 4, i+1)
+            plt.imshow(cond[i, :, :, 0], cmap='gray')
+            plt.title(f'Cond t-{4-i}')
+            plt.axis('off')
+
+        for i in range(4):  # Visualize 4 future frames
+            plt.subplot(2, 4, i+5)
+            plt.imshow(targ[i, :, :, 0], cmap='gray')
+            plt.title(f'Target t+{i+1}')
+            plt.axis('off')
+
+        plt.suptitle(title)
+        plt.tight_layout()
+        plt.show()
+        break
+
 if __name__ == "__main__":
     raw_train_data = '/net/pc200258/nobackup_1/users/meirink/Jeroen/raw_train_data'
     raw_val_data = '/net/pc200258/nobackup_1/users/meirink/Jeroen/raw_val_data'
@@ -61,3 +90,10 @@ if __name__ == "__main__":
     print(get_directory_size_in_gb(train_data))
     print(get_directory_size_in_gb(val_data))
     print(get_directory_size_in_gb(test_data))
+
+    print("Visualizing random train sample...")
+    visualize_random_sample(train_data, title="Train Sample")
+    print("Visualizing random val sample...")
+    visualize_random_sample(val_data, title="Validation Sample")
+    print("Visualizing random test sample...")
+    visualize_random_sample(test_data, title="Test Sample")
