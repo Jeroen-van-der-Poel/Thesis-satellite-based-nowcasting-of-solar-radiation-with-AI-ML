@@ -37,24 +37,37 @@ def get_directory_size_in_gb(path):
                 total_bytes += os.path.getsize(fp)
     return round(total_bytes / (1024**3), 2)  
 
-def visualize_random_sample(tfrecord_path, title):
-    parser = Nowcasting_tfrecord()
-    
-    dataset = parser.get_dataset_large(tfrecord_path, pattern="*.tfrecords", has_prob=True)
+def visualize_random_sample(tfrecord_dir, title):
+    # Grab one random .tfrecords file
+    tfrecord_files = glob.glob(os.path.join(tfrecord_dir, "*.tfrecords"))
+    if not tfrecord_files:
+        print("No TFRecord files found.")
+        return
 
-    for cond, targ, mask, prob, date in dataset.shuffle(10).take(1): 
+    tfrecord_file = random.choice(tfrecord_files)
+    print(f"Reading from file: {os.path.basename(tfrecord_file)}")
+
+    # Init parser (without mask/prob)
+    parser = Nowcasting_tfrecord()
+    dataset = tf.data.TFRecordDataset(tfrecord_file, compression_type="GZIP")
+    dataset = dataset.map(parser.parse_tfr_element)
+
+    # Take one example (1 window of 20 frames = 4x cond, 16x targ)
+    for cond, targ, _, _ in dataset.take(1):
         cond = cond.numpy()
         targ = targ.numpy()
 
         plt.figure(figsize=(16, 4))
-        
-        for i in range(4):  # Visualize 4 past frames
+
+        # Plot 4 past frames
+        for i in range(4):
             plt.subplot(2, 4, i + 1)
             plt.imshow(cond[i, :, :, 0], cmap='gray')
-            plt.title(f'Cond t-{4 - i}')
+            plt.title(f'Input t-{4 - i}')
             plt.axis('off')
 
-        for i in range(4):  # Visualize 4 future frames
+        # Plot 4 future frames
+        for i in range(4):
             plt.subplot(2, 4, i + 5)
             plt.imshow(targ[i, :, :, 0], cmap='gray')
             plt.title(f'Target t+{i + 1}')
@@ -63,7 +76,7 @@ def visualize_random_sample(tfrecord_path, title):
         plt.suptitle(title)
         plt.tight_layout()
         plt.show()
-        break 
+        break
 
 if __name__ == "__main__":
     raw_train_data = '/net/pc200258/nobackup_1/users/meirink/Jeroen/raw_train_data'
