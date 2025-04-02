@@ -39,7 +39,7 @@ def get_directory_size_in_gb(path):
 
 def visualize_random_sample(tfrecord_path, title):
     parser = Nowcasting_tfrecord()
-    dataset = parser.get_dataset_large(tfrecord_path, pattern="*.tfrecords")
+    dataset = parser.get_dataset_large(tfrecord_path, pattern="*.tfrecords", has_prob=False)
 
     for cond, targ, _, _ in dataset.shuffle(10).take(1):  # Take one random example
         cond = cond.numpy()
