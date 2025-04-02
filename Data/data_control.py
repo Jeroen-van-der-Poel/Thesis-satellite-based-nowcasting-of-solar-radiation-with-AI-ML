@@ -5,6 +5,7 @@ import datetime
 from tfrecord_shards_for_nowcasting import Nowcasting_tfrecord
 import matplotlib.pyplot as plt
 import random
+import numpy as np
 
 def get_all_nc_files(path):
     all_file_name_list = []
@@ -37,46 +38,80 @@ def get_directory_size_in_gb(path):
                 total_bytes += os.path.getsize(fp)
     return round(total_bytes / (1024**3), 2)  
 
-def visualize_random_sample(tfrecord_dir, title):
-    # Grab one random .tfrecords file
-    tfrecord_files = glob.glob(os.path.join(tfrecord_dir, "*.tfrecords"))
-    if not tfrecord_files:
-        print("No TFRecord files found.")
-        return
+def parse_record(raw_record):
+    feature_description = {
+        'raw_image_cond': tf.io.FixedLenFeature([], tf.string),
+        'raw_image_targ': tf.io.FixedLenFeature([], tf.string),
+        'window_cond': tf.io.FixedLenFeature([], tf.float32),
+        'height_cond': tf.io.FixedLenFeature([], tf.float32),
+        'width_cond': tf.io.FixedLenFeature([], tf.float32),
+        'depth_cond': tf.io.FixedLenFeature([], tf.float32),
+        'window_targ': tf.io.FixedLenFeature([], tf.float32),
+        'height_targ': tf.io.FixedLenFeature([], tf.float32),
+        'width_targ': tf.io.FixedLenFeature([], tf.float32),
+        'depth_targ': tf.io.FixedLenFeature([], tf.float32),
+    }
+    return tf.io.parse_single_example(raw_record, feature_description)
 
-    tfrecord_file = random.choice(tfrecord_files)
-    print(f"Reading from file: {os.path.basename(tfrecord_file)}")
+def sanity_check_tfrecords(tfrecord_dir, n_samples=10):
+    print(f"Running sanity checks on {tfrecord_dir} ...")
+    tfrecord_files = [f for f in os.listdir(tfrecord_dir) if f.endswith('.tfrecords')]
+    selected_files = tfrecord_files[:3]  # only a few files for speed
 
-    # Init parser (without mask/prob)
-    parser = Nowcasting_tfrecord()
-    dataset = tf.data.TFRecordDataset(tfrecord_file, compression_type="GZIP")
-    dataset = dataset.map(parser.parse_tfr_element)
+    all_pixels = []
 
-    # Take one example (1 window of 20 frames = 4x cond, 16x targ)
-    for cond, targ, _, _ in dataset.take(1):
-        cond = cond.numpy()
-        targ = targ.numpy()
+    for file in selected_files:
+        path = os.path.join(tfrecord_dir, file)
+        dataset = tf.data.TFRecordDataset([path], compression_type='GZIP')
+        for i, raw_record in enumerate(dataset.take(n_samples)):
+            example = parse_record(raw_record)
 
-        plt.figure(figsize=(16, 4))
+            try:
+                # Decode and reshape
+                cond = tf.io.parse_tensor(example['raw_image_cond'], out_type=tf.float32)
+                targ = tf.io.parse_tensor(example['raw_image_targ'], out_type=tf.float32)
 
-        # Plot 4 past frames
-        for i in range(4):
-            plt.subplot(2, 4, i + 1)
-            plt.imshow(cond[i, :, :, 0], cmap='gray')
-            plt.title(f'Input t-{4 - i}')
-            plt.axis('off')
+                cond_shape = [int(example['window_cond'].numpy()),
+                              int(example['height_cond'].numpy()),
+                              int(example['width_cond'].numpy()),
+                              int(example['depth_cond'].numpy())]
 
-        # Plot 4 future frames
-        for i in range(4):
-            plt.subplot(2, 4, i + 5)
-            plt.imshow(targ[i, :, :, 0], cmap='gray')
-            plt.title(f'Target t+{i + 1}')
-            plt.axis('off')
+                targ_shape = [int(example['window_targ'].numpy()),
+                              int(example['height_targ'].numpy()),
+                              int(example['width_targ'].numpy()),
+                              int(example['depth_targ'].numpy())]
 
-        plt.suptitle(title)
+                cond = tf.reshape(cond, cond_shape).numpy()
+                targ = tf.reshape(targ, targ_shape).numpy()
+
+                # --- Checks ---
+                if np.isnan(cond).any() or np.isnan(targ).any():
+                    print(f"[{file}] Sample {i}: Contains NaNs")
+                if np.isinf(cond).any() or np.isinf(targ).any():
+                    print(f"[{file}] Sample {i}: Contains Infs")
+                if np.all(cond == 0) or np.all(targ == 0):
+                    print(f"[{file}] Sample {i}: All-zero data")
+                if cond.shape != (4, 390, 256, 1) or targ.shape != (16, 390, 256, 1):
+                    print(f"[{file}] Sample {i}: Unexpected shape {cond.shape}, {targ.shape}")
+
+                all_pixels.append(cond.flatten())
+                all_pixels.append(targ.flatten())
+
+            except Exception as e:
+                print(f"[{file}] Sample {i}: Error decoding - {e}")
+
+    # Pixel histogram
+    if all_pixels:
+        pixels = np.concatenate(all_pixels)
+        plt.figure(figsize=(8, 4))
+        plt.hist(pixels, bins=50, color='skyblue')
+        plt.title("Pixel intensity distribution")
+        plt.xlabel("Normalized value")
+        plt.ylabel("Frequency")
+        plt.grid(True)
         plt.tight_layout()
         plt.show()
-        break
+
 
 if __name__ == "__main__":
     raw_train_data = '/net/pc200258/nobackup_1/users/meirink/Jeroen/raw_train_data'
@@ -102,13 +137,6 @@ if __name__ == "__main__":
     # print(f"Total new val data: {total_val_samples}")
     # print(f"Total new test data: {total_test_samples}")
 
-    print(get_directory_size_in_gb(train_data))
-    print(get_directory_size_in_gb(val_data))
-    print(get_directory_size_in_gb(test_data))
-
-    print("Visualizing random train sample...")
-    visualize_random_sample(train_data, title="Train Sample")
-    print("Visualizing random val sample...")
-    visualize_random_sample(val_data, title="Validation Sample")
-    print("Visualizing random test sample...")
-    visualize_random_sample(test_data, title="Test Sample")
+    sanity_check_tfrecords(train_data)
+    sanity_check_tfrecords(val_data)
+    sanity_check_tfrecords(test_data)
