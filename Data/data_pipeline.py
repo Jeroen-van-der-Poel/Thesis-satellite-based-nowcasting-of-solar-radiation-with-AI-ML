@@ -78,7 +78,7 @@ def random_crop_images(target_data, label_data, crop_height, crop_width):
 
 # Combines flipping, contrast adjustment, and random cropping in one function
 def augmentation(input_img, target_img, time_stamp):
-  """Perform random augmentations on a sample with dimensions [192, 64, 5, 2]"""
+  """Perform random augmentations"""
   # Spatial flips
   if tf.random.uniform([]) < 0.5:
     input_img = tf.reverse(input_img, axis=[1])
