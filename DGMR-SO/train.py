@@ -32,8 +32,8 @@ training_steps = cfg['model_params']['steps']
 
 batch_size = 16
 # The size of images need to be changed to (224,128), in order to march the model
-train_data,train_dataset_aug = Dataset(Path('/data1/cui/data/train_sds_single_day_opt_csc_20_21/'), batch_size=batch_size)
-val_data,val_data_val = Dataset(Path('/data1/cui/data/train_sds_single_day_opt_csc_20_21/'), batch_size=batch_size)
+train_data,train_dataset_aug = Dataset(Path('/data1/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/train_data'), batch_size=batch_size)
+val_data,val_data_val = Dataset(Path('/data1/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/val_data'), batch_size=batch_size)
 
 train_writer = tf.summary.create_file_writer(str(ROOT / "logs" / (str(MODEL_NAME) + '_v' + str(MODEL_VERSION)) / "train/"))
 prof_dir = str(ROOT / "logs" / (str(MODEL_NAME) + '_v' + str(MODEL_VERSION)) / "profiler/")

@@ -25,6 +25,14 @@ class DGMR(tf.keras.Model):
         self.gen_loss = gen_loss
         self.disc_loss = disc_loss
 
+    def resize_tensor_to_256x256(self, tensor):
+        # tensor: [B, T, H, W, C]
+        b, t, h, w, c = tensor.shape
+        tensor = tf.reshape(tensor, [-1, h, w, c])  # → [B*T, H, W, C]
+        tensor = tf.image.resize(tensor, [256, 256])  # Resize
+        tensor = tf.reshape(tensor, [b, t, 256, 256, c])  # → [B, T, 256, 256, C]
+        return tensor
+
     def fit(self, dataset_aug, data_val, steps=2, callbacks=[]):
         train_writer = callbacks[0]
         ckpt_manager = callbacks[1]
@@ -53,15 +61,15 @@ class DGMR(tf.keras.Model):
             batch_inputs4, batch_targets4, targ_mask4 = next(dataset_aug)
             batch_targets4 = batch_targets4[:, :, :, :, :]
 
-            # The size of images need to be changed to (224,128), in order to match the model
-            batch_inputs1 = tf.pad(batch_inputs1, [[0, 0], [0, 0], [0, 16], [0, 2], [0, 0]], mode='CONSTANT')
-            batch_targets1 = tf.pad(batch_targets1, [[0, 0], [0, 0], [0, 16], [0, 2], [0, 0]], mode='CONSTANT')
-            batch_inputs2 = tf.pad(batch_inputs2, [[0, 0], [0, 0], [0, 16], [0, 2], [0, 0]], mode='CONSTANT')
-            batch_targets2 = tf.pad(batch_targets2, [[0, 0], [0, 0], [0, 16], [0, 2], [0, 0]], mode='CONSTANT')
-            batch_inputs3 = tf.pad(batch_inputs3, [[0, 0], [0, 0], [0, 16], [0, 2], [0, 0]], mode='CONSTANT')
-            batch_targets3 = tf.pad(batch_targets3, [[0, 0], [0, 0], [0, 16], [0, 2], [0, 0]], mode='CONSTANT')
-            batch_inputs4 = tf.pad(batch_inputs4, [[0, 0], [0, 0], [0, 16], [0, 2], [0, 0]], mode='CONSTANT')
-            batch_targets4 = tf.pad(batch_targets4, [[0, 0], [0, 0], [0, 16], [0, 2], [0, 0]], mode='CONSTANT')
+            # The size of images need to be changed to (256,256), in order to match the model
+            batch_inputs1 = self.resize_tensor_to_256x256(batch_inputs1)
+            batch_targets1 = self.resize_tensor_to_256x256(batch_targets1)
+            batch_inputs2 = self.resize_tensor_to_256x256(batch_inputs2)
+            batch_targets2 = self.resize_tensor_to_256x256(batch_targets2)
+            batch_inputs3 = self.resize_tensor_to_256x256(batch_inputs3)
+            batch_targets3 = self.resize_tensor_to_256x256(batch_targets3)
+            batch_inputs4 = self.resize_tensor_to_256x256(batch_inputs4)
+            batch_targets4 = self.resize_tensor_to_256x256(batch_targets4)
 
             temp_time = time.time()
 

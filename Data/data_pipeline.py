@@ -93,12 +93,10 @@ def augmentation(input_img, target_img, time_stamp):
   target_img = random_contrast_augmentation(target_img, 0.9, 1.1, random_seed)
 
   # Random crop and resize
-  # In 20% of cases, the original image is used for training
-  # In 80% of cases, a crop factor of 0.9375 is applied in each direction for an area of approx. 88%
   if tf.random.uniform([]) > 0.2:
-    input_img,target_img = random_crop_images(input_img,target_img, 190,110)
-    input_img = tf.image.resize(input_img, size=[208, 126])
-    target_img = tf.image.resize(target_img, size=[208, 126])
+    input_img,target_img = random_crop_images(input_img,target_img, 343, 225)
+    input_img = tf.image.resize(input_img, size=[390, 256])
+    target_img = tf.image.resize(target_img, size=[390, 256])
 
   return (input_img, target_img, time_stamp)
 
