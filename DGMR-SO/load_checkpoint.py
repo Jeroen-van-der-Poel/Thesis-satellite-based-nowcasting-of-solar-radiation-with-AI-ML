@@ -1,38 +1,47 @@
 import tensorflow as tf
 from tensorflow.keras.optimizers import Adam
-from losses import Loss_hing_disc, Loss_hing_gen
+from utils.losses import Loss_hing_disc, Loss_hing_gen
 from model.dgmr import DGMR
-from utils import *
+from utils.utils import *
 import numpy as np
-import h5py
 import matplotlib
 import datetime
 from analyse_results import *
+from netCDF4 import Dataset
 
 all_file_full_path_list = []
 all_file_name_list = []
 label_list = []
 
-def get_all_keys_from_h5(h5_file):
+def get_all_keys_from_nc(nc_file):
     res = []
-    for key in h5_file.keys():
+    for key in nc_file.variables.keys():
         res.append(key)
     return res
 
 def get_all_files(path):
-    all_file_list = os.listdir(path)
-    all_file_list.sort()
-    for file in all_file_list:
-        file_path = os.path.join(path, file)
-        if os.path.isdir(file_path):
-            get_all_files(file_path)
-        elif os.path.isfile(file_path) and file.startswith(('.')) == False:
-            all_file_full_path_list.append(file_path)
-            all_file_name_list.append(file)
-            datestr = file.split('_')[2].split('.')[0]
-            startTime = datetime.datetime.strptime(datestr, "%Y%m%d%H%M")
-            label_list.append(startTime)
-    return all_file_full_path_list, all_file_name_list,label_list
+    """
+    Get all the files from the path including subfolders.
+    """
+    all_file_full_path_list = []
+    all_file_name_list = []
+    label_list = []
+
+    for root, _, files in os.walk(path):
+        files.sort()
+        for file in files:
+            if not file.startswith('.'):
+                file_path = os.path.join(root, file)
+                all_file_full_path_list.append(file_path)
+                all_file_name_list.append(file)
+                try:
+                    datestr = file.split('_')[8] 
+                    startTime = datetime.datetime.strptime(datestr, "%Y%m%dT%H%M%S")
+                    label_list.append(startTime)
+                except Exception as e:
+                    print(f"Skipping file {file} due to error: {e}")
+
+    return all_file_full_path_list, all_file_name_list, label_list
 
 def Dataprocess_single(INPUT_PATH,windows,height,width):
     all_file_full_path_list, all_file_name_list, label_list = get_all_files(INPUT_PATH)
@@ -58,33 +67,33 @@ def Dataprocess_single(INPUT_PATH,windows,height,width):
             print('Sorry, skip lost files')
             continue
 
-        h5_file_start = h5py.File(all_file_full_path_list[id])
-        h5_file_end = h5py.File(all_file_full_path_list[id + 3])
+        nc_file_start = Dataset(all_file_full_path_list[id], mode='r')
+        nc_file_end = Dataset(all_file_full_path_list[id + 3], mode='r')
         start_time = label_list[id]
         end_time = label_list[id + 3]
         if start_time.hour < 5 or start_time.hour > 20:
             continue
-        if np.all(h5_file_start['sds'][:] < 0):
+        if np.all(nc_file_start['sds'][:] < 0):
             print('start has all -1 ' + str(label_list[id]))
             continue
-        if np.all(h5_file_end['sds'][:] < 0):
+        if np.all(nc_file_end['sds'][:] < 0):
             print('end has all -1 ' + str(label_list[id]))
             continue
-        if np.any(h5_file_start['sds'][:] < 0) and start_time.hour <= 9:
+        if np.any(nc_file_start['sds'][:] < 0) and start_time.hour <= 9:
             print('Skip files with input with some -1 ' + str(label_list[id]))
             continue
         sds_csc = np.zeros(shape=(windows, height, width))
         dataset = np.zeros(shape=(windows, height, width))
         for j in range(windows):
-            h5_file = h5py.File(all_file_full_path_list[id + j])
-            keys = get_all_keys_from_h5(h5_file)
+            nc_file = Dataset(all_file_full_path_list[id + j], mode ='r')
+            keys = get_all_keys_from_nc(nc_file)
             # calculate cth
             #ele = h5_file[keys[3]][:] /15000
             # calculate sds
             # ele = h5_file[keys[7]][:] / 10000
-            ele_sds = h5_file['sds'][:]
+            ele_sds = nc_file['sds'][:]
             ele_sds[ele_sds < 0] = 0
-            ele_cs = h5_file['sds_cs'][:]
+            ele_cs = nc_file['sds_cs'][:]
             ele_cs[ele_cs < 0] = 0
             ele = ele_sds / ele_cs
             ele[np.isnan(ele)] = 0
@@ -124,14 +133,14 @@ def Dataprocess_multi_5(INPUT_PATH,model_path,windows,height,width,depth):
             continue
         dataset = np.zeros(shape=(windows, height, width,depth))
         for j in range(windows):
-            h5_file = h5py.File(all_file_full_path_list[id + j])
-            keys = get_all_keys_from_h5(h5_file)
+            nc_file = Dataset(all_file_full_path_list[id + j], mode='r')
+            keys = get_all_keys_from_nc(nc_file)
             # calculate cth
             #cldmask = np.array(h5_file[keys[0]][:]).T
             #cot = np.array(h5_file[keys[1]][:]).T / 15000
-            cth = np.array(h5_file[keys[3]][:]).T / 16537
-            reff = np.array(h5_file[keys[6]][:]).T / 6000
-            sds = np.array(h5_file[keys[7]][:]).T / 10000
+            cth = np.array(nc_file[keys[3]][:]).T / 16537
+            reff = np.array(nc_file[keys[6]][:]).T / 6000
+            sds = np.array(nc_file[keys[7]][:]).T / 10000
             matrix = np.stack((cth, reff, sds), axis=-1)
             # matrix = np.stack((cldmask, cot, cth, reff, sds), axis=-1)
             # note that here it is (width, heigh) while in the tensor is in (rows = height, cols = width)
@@ -166,17 +175,17 @@ def Dataprocess_multi_2(INPUT_PATH,model_path,windows,height,width,depth):
             continue
         dataset = np.zeros(shape=(windows, height, width,depth))
         for j in range(windows):
-            h5_file = h5py.File(all_file_full_path_list[id + j])
-            keys = get_all_keys_from_h5(h5_file)
+            nc_file = Dataset(all_file_full_path_list[id + j], mode='r')
+            keys = get_all_keys_from_nc(nc_file)
             # sds
-            ele_sds = h5_file[keys[7]][:]
+            ele_sds = nc_file[keys[7]][:]
             ele_sds[ele_sds < 0] = 0
             # sds_cs
             # ele_cs = h5_file[keys[8]][:]
             # ele_cs[ele_cs < 0] = 0
             sds = ele_sds / 10000
             sds[np.isnan(sds)] = 0
-            sunz = h5_file[keys[10]][:] / 100
+            sunz = nc_file[keys[10]][:] / 100
             sunz[sunz < 0] = 0
             sunz = np.radians(sunz)
             sunz_cos = np.cos(sunz)

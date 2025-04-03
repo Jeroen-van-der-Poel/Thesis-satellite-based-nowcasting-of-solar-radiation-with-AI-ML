@@ -26,11 +26,10 @@ class DGMR(tf.keras.Model):
         self.disc_loss = disc_loss
 
     def resize_tensor_to_256x256(self, tensor):
-        # tensor: [B, T, H, W, C]
-        b, t, h, w, c = tensor.shape
-        tensor = tf.reshape(tensor, [-1, h, w, c])  # → [B*T, H, W, C]
-        tensor = tf.image.resize(tensor, [256, 256])  # Resize
-        tensor = tf.reshape(tensor, [b, t, 256, 256, c])  # → [B, T, 256, 256, C]
+        shape = tf.shape(tensor)  # returns dynamic shape: [B, T, H, W, C]
+        tensor = tf.reshape(tensor, [-1, shape[2], shape[3], shape[4]])
+        tensor = tf.image.resize(tensor, [256, 256])
+        tensor = tf.reshape(tensor, [shape[0], shape[1], 256, 256, shape[4]])
         return tensor
 
     def fit(self, dataset_aug, data_val, steps=2, callbacks=[]):
@@ -86,10 +85,10 @@ class DGMR(tf.keras.Model):
                 val_input1, val_target1, label1 = next(dataset_val)
                 val_input2, val_target2, label2 = next(dataset_val)
 
-                val_input = tf.pad(val_input1, [[0, 0], [0, 0], [0, 16], [0, 2], [0, 0]], mode='CONSTANT')
-                val_target = tf.pad(val_target1, [[0, 0], [0, 0], [0, 16], [0, 2], [0, 0]], mode='CONSTANT')
-                input = tf.pad(val_input2, [[0, 0], [0, 0], [0, 16], [0, 2], [0, 0]], mode='CONSTANT')
-                target = tf.pad(val_target2, [[0, 0], [0, 0], [0, 16], [0, 2], [0, 0]], mode='CONSTANT')
+                val_input = self.resize_tensor_to_256x256(val_input1)
+                val_target = self.resize_tensor_to_256x256(val_target1)
+                input = self.resize_tensor_to_256x256(val_input2)
+                target = self.resize_tensor_to_256x256(val_target2)
 
                 val_gen_loss, val_disc_loss = self.val_step(val_input, val_target, label1, input, target, label2)
                 tf.print("val_gen_loss", val_gen_loss, "val_disc_loss", val_disc_loss)
@@ -123,8 +122,8 @@ class DGMR(tf.keras.Model):
                 for i in range(180):
                     val_input1, val_target1, label1 = next(dataset_val_eva)
                     val_target1 = val_target1[:, :, :, :, :]
-                    val_input = tf.pad(val_input1, [[0, 0], [0, 0], [0, 16], [0, 2], [0, 0]], mode='CONSTANT')
-                    val_target = tf.pad(val_target1, [[0, 0], [0, 0], [0, 16], [0, 2], [0, 0]], mode='CONSTANT')
+                    val_input = self.resize_tensor_to_256x256(val_input1)
+                    val_target = self.resize_tensor_to_256x256(val_target1)
 
                     targets_1,input1, target_8, input8, target_16, input16, obv_img, pred_img = self.data_process(val_input[:],
                                                                                                 val_target[:])
