@@ -79,9 +79,12 @@ def write_tfrecord(INPUT_PATH, batches, windows, height, width, folder, output_p
             # Check for night coverage (> 50% NaN or -1)
             with Dataset(all_file_full_path_list[id + i]) as nc_file:
                 ele_sds = nc_file.variables['sds'][0, :, :]
+                print("Min:", np.min(ele_sds), "Max:", np.max(ele_sds), "Mean:", np.mean(ele_sds))
+                print("NaNs:", np.isnan(ele_sds).sum(), "<=0:", (ele_sds <= 0).sum())
                 total_pixels = ele_sds.size
                 invalid_mask = np.logical_or(np.isnan(ele_sds), ele_sds <= 0)
                 dark_ratio = np.sum(invalid_mask) / total_pixels
+                print(f"Dark ratio: {dark_ratio}")
                 if dark_ratio > 0.5:
                     print(f'Skipping due to >50% darkness: {label_list[id + i]}')
                     continue
