@@ -81,14 +81,12 @@ def write_tfrecord(INPUT_PATH, batches, windows, height, width, folder, output_p
                 ele_sds_raw = nc_file.variables['sds'][0, :, :]
                 ele_sds = ele_sds_raw.filled(-1) 
                 print("Min:", np.min(ele_sds), "Max:", np.max(ele_sds), "Mean:", np.mean(ele_sds))
-                print("NaNs:", np.isnan(ele_sds).sum(), "<=0:", (ele_sds <= 0).sum())
-                print("Data shape:", ele_sds.shape)
                 print("Sample values:", ele_sds[0:5, 0:5])
                 total_pixels = ele_sds.size
-                invalid_mask = np.any(ele_sds <= 0)
+                invalid_mask = np.logical_or(np.isnan(ele_sds), ele_sds <= 0)
                 dark_ratio = np.sum(invalid_mask) / total_pixels
                 print("Invalid mask sum:", np.sum(invalid_mask))
-                print("Dark ratio:", dark_ratio)
+                print("Dark ratio:", dark_ratio > 0.5)
                 if dark_ratio > 0.5:
                     print(f'Skipping due to >50% darkness: {label_list[id + i]}')
                     continue
