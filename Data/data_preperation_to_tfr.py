@@ -70,23 +70,28 @@ def write_tfrecord(INPUT_PATH, batches, windows, height, width, folder, output_p
             interval = label_list[id + i + windows] - label_list[id + i]
             if interval != exact_end_time:
                 id = id + 1
-                # print('Skip files start from: ' + str(label_list[id + i]))
+                print('Skip files start from: ' + str(label_list[id + i]))
                 continue
 
             start_time = label_list[id + i]
             end_time = label_list[id + i + 3]
 
-            # Remove night time data
-            if start_time.hour < 5 or start_time.hour > 17:
-                # print('remove night time ' + str(label_list[id + i]))
-                continue
+            # Check for night coverage (> 50% NaN or -1)
+            with Dataset(all_file_full_path_list[id + i]) as nc_file:
+                ele_sds = nc_file.variables['sds'][0, :, :]
+                total_pixels = ele_sds.size
+                invalid_mask = np.logical_or(np.isnan(ele_sds), ele_sds <= 0)
+                dark_ratio = np.sum(invalid_mask) / total_pixels
+                if dark_ratio > 0.5:
+                    print(f'Skipping due to >50% darkness: {label_list[id + i]}')
+                    continue
 
             with Dataset(all_file_full_path_list[id + i]) as nc_file_start, Dataset(all_file_full_path_list[id + i + windows]) as nc_file_end:
                 if np.any(nc_file_start.variables['sds'][0,:,:] <= 0):
-                    # print('remove start ' + str(label_list[id + i]))
+                    print('remove start ' + str(label_list[id + i]))
                     continue
                 if np.any(nc_file_end.variables['sds'][0,:,:] <= 0):
-                    # print('remove end ' + str(label_list[id + i + windows]))
+                    print('remove end ' + str(label_list[id + i + windows]))
                     continue
 
             # Normalize SDS using SDS_CS
@@ -97,6 +102,7 @@ def write_tfrecord(INPUT_PATH, batches, windows, height, width, folder, output_p
                     ele_cs[ele_cs < 0] = 0
                     ele = ele_sds / ele_cs
                     ele[np.isnan(ele)] = 0
+                    ele[ele < 0] = 0
 
                     if np.any(ele <= 0):
                         print('Data is partly 0: ' + str(label_list[id + i + j]) + 'window is: ' + str(j))
