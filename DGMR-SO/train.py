@@ -1,6 +1,6 @@
 # import tensorflow.compat.v1 as tf
 import tensorflow as tf
-from tensorflow.python.keras.optimizers import Adam
+from tensorflow.keras.optimizers import Adam
 from Data.data_pipeline import Dataset
 from pathlib import Path
 from model.dgmr import DGMR
@@ -8,7 +8,7 @@ from utils.losses import Loss_hing_disc, Loss_hing_gen
 import os
 import matplotlib.pyplot as plt
 from utils.utils import *
-from tensorflow.python import debug as tfdbg
+from tensorflow import debug as tfdbg
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 os.environ['TF_XLA_FLAGS'] = '--tf_xla_enable_xla_devices'
