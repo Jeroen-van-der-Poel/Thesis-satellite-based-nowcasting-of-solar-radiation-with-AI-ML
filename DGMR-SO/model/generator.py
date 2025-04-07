@@ -1,7 +1,7 @@
 import functools
-import discriminator
-import latent_stack
-import layers
+import model.discriminator as discriminator
+import model.latent_stack as latent_stack
+import model.layers as layers
 import tensorflow._api.v2.compat.v1 as tf
 import sonnet as snt
 

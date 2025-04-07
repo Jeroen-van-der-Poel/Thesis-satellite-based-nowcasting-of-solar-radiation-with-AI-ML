@@ -1,7 +1,7 @@
 # import sonnet as snt
 import tensorflow as tf
-from generator import Generator
-from discriminator import Discriminator
+from model.generator import Generator
+from model.discriminator import Discriminator
 import numpy as np
 import time
 import datetime
