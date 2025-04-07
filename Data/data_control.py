@@ -148,6 +148,7 @@ if __name__ == "__main__":
     # print(f"Total new val data: {total_val_samples}")
     # print(f"Total new test data: {total_test_samples}")
 
+    # Takes a very long time
     sanity_check_tfrecords(train_data)
     sanity_check_tfrecords(val_data)
     sanity_check_tfrecords(test_data)
