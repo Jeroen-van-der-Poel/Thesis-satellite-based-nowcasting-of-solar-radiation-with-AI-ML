@@ -53,52 +53,63 @@ def parse_record(raw_record):
     }
     return tf.io.parse_single_example(raw_record, feature_description)
 
-def sanity_check_tfrecords(tfrecord_dir, n_samples=10):
+def sanity_check_tfrecords(tfrecord_dir, n_samples=1):
     print(f"Running sanity checks on {tfrecord_dir} ...")
     tfrecord_files = [f for f in os.listdir(tfrecord_dir) if f.endswith('.tfrecords')]
-    selected_files = tfrecord_files[:3]  # only a few files for speed
+    
+    all_records = []
+    for file in tfrecord_files:
+        path = os.path.join(tfrecord_dir, file)
+        try:
+            dataset = tf.data.TFRecordDataset([path], compression_type='GZIP')
+            count = sum(1 for _ in dataset)
+            all_records.extend([(file, i) for i in range(count)])
+        except Exception as e:
+            print(f"Could not read {file}: {e}")
 
+
+    sampled_records = random.sample(all_records, min(n_samples, len(all_records)))
     all_pixels = []
 
-    for file in selected_files:
+    for file, sample_index in sampled_records:
         path = os.path.join(tfrecord_dir, file)
         dataset = tf.data.TFRecordDataset([path], compression_type='GZIP')
-        for i, raw_record in enumerate(dataset.take(n_samples)):
+
+        try:
+            raw_record = list(dataset.skip(sample_index).take(1))[0]
             example = parse_record(raw_record)
 
-            try:
-                # Decode and reshape
-                cond = tf.io.parse_tensor(example['raw_image_cond'], out_type=tf.float32)
-                targ = tf.io.parse_tensor(example['raw_image_targ'], out_type=tf.float32)
+            # Decode and reshape
+            cond = tf.io.parse_tensor(example['raw_image_cond'], out_type=tf.float32)
+            targ = tf.io.parse_tensor(example['raw_image_targ'], out_type=tf.float32)
 
-                cond_shape = [int(example['window_cond'].numpy()),
-                              int(example['height_cond'].numpy()),
-                              int(example['width_cond'].numpy()),
-                              int(example['depth_cond'].numpy())]
+            cond_shape = [int(example['window_cond'].numpy()),
+                          int(example['height_cond'].numpy()),
+                          int(example['width_cond'].numpy()),
+                          int(example['depth_cond'].numpy())]
 
-                targ_shape = [int(example['window_targ'].numpy()),
-                              int(example['height_targ'].numpy()),
-                              int(example['width_targ'].numpy()),
-                              int(example['depth_targ'].numpy())]
+            targ_shape = [int(example['window_targ'].numpy()),
+                          int(example['height_targ'].numpy()),
+                          int(example['width_targ'].numpy()),
+                          int(example['depth_targ'].numpy())]
 
-                cond = tf.reshape(cond, cond_shape).numpy()
-                targ = tf.reshape(targ, targ_shape).numpy()
+            cond = tf.reshape(cond, cond_shape).numpy()
+            targ = tf.reshape(targ, targ_shape).numpy()
 
-                # --- Checks ---
-                if np.isnan(cond).any() or np.isnan(targ).any():
-                    print(f"[{file}] Sample {i}: Contains NaNs")
-                if np.isinf(cond).any() or np.isinf(targ).any():
-                    print(f"[{file}] Sample {i}: Contains Infs")
-                if np.all(cond == 0) or np.all(targ == 0):
-                    print(f"[{file}] Sample {i}: All-zero data")
-                if cond.shape != (4, 390, 256, 1) or targ.shape != (16, 390, 256, 1):
-                    print(f"[{file}] Sample {i}: Unexpected shape {cond.shape}, {targ.shape}")
+            if np.isnan(cond).any() or np.isnan(targ).any():
+                print(f"[{file}] Sample {sample_index}: Contains NaNs")
+            if np.isinf(cond).any() or np.isinf(targ).any():
+                print(f"[{file}] Sample {sample_index}: Contains Infs")
+            if np.all(cond == 0) or np.all(targ == 0):
+                print(f"[{file}] Sample {sample_index}: All-zero data")
+            if cond.shape != (4, 390, 256, 1) or targ.shape != (16, 390, 256, 1):
+                print(f"[{file}] Sample {sample_index}: Unexpected shape {cond.shape}, {targ.shape}")
 
-                all_pixels.append(cond.flatten())
-                all_pixels.append(targ.flatten())
+            all_pixels.append(cond.flatten())
+            all_pixels.append(targ.flatten())
 
-            except Exception as e:
-                print(f"[{file}] Sample {i}: Error decoding - {e}")
+        except Exception as e:
+            print(f"[{file}] Sample {sample_index}: Error decoding - {e}")
 
     # Pixel histogram
     if all_pixels:
