@@ -1,4 +1,7 @@
 # import tensorflow.compat.v1 as tf
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parents[1]))
 import tensorflow as tf
 from tensorflow.keras.optimizers import Adam
 from Data.data_pipeline import Dataset
