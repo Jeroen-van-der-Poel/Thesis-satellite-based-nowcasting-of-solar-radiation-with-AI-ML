@@ -1,5 +1,5 @@
 import model.layers as layers
-import tensorflow._api.v2.compat.v1 as tf
+import tensorflow.compat.v1 as tf
 import sonnet as snt
 
 class Discriminator(snt.Module):
