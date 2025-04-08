@@ -1,5 +1,5 @@
 import model.layers as layers
-import tensorflow.compat.v1 as tf
+import tensorflow._api.v2.compat.v1 as tf
 import sonnet as snt
 
 class Discriminator(snt.Module):
@@ -28,7 +28,8 @@ class Discriminator(snt.Module):
         target_frames_sel = tf.range(self._num_conditioning_frames, t)
         permutation = tf.stack([tf.random.shuffle(target_frames_sel)[:self._num_spatial_frames] for _ in range(b)], 0)
         frames_for_sd = tf.gather(frames, permutation, batch_dims=1)
-        frames_for_sd = tf.layers.AveragePooling3D([1, 2, 2], [1, 2, 2], data_format='channels_last')(frames_for_sd)
+        frames_for_sd = tf.keras.layers.AveragePooling3D(pool_size=(1, 2, 2), strides=(1, 2, 2), data_format='channels_last')(frames_for_sd)
+
 
         # Compute the average spatial discriminator score for each of 8 picked time
         sd_out = self._spatial_discriminator(frames_for_sd, is_training=is_training)

@@ -2,7 +2,7 @@ import functools
 import model.discriminator as discriminator
 import model.latent_stack as latent_stack
 import model.layers as layers
-import tensorflow.compat.v1 as tf
+import tensorflow._api.v2.compat.v1 as tf
 import sonnet as snt
 
 class Generator(snt.Module):
