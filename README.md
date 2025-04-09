@@ -18,7 +18,6 @@ DGMR-SO is an adapted version of the Deep Generative Model for Radar (DGMR) by G
 4. Install the required packages:
      - "pip install tensorflow[and-cuda]"
      - "pip install matplotlib"
-     - "pip install matplotlib"
      - "pip install dm-sonnet"
      - "pip install pyyaml"
 
