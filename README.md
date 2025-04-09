@@ -16,9 +16,10 @@ The original paper: https://www.sciencedirect.com/science/article/pii/S0038092X2
 !IMPORTANT make sure conda, cuda and cuDNN are avaialble/downloaded!
 
 1. Clone the GitHub repository
-2. Create conda environment: "conda create -n dgmr_env python=3.9"
-3. Activate conda environment: "conda activate dgmr_env"
-4. Install the required packages:
+2. Move into DGMR_SO folder
+3. Create conda environment: "conda create -n dgmr_env python=3.9"
+4. Activate conda environment: "conda activate dgmr_env"
+5. Install the required packages:
      - "pip install tensorflow[and-cuda]"
      - "pip install matplotlib"
      - "pip install dm-sonnet"
