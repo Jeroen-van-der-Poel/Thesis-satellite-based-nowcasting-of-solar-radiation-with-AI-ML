@@ -1,6 +1,6 @@
 # Satellite-based Nowcasting of Solar Radiation with AI/ML
 
-This repository contains code and data pipelines for experimenting with state-of-the-art deep learning models for short-term solar radiation nowcasting, using geostationary satellite images. It includes implementations and training workflows for both **DGMR-SO** and **Earthformer** architectures.
+This repository contains code and a data pipeline for experimenting with state-of-the-art deep learning models for short-term solar radiation nowcasting, using geostationary satellite images. It includes implementations and training workflows for both **DGMR-SO** and **Earthformer** architectures.
 
 
 ## Data Preperation
