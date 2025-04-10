@@ -55,15 +55,15 @@ class DGMR(tf.keras.Model):
             batch_inputs4, batch_targets4, targ_mask4 = next(dataset_aug)
             batch_targets4 = batch_targets4[:, :, :, :, :]
 
-            # the size of images need to be changed to (400, 256), in order to march the model
-            batch_inputs1 = tf.pad(batch_inputs1, [[0, 0], [0, 0], [5, 5], [0, 0], [0, 0]], mode='CONSTANT')
-            batch_targets1 = tf.pad(batch_targets1, [[0, 0], [0, 0], [5, 5], [0, 0], [0, 0]], mode='CONSTANT')
-            batch_inputs2 = tf.pad(batch_inputs2, [[0, 0], [0, 0], [5, 5], [0, 0], [0, 0]], mode='CONSTANT')
-            batch_targets2 = tf.pad(batch_targets2, [[0, 0], [0, 0], [5, 5], [0, 0], [0, 0]], mode='CONSTANT')
-            batch_inputs3 = tf.pad(batch_inputs3, [[0, 0], [0, 0], [5, 5], [0, 0], [0, 0]], mode='CONSTANT')
-            batch_targets3 = tf.pad(batch_targets3, [[0, 0], [0, 0], [5, 5], [0, 0], [0, 0]], mode='CONSTANT')
-            batch_inputs4 = tf.pad(batch_inputs4, [[0, 0], [0, 0], [5, 5], [0, 0], [0, 0]], mode='CONSTANT')
-            batch_targets4 = tf.pad(batch_targets4, [[0, 0], [0, 0], [5, 5], [0, 0], [0, 0]], mode='CONSTANT')
+            # the size of images need to be changed to (416, 256), in order to march the model
+            batch_inputs1 = tf.pad(batch_inputs1, [[0, 0], [0, 0], [13, 13], [0, 0], [0, 0]], mode='CONSTANT')
+            batch_targets1 = tf.pad(batch_targets1, [[0, 0], [0, 0], [13, 13], [0, 0], [0, 0]], mode='CONSTANT')
+            batch_inputs2 = tf.pad(batch_inputs2, [[0, 0], [0, 0], [13, 13], [0, 0], [0, 0]], mode='CONSTANT')
+            batch_targets2 = tf.pad(batch_targets2, [[0, 0], [0, 0], [13, 13], [0, 0], [0, 0]], mode='CONSTANT')
+            batch_inputs3 = tf.pad(batch_inputs3, [[0, 0], [0, 0], [13, 13], [0, 0], [0, 0]], mode='CONSTANT')
+            batch_targets3 = tf.pad(batch_targets3, [[0, 0], [0, 0], [13, 13], [0, 0], [0, 0]], mode='CONSTANT')
+            batch_inputs4 = tf.pad(batch_inputs4, [[0, 0], [0, 0], [13, 13], [0, 0], [0, 0]], mode='CONSTANT')
+            batch_targets4 = tf.pad(batch_targets4, [[0, 0], [0, 0], [13, 13], [0, 0], [0, 0]], mode='CONSTANT')
 
             #batch_inputs1, batch_targets1 = self.random_crop_images(batch_inputs1, batch_targets1, self.crop_height, self.crop_width)
             #batch_inputs2, batch_targets2 = self.random_crop_images(batch_inputs2, batch_targets2, self.crop_height, self.crop_width)
@@ -85,11 +85,11 @@ class DGMR(tf.keras.Model):
                 val_input1, val_target1, label1 = next(dataset_val)
                 val_input2, val_target2, label2 = next(dataset_val)
 
-                val_input = tf.pad(val_input1, [[0, 0], [0, 0], [5, 5], [0, 0], [0, 0]], mode='CONSTANT')
-                val_target = tf.pad(val_target1, [[0, 0], [0, 0], [5, 5], [0, 0], [0, 0]], mode='CONSTANT')
+                val_input = tf.pad(val_input1, [[0, 0], [0, 0], [13, 13], [0, 0], [0, 0]], mode='CONSTANT')
+                val_target = tf.pad(val_target1, [[0, 0], [0, 0], [13, 13], [0, 0], [0, 0]], mode='CONSTANT')
                 #val_input, val_target = self.random_crop_images(val_input, val_target, self.crop_height, self.crop_width)
-                input = tf.pad(val_input2, [[0, 0], [0, 0], [5, 5], [0, 0], [0, 0]], mode='CONSTANT')
-                target = tf.pad(val_target2, [[0, 0], [0, 0], [5, 5], [0, 0], [0, 0]], mode='CONSTANT')
+                input = tf.pad(val_input2, [[0, 0], [0, 0], [13, 13], [0, 0], [0, 0]], mode='CONSTANT')
+                target = tf.pad(val_target2, [[0, 0], [0, 0], [13, 13], [0, 0], [0, 0]], mode='CONSTANT')
 
                 val_gen_loss, val_disc_loss = self.val_step(val_input, val_target, label1, input, target, label2)
                 tf.print("val_gen_loss", val_gen_loss, "val_disc_loss", val_disc_loss)
@@ -123,8 +123,8 @@ class DGMR(tf.keras.Model):
                 for i in range(180):
                     val_input1, val_target1, label1 = next(dataset_val_eva)
                     val_target1 = val_target1[:, :, :, :, :]
-                    val_input = tf.pad(val_input1, [[0, 0], [0, 0], [5, 5], [0, 0], [0, 0]], mode='CONSTANT')
-                    val_target = tf.pad(val_target1, [[0, 0], [0, 0], [5, 5], [0, 0], [0, 0]], mode='CONSTANT')
+                    val_input = tf.pad(val_input1, [[0, 0], [0, 0], [13, 13], [0, 0], [0, 0]], mode='CONSTANT')
+                    val_target = tf.pad(val_target1, [[0, 0], [0, 0], [13, 13], [0, 0], [0, 0]], mode='CONSTANT')
                     #val_input, val_target = self.random_crop_images(val_input, val_target, self.crop_height, self.crop_width)
 
                     targets_1,input1, target_8, input8, target_16, input16, obv_img, pred_img = self.data_process(val_input[:], val_target[:])
