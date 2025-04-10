@@ -210,38 +210,40 @@ class DGMR(tf.keras.Model):
 
     def random_crop_images(self, target_data, label_data, crop_height, crop_width):
         shape = tf.shape(target_data)
-        batch_size = shape[0]
-        time_steps = shape[1]
-        height = shape[2]
-        width = shape[3]
-        channels = shape[4]
+        batch_size, time_steps, height, width, channels = (
+            shape[0], shape[1], shape[2], shape[3], shape[4]
+        )
 
-        # Ensure crop fits
+        tf.debugging.assert_greater_equal(height, crop_height)
+        tf.debugging.assert_greater_equal(width, crop_width)
+
+        # Generate the same crop offset for both
         target_y = tf.random.uniform([], maxval=height - crop_height + 1, dtype=tf.int32)
         target_x = tf.random.uniform([], maxval=width - crop_width + 1, dtype=tf.int32)
 
-        # Flatten batch and time into one dimension to apply crop
-        target_data_reshaped = tf.reshape(target_data, [-1, height, width, channels])
-        label_data_reshaped = tf.reshape(label_data, [-1, height, width, channels])
+        # Flatten [B, T, H, W, C] → [B*T, H, W, C]
+        combined_bt = batch_size * time_steps
+        target_reshaped = tf.reshape(target_data, [combined_bt, height, width, channels])
+        label_reshaped = tf.reshape(label_data, [combined_bt, height, width, channels])
 
-        # Apply cropping
+        # Crop
         target_cropped = tf.image.crop_to_bounding_box(
-            target_data_reshaped, target_y, target_x, crop_height, crop_width
+            target_reshaped, target_y, target_x, crop_height, crop_width
         )
         label_cropped = tf.image.crop_to_bounding_box(
-            label_data_reshaped, target_y, target_x, crop_height, crop_width
+            label_reshaped, target_y, target_x, crop_height, crop_width
         )
 
-        # Restore original shape
-        cropped_shape = tf.shape(target_cropped)
-        target_cropped = tf.reshape(
-            target_cropped, [batch_size, time_steps, crop_height, crop_width, channels]
-        )
-        label_cropped = tf.reshape(
-            label_cropped, [batch_size, time_steps, crop_height, crop_width, channels]
-        )
+        # Make sure the reshape is valid by calculating the resulting shape dynamically
+        final_shape = tf.stack([batch_size, time_steps, crop_height, crop_width, channels])
+        target_cropped = tf.reshape(target_cropped, final_shape)
+        label_cropped = tf.reshape(label_cropped, final_shape)
+
+        tf.print("Before crop:", tf.shape(target_data))
+        tf.print("After crop:", tf.shape(target_cropped))
 
         return target_cropped, label_cropped
+
 
 
     # @tf.function
