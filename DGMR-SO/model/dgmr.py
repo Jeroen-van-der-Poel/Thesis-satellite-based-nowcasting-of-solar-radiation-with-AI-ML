@@ -73,8 +73,6 @@ class DGMR(tf.keras.Model):
             batch_inputs4 = self.resize_tensor_to_256x256(batch_inputs4)
             batch_targets4 = self.resize_tensor_to_256x256(batch_targets4)
 
-            print("batch_inputs1", batch_inputs1.shape)
-            print("batch_targets1", batch_targets1.shape)
             #batch_inputs1, batch_targets1 = self.random_crop_images(batch_inputs1, batch_targets1, self.crop_height, self.crop_width)
             #batch_inputs2, batch_targets2 = self.random_crop_images(batch_inputs2, batch_targets2, self.crop_height, self.crop_width)
             #batch_inputs3, batch_targets3 = self.random_crop_images(batch_inputs3, batch_targets3, self.crop_height, self.crop_width)
