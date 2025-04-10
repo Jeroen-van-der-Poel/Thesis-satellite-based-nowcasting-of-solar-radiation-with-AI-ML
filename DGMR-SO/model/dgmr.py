@@ -210,10 +210,17 @@ class DGMR(tf.keras.Model):
 
     def random_crop_images(self,target_data, label_data, crop_height, crop_width):
         target_shape = tf.shape(target_data)
+
+        # Check if height/width are sufficient
+        if target_shape[1] < crop_height or target_shape[2] < crop_width:
+            raise ValueError(f"Input too small for cropping! Got {target_shape[1]}x{target_shape[2]}")
+
         target_y = tf.random.uniform(shape=[], maxval=target_shape[1] - crop_height + 1, dtype=tf.int32)
         target_x = tf.random.uniform(shape=[], maxval=target_shape[2] - crop_width + 1, dtype=tf.int32)
+
         label_y = target_y
         label_x = target_x
+
         target_cropped = tf.image.crop_to_bounding_box(target_data, target_y, target_x, crop_height, crop_width)
         label_cropped = tf.image.crop_to_bounding_box(label_data, label_y, label_x, crop_height, crop_width)
         return target_cropped, label_cropped
