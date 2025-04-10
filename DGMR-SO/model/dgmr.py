@@ -63,7 +63,7 @@ class DGMR(tf.keras.Model):
             batch_inputs4, batch_targets4, targ_mask4 = next(dataset_aug)
             batch_targets4 = batch_targets4[:, :, :, :, :]
 
-            # the size of images need to be changed to (384, 256), in order to march the model
+            # the size of images need to be changed to (256, 256), in order to march the model
             batch_inputs1 = self.resize_tensor_to_256x256(batch_inputs1)
             batch_targets1 = self.resize_tensor_to_256x256(batch_targets1)
             batch_inputs2 = self.resize_tensor_to_256x256(batch_inputs2)
@@ -73,10 +73,10 @@ class DGMR(tf.keras.Model):
             batch_inputs4 = self.resize_tensor_to_256x256(batch_inputs4)
             batch_targets4 = self.resize_tensor_to_256x256(batch_targets4)
 
-            #batch_inputs1, batch_targets1 = self.random_crop_images(batch_inputs1, batch_targets1, self.crop_height, self.crop_width)
-            #batch_inputs2, batch_targets2 = self.random_crop_images(batch_inputs2, batch_targets2, self.crop_height, self.crop_width)
-            #batch_inputs3, batch_targets3 = self.random_crop_images(batch_inputs3, batch_targets3, self.crop_height, self.crop_width)
-            #batch_inputs4, batch_targets4 = self.random_crop_images(batch_inputs4, batch_targets4, self.crop_height, self.crop_width)
+            batch_inputs1, batch_targets1 = self.random_crop_images(batch_inputs1, batch_targets1, self.crop_height, self.crop_width)
+            batch_inputs2, batch_targets2 = self.random_crop_images(batch_inputs2, batch_targets2, self.crop_height, self.crop_width)
+            batch_inputs3, batch_targets3 = self.random_crop_images(batch_inputs3, batch_targets3, self.crop_height, self.crop_width)
+            batch_inputs4, batch_targets4 = self.random_crop_images(batch_inputs4, batch_targets4, self.crop_height, self.crop_width)
 
             temp_time = time.time()
 
@@ -95,9 +95,10 @@ class DGMR(tf.keras.Model):
 
                 val_input = self.resize_tensor_to_256x256(val_input1)
                 val_target = self.resize_tensor_to_256x256(val_target1)
-                #val_input, val_target = self.random_crop_images(val_input, val_target, self.crop_height, self.crop_width)
+                val_input, val_target = self.random_crop_images(val_input, val_target, self.crop_height, self.crop_width)
                 input = self.resize_tensor_to_256x256(val_input2)
                 target = self.resize_tensor_to_256x256(val_target2)
+                input, target = self.random_crop_images(input, target, self.crop_height, self.crop_width)
 
                 val_gen_loss, val_disc_loss = self.val_step(val_input, val_target, label1, input, target, label2)
                 tf.print("val_gen_loss", val_gen_loss, "val_disc_loss", val_disc_loss)
@@ -133,7 +134,7 @@ class DGMR(tf.keras.Model):
                     val_target1 = val_target1[:, :, :, :, :]
                     val_input = self.resize_tensor_to_256x256(val_input1)
                     val_target = self.resize_tensor_to_256x256(val_target1)
-                    #val_input, val_target = self.random_crop_images(val_input, val_target, self.crop_height, self.crop_width)
+                    val_input, val_target = self.random_crop_images(val_input, val_target, self.crop_height, self.crop_width)
 
                     targets_1,input1, target_8, input8, target_16, input16, obv_img, pred_img = self.data_process(val_input[:], val_target[:])
                     if len(target_8) == 0 or len(input8) == 0 or len(target_16) == 0 or len(input16) == 0 or len(input1) == 0 or len(targets_1) == 0:
@@ -186,7 +187,7 @@ class DGMR(tf.keras.Model):
 
             num_batches += 1
             if num_batches < 500:
-                tf.print(f"Time per epoch:  {time.time() - temp_time} seconds")
+                tf.print(f"Time per step:  {time.time() - temp_time} seconds")
 
             if step and (step % 100 == 0):
                 tf.print("Gen Loss: ", gen_loss.numpy(), " Disc Loss: ", disc_loss.numpy())
