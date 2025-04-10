@@ -208,16 +208,41 @@ class DGMR(tf.keras.Model):
 
     # (input_signature=[tf.TensorSpec(shape=[2, 4, 256, 256, 1], dtype=tf.float32), tf.TensorSpec(shape=[2, 2, 256, 256, 1], dtype=tf.float32)])
 
-    def random_crop_images(self,target_data, label_data, crop_height, crop_width):
-        target_shape = tf.shape(target_data)
-        #print("target_shape", target_shape)
-        target_y = tf.random.uniform(shape=[], maxval=target_shape[2] - crop_height + 1, dtype=tf.int32)
-        target_x = tf.random.uniform(shape=[], maxval=target_shape[3] - crop_width + 1, dtype=tf.int32)
-        label_y = target_y
-        label_x = target_x
-        target_cropped = tf.image.crop_to_bounding_box(target_data, target_y, target_x, crop_height, crop_width)
-        label_cropped = tf.image.crop_to_bounding_box(label_data, label_y, label_x, crop_height, crop_width)
+    def random_crop_images(self, target_data, label_data, crop_height, crop_width):
+        shape = tf.shape(target_data)
+        batch_size = shape[0]
+        time_steps = shape[1]
+        height = shape[2]
+        width = shape[3]
+        channels = shape[4]
+
+        # Ensure crop fits
+        target_y = tf.random.uniform([], maxval=height - crop_height + 1, dtype=tf.int32)
+        target_x = tf.random.uniform([], maxval=width - crop_width + 1, dtype=tf.int32)
+
+        # Flatten batch and time into one dimension to apply crop
+        target_data_reshaped = tf.reshape(target_data, [-1, height, width, channels])
+        label_data_reshaped = tf.reshape(label_data, [-1, height, width, channels])
+
+        # Apply cropping
+        target_cropped = tf.image.crop_to_bounding_box(
+            target_data_reshaped, target_y, target_x, crop_height, crop_width
+        )
+        label_cropped = tf.image.crop_to_bounding_box(
+            label_data_reshaped, target_y, target_x, crop_height, crop_width
+        )
+
+        # Restore original shape
+        cropped_shape = tf.shape(target_cropped)
+        target_cropped = tf.reshape(
+            target_cropped, [batch_size, time_steps, crop_height, crop_width, channels]
+        )
+        label_cropped = tf.reshape(
+            label_cropped, [batch_size, time_steps, crop_height, crop_width, channels]
+        )
+
         return target_cropped, label_cropped
+
 
     # @tf.function
     def distributed_train_step(self, batch_inputs1, batch_targets1, targ_mask1, batch_inputs2, batch_targets2, targ_mask2):
