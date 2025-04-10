@@ -210,6 +210,7 @@ class DGMR(tf.keras.Model):
 
     def random_crop_images(self,target_data, label_data, crop_height, crop_width):
         target_shape = tf.shape(target_data)
+        print("target_shape", target_shape)
         target_y = tf.random.uniform(shape=[], maxval=target_shape[1] - crop_height + 1, dtype=tf.int32)
         target_x = tf.random.uniform(shape=[], maxval=target_shape[2] - crop_width + 1, dtype=tf.int32)
         label_y = target_y
