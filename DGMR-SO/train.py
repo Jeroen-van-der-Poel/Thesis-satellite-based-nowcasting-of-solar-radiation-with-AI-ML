@@ -15,7 +15,10 @@ from utils.utils import *
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 os.environ['TF_XLA_FLAGS'] = '--tf_xla_enable_xla_devices'
-print('GPU:', tf.config.list_physical_devices('GPU'))
+gpus = tf.config.list_physical_devices('GPU')
+for gpu in gpus:
+    tf.config.experimental.set_memory_growth(gpu, True)
+print('GPU:', gpus)
 
 cfg = read_yaml(Path('./config/' + 'train_0' + '.yml'))
 
