@@ -67,8 +67,8 @@ class MSE_score1():
         pass
 
     def __call__(self, batch_gen, batch_target):
-        pred = tf.pad(batch_gen, [[0, 0], [0, 0], [0, 16], [0, 2], [0, 0]], mode='CONSTANT')
-        targ = tf.pad(batch_target, [[0, 0], [0, 0], [0, 16], [0, 2], [0, 0]], mode='CONSTANT')
+        pred = tf.pad(batch_gen, [[0, 0], [0, 0], [5, 5], [0, 0], [0, 0]], mode='CONSTANT')
+        targ = tf.pad(batch_target, [[0, 0], [0, 0], [5, 5], [0, 0], [0, 0]], mode='CONSTANT')
         pred_u = tf.unstack(pred, axis=1)
         targ_u = tf.unstack(targ, axis=1)
 

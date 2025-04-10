@@ -52,10 +52,7 @@ my_model = DGMR(lead_time=240, time_delta=15)
 my_model.trainable = True
 my_model.compile(gen_optimizer, disc_optimizer, loss_hinge_gen, loss_hinge_disc)
 
-ckpt = tf.train.Checkpoint(generator=my_model.generator_obj,
-                           discriminator=my_model.discriminator_obj,
-                           generator_optimizer=my_model.gen_optimizer,
-                           discriminator_optimizer=my_model.disc_optimizer)
+ckpt = tf.train.Checkpoint(generator=my_model.generator_obj, discriminator=my_model.discriminator_obj, generator_optimizer=my_model.gen_optimizer, discriminator_optimizer=my_model.disc_optimizer)
 ckpt_manager = tf.train.CheckpointManager(ckpt, CHECKPOINT_DIR, max_to_keep=100)
 
 if ckpt_manager.latest_checkpoint:
