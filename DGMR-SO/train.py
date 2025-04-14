@@ -36,7 +36,7 @@ training_steps = cfg['model_params']['steps']
 # tf.config.set_soft_device_placement(True)
 # gpu_devices_list = tf.config.list_physical_devices('GPU')
 
-batch_size = 8
+batch_size = 16
 train_data,train_dataset_aug = Dataset(Path('/data1/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/train_data'), batch_size=batch_size)
 val_data,val_data_val = Dataset(Path('/data1/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/val_data'), batch_size=batch_size)
 
@@ -52,6 +52,7 @@ loss_hinge_gen = Loss_hing_gen()
 loss_hinge_disc = Loss_hing_disc()
 
 # with strategy.scope() :
+tf.keras.backend.clear_session()
 my_model = DGMR(lead_time=240, time_delta=15)
 my_model.trainable = True
 my_model.compile(gen_optimizer, disc_optimizer, loss_hinge_gen, loss_hinge_disc)
@@ -64,3 +65,4 @@ if ckpt_manager.latest_checkpoint:
     print('Latest checkpoint restored!!')
 
 gen_loss, disc_loss = my_model.fit(train_dataset_aug, val_data, steps=training_steps, callbacks=[train_writer, ckpt_manager, ckpt, prof_dir])
+tf.keras.backend.clear_session()

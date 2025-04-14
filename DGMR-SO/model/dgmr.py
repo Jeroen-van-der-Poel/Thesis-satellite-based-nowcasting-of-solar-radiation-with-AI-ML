@@ -355,22 +355,14 @@ class DGMR(tf.keras.Model):
         gen_loss = gen_disc_loss + 1 * grid_cell_reg
         return gen_loss
 
-    #@tf.function
+    @tf.function
     def train_step(self, batch_inputs1, batch_targets1, targ_mask1, batch_inputs2, batch_targets2, targ_mask2, batch_inputs3, batch_targets3, targ_mask3, batch_inputs4, batch_targets4, targ_mask4):
         try:
-            tf.print("DEBUG: entering disc_step 1")
             self.disc_step(batch_inputs1, batch_targets1, targ_mask1)
-
-            tf.print("DEBUG: entering disc_step 2")
             self.disc_step(batch_inputs2, batch_targets2, targ_mask2)
-
-            tf.print("DEBUG: entering disc_step 3")
             self.disc_step(batch_inputs3, batch_targets3, targ_mask3)
 
-            tf.print("DEBUG: entering disc_step 4 (disc_loss)")
             disc_loss = self.disc_step(batch_inputs4, batch_targets4, targ_mask4)
-
-            tf.print("DEBUG: entering gen_step (gen_loss)")
             gen_loss = self.gen_step(batch_inputs4, batch_targets4, targ_mask4)
 
             tf.print("Debugging: total_gen_loss -> ", gen_loss)
