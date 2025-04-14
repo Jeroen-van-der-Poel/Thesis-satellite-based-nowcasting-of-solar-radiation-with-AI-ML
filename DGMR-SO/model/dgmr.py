@@ -211,8 +211,6 @@ class DGMR(tf.keras.Model):
     def random_crop_images(self,target_data, label_data, crop_height, crop_width):
         target_shape = tf.shape(target_data)
         label_shape = tf.shape(label_data)
-        print("target_shape", target_shape)
-        print("label_shape", tf.shape(label_data))
 
         target_y = tf.random.uniform(shape=[], maxval=target_shape[2] - crop_height + 1, dtype=tf.int32)
         target_x = tf.random.uniform(shape=[], maxval=target_shape[3] - crop_width + 1, dtype=tf.int32)
@@ -225,11 +223,9 @@ class DGMR(tf.keras.Model):
 
         target_cropped = tf.image.crop_to_bounding_box(tensor_4d_target, target_y, target_x, crop_height, crop_width)
         label_cropped = tf.image.crop_to_bounding_box(tensor_4d_label, label_y, label_x, crop_height, crop_width)
-        print("target_cropped", target_cropped.shape, ", label_cropped", label_cropped.shape)
 
         tensor_5d_target_cropped = tf.reshape(target_cropped, [target_shape[0], target_shape[1], crop_height, crop_width, target_shape[4]])
         tensor_5d_label_cropped = tf.reshape(label_cropped, [label_shape[0], label_shape[1], crop_height, crop_width, label_shape[4]])
-        print("tensor_5d_target_cropped", tensor_5d_target_cropped.shape, ", tensor_5d_label_cropped", tensor_5d_label_cropped.shape)
 
         return tensor_5d_target_cropped, tensor_5d_label_cropped
 
