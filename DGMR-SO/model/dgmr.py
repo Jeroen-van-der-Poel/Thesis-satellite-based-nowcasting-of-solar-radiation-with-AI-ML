@@ -63,7 +63,7 @@ class DGMR(tf.keras.Model):
             batch_inputs4, batch_targets4, targ_mask4 = next(dataset_aug)
             batch_targets4 = batch_targets4[:, :, :, :, :]
 
-            # the size of images need to be changed to (384, 256), in order to march the model
+            # the size of images need to be changed to (256, 256), in order to march the model
             batch_inputs1 = self.resize_tensor_to_256x256(batch_inputs1)
             batch_targets1 = self.resize_tensor_to_256x256(batch_targets1)
             batch_inputs2 = self.resize_tensor_to_256x256(batch_inputs2)
@@ -354,18 +354,33 @@ class DGMR(tf.keras.Model):
         gen_loss = gen_disc_loss + 1 * grid_cell_reg
         return gen_loss
 
-    @tf.function
+    #@tf.function
     def train_step(self, batch_inputs1, batch_targets1, targ_mask1, batch_inputs2, batch_targets2, targ_mask2, batch_inputs3, batch_targets3, targ_mask3, batch_inputs4, batch_targets4, targ_mask4):
-        self.disc_step(batch_inputs1, batch_targets1, targ_mask1)
-        self.disc_step(batch_inputs2, batch_targets2, targ_mask2)
-        self.disc_step(batch_inputs3, batch_targets3, targ_mask3)
+        try:
+            tf.print("DEBUG: entering disc_step 1")
+            self.disc_step(batch_inputs1, batch_targets1, targ_mask1)
 
-        disc_loss = self.disc_step(batch_inputs4, batch_targets4, targ_mask4)
-        gen_loss = self.gen_step(batch_inputs4, batch_targets4, targ_mask4)
+            tf.print("DEBUG: entering disc_step 2")
+            self.disc_step(batch_inputs2, batch_targets2, targ_mask2)
 
-        tf.print("Debugging: total_gen_loss -> ", gen_loss)
-        tf.print("Debugging: total_disc_loss -> ", disc_loss)
-        return gen_loss, disc_loss
+            tf.print("DEBUG: entering disc_step 3")
+            self.disc_step(batch_inputs3, batch_targets3, targ_mask3)
+
+            tf.print("DEBUG: entering disc_step 4 (disc_loss)")
+            disc_loss = self.disc_step(batch_inputs4, batch_targets4, targ_mask4)
+
+            tf.print("DEBUG: entering gen_step")
+            gen_loss = self.gen_step(batch_inputs4, batch_targets4, targ_mask4)
+
+            tf.print("Debugging: total_gen_loss -> ", gen_loss)
+            tf.print("Debugging: total_disc_loss -> ", disc_loss)
+            return gen_loss, disc_loss
+        except tf.errors.InvalidArgumentError as e:
+            tf.print("Caught TensorFlow error:", e.message)
+            return tf.constant(-1.0), tf.constant(-1.0)
+        except Exception as e:
+            tf.print("Caught generic error:", str(e))
+            return tf.constant(-1.0), tf.constant(-1.0)
 
     def disc_step(self, batch_inputs, batch_targets, targ_mask, is_training=True):
         tf.print("Debugging: disc_step: ", "Disc step has started", str(datetime.datetime.now()))

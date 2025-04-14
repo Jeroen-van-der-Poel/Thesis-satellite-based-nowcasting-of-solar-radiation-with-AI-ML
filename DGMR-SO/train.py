@@ -41,6 +41,7 @@ train_data,train_dataset_aug = Dataset(Path('/data1/Thesis-satellite-based-nowca
 val_data,val_data_val = Dataset(Path('/data1/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/val_data'), batch_size=batch_size)
 
 train_writer = tf.summary.create_file_writer(str(ROOT / "logs" / (str(MODEL_NAME) + '_v' + str(MODEL_VERSION)) / "train/"))
+print("Log directory:", str(ROOT / "logs" / (str(MODEL_NAME) + '_v' + str(MODEL_VERSION)) / "train/"))
 prof_dir = str(ROOT / "logs" / (str(MODEL_NAME) + '_v' + str(MODEL_VERSION)) / "profiler/")
 # profiler_writer = tf.summary.create_file_writer(prof_dir)
 
