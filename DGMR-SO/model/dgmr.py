@@ -34,12 +34,13 @@ class DGMR(tf.keras.Model):
         tensor = tf.reshape(tensor, [shape[0], shape[1], 256, 256, shape[4]])
         return tensor
 
-
     def fit(self, dataset_aug, data_val, steps=2, callbacks=[]):
         train_writer = callbacks[0]
         ckpt_manager = callbacks[1]
         ckpt = callbacks[2]
         # tf.profiler.experimental.start(callbacks[3])
+
+        tf.profiler.experimental.start('logs/profiler')
 
         disc_loss_l = []
         gen_loss_l = []
@@ -202,7 +203,7 @@ class DGMR(tf.keras.Model):
                     tf.summary.scalar("Gen_loss", gen_loss, step=step)
                     tf.summary.scalar("Disc_loss", disc_loss, step=step)
 
-        # tf.profiler.experimental.stop()
+        tf.profiler.experimental.stop()
 
         return gen_loss_l, disc_loss_l
 
@@ -369,7 +370,7 @@ class DGMR(tf.keras.Model):
             tf.print("DEBUG: entering disc_step 4 (disc_loss)")
             disc_loss = self.disc_step(batch_inputs4, batch_targets4, targ_mask4)
 
-            tf.print("DEBUG: entering gen_step")
+            tf.print("DEBUG: entering gen_step (gen_loss)")
             gen_loss = self.gen_step(batch_inputs4, batch_targets4, targ_mask4)
 
             tf.print("Debugging: total_gen_loss -> ", gen_loss)

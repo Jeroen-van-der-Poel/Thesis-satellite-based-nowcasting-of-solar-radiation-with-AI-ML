@@ -1,5 +1,5 @@
 model_identification:
-  model_name: "sds_single_day_V0921_y03"
+  model_name: "solar_nowcasting"
   model_version: 0
 
 pre_trained_identification:
