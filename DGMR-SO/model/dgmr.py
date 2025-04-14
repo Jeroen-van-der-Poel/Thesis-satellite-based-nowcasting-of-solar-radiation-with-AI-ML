@@ -39,8 +39,7 @@ class DGMR(tf.keras.Model):
         ckpt_manager = callbacks[1]
         ckpt = callbacks[2]
         # tf.profiler.experimental.start(callbacks[3])
-
-        tf.profiler.experimental.start('logs/profiler')
+        #tf.profiler.experimental.start('logs/profiler')
 
         disc_loss_l = []
         gen_loss_l = []
@@ -203,7 +202,7 @@ class DGMR(tf.keras.Model):
                     tf.summary.scalar("Gen_loss", gen_loss, step=step)
                     tf.summary.scalar("Disc_loss", disc_loss, step=step)
 
-        tf.profiler.experimental.stop()
+        #tf.profiler.experimental.stop()
 
         return gen_loss_l, disc_loss_l
 
