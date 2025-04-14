@@ -73,7 +73,7 @@ class DGMR(tf.keras.Model):
             batch_inputs4 = self.resize_tensor_to_256x256(batch_inputs4)
             batch_targets4 = self.resize_tensor_to_256x256(batch_targets4)
 
-            #batch_inputs1, batch_targets1 = self.random_crop_images(batch_inputs1, batch_targets1, self.crop_height, self.crop_width)
+            batch_inputs1, batch_targets1 = self.random_crop_images(batch_inputs1, batch_targets1, self.crop_height, self.crop_width)
             #batch_inputs2, batch_targets2 = self.random_crop_images(batch_inputs2, batch_targets2, self.crop_height, self.crop_width)
             #batch_inputs3, batch_targets3 = self.random_crop_images(batch_inputs3, batch_targets3, self.crop_height, self.crop_width)
             #batch_inputs4, batch_targets4 = self.random_crop_images(batch_inputs4, batch_targets4, self.crop_height, self.crop_width)
@@ -210,14 +210,28 @@ class DGMR(tf.keras.Model):
 
     def random_crop_images(self,target_data, label_data, crop_height, crop_width):
         target_shape = tf.shape(target_data)
-        #print("target_shape", target_shape)
+        label_shape = tf.shape(label_data)
+        print("target_shape", target_shape)
+        print("label_shape", tf.shape(label_data))
+
         target_y = tf.random.uniform(shape=[], maxval=target_shape[2] - crop_height + 1, dtype=tf.int32)
         target_x = tf.random.uniform(shape=[], maxval=target_shape[3] - crop_width + 1, dtype=tf.int32)
+
+        tensor_4d_target = tf.reshape(target_data, [-1, target_shape[2], target_shape[3], target_shape[4]])
+        tensor_4d_label = tf.reshape(label_data, [-1, label_shape[2], label_shape[3], label_shape[4]])
+
         label_y = target_y
         label_x = target_x
-        target_cropped = tf.image.crop_to_bounding_box(target_data, target_y, target_x, crop_height, crop_width)
-        label_cropped = tf.image.crop_to_bounding_box(label_data, label_y, label_x, crop_height, crop_width)
-        return target_cropped, label_cropped
+
+        target_cropped = tf.image.crop_to_bounding_box(tensor_4d_target, target_y, target_x, crop_height, crop_width)
+        label_cropped = tf.image.crop_to_bounding_box(tensor_4d_label, label_y, label_x, crop_height, crop_width)
+        print("target_cropped", target_cropped.shape, ", label_cropped", label_cropped.shape)
+
+        tensor_5d_target_cropped = tf.reshape(target_cropped, [target_shape[0], target_shape[1], crop_height, crop_width, target_shape[4]])
+        tensor_5d_label_cropped = tf.reshape(label_cropped, [label_shape[0], label_shape[1], crop_height, crop_width, label_shape[4]])
+        print("tensor_5d_target_cropped", tensor_5d_target_cropped.shape, ", tensor_5d_label_cropped", tensor_5d_label_cropped.shape)
+
+        return tensor_5d_target_cropped, tensor_5d_label_cropped
 
     # @tf.function
     def distributed_train_step(self, batch_inputs1, batch_targets1, targ_mask1, batch_inputs2, batch_targets2, targ_mask2):
