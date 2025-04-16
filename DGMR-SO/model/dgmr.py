@@ -84,7 +84,7 @@ class DGMR(tf.keras.Model):
                 batch_inputs1, batch_targets1, targ_mask1, batch_inputs2, batch_targets2, targ_mask2, batch_inputs3,
                 batch_targets3, targ_mask3, batch_inputs4, batch_targets4, targ_mask4)
 
-            tf.print("Debugging: before run")
+            #tf.print("Debugging: before run")
             # Loss
             disc_loss_l.append(disc_loss)
             gen_loss_l.append(gen_loss)
@@ -186,8 +186,7 @@ class DGMR(tf.keras.Model):
                     tf.summary.scalar("ssim_score_val_16", ssim_16, step=step)
 
             num_batches += 1
-            if num_batches < 500:
-                tf.print(f"Time per step:  {time.time() - temp_time} seconds")
+            tf.print(f"Time per step:  {time.time() - temp_time} seconds")
 
             if step and (step % 100 == 0):
                 tf.print("Gen Loss: ", gen_loss.numpy(), " Disc Loss: ", disc_loss.numpy())
@@ -385,7 +384,7 @@ class DGMR(tf.keras.Model):
             return tf.constant(-1.0), tf.constant(-1.0)
 
     def disc_step(self, batch_inputs, batch_targets, targ_mask, is_training=True):
-        tf.print("Debugging: disc_step: ", "Disc step has started", str(datetime.datetime.now()))
+        #tf.print("Debugging: disc_step: ", "Disc step has started", str(datetime.datetime.now()))
         with tf.GradientTape() as disc_tape:
             batch_predictions = self.generator_obj(batch_inputs, is_training=is_training)
             '''batch_predictions = tf.where(
@@ -414,7 +413,7 @@ class DGMR(tf.keras.Model):
         return disc_loss
 
     def gen_step(self, batch_inputs, batch_targets, targ_mask, is_training=True):
-        tf.print("Debugging: gen_step: ", "Gen step has started", str(datetime.datetime.now()))
+        #tf.print("Debugging: gen_step: ", "Gen step has started", str(datetime.datetime.now()))
         with tf.GradientTape() as gen_tape:
             num_samples_per_input = 1  # FIXME it was 6.
             gen_samples = [self.generator_obj(batch_inputs, is_training=is_training)
