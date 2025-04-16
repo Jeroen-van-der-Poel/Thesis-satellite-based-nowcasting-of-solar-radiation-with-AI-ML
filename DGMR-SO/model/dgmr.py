@@ -409,7 +409,7 @@ class DGMR(tf.keras.Model):
 
         self.disc_optimizer.apply_gradients(zip(disc_grads, self.discriminator_obj.trainable_variables))
 
-        tf.print("Debugging: disc_step: ", "Disc step ended", str(datetime.datetime.now()))
+        # tf.print("Debugging: disc_step: ", "Disc step ended", str(datetime.datetime.now()))
         return disc_loss
 
     def gen_step(self, batch_inputs, batch_targets, targ_mask, is_training=True):
