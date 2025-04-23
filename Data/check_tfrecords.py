@@ -4,47 +4,85 @@ import os
 from pathlib import Path
 from tfrecord_shards_for_nowcasting import Nowcasting_tfrecord
 
+def parse_record(raw_record):
+    feature_description = {
+        'raw_image_cond': tf.io.FixedLenFeature([], tf.string),
+        'raw_image_targ': tf.io.FixedLenFeature([], tf.string),
+        'window_cond': tf.io.FixedLenFeature([], tf.float32),
+        'height_cond': tf.io.FixedLenFeature([], tf.float32),
+        'width_cond': tf.io.FixedLenFeature([], tf.float32),
+        'depth_cond': tf.io.FixedLenFeature([], tf.float32),
+        'window_targ': tf.io.FixedLenFeature([], tf.float32),
+        'height_targ': tf.io.FixedLenFeature([], tf.float32),
+        'width_targ': tf.io.FixedLenFeature([], tf.float32),
+        'depth_targ': tf.io.FixedLenFeature([], tf.float32),
+    }
+    return tf.io.parse_single_example(raw_record, feature_description)
+
 def check_black_samples_like_raw_filter(tfrecord_dir, pattern="*.tfrecords", value_threshold=0.0, percent_thresh=0.5):
-    tfrec = Nowcasting_tfrecord()
-    dataset = tfrec.get_dataset_large(str(tfrecord_dir), pattern)
+    print(f"Scanning TFRecords in: {tfrecord_dir}")
+    tfrecord_files = list(Path(tfrecord_dir).rglob(pattern))
 
     black_frame_count = 0
     black_sample_count = 0
     total_frames = 0
     total_samples = 0
 
-    for sample_index, (cond, targ, mask, date) in enumerate(dataset):
-        cond_np = cond.numpy()  # shape: [4, H, W, 1]
-        targ_np = targ.numpy()  # shape: [16, H, W, 1]
+    for tfrecord_path in tfrecord_files:
+        try:
+            dataset = tf.data.TFRecordDataset(str(tfrecord_path), compression_type='GZIP')
+            for sample_index, raw_record in enumerate(dataset):
+                example = parse_record(raw_record)
 
-        sample_has_black_frame = False
+                # Decode tensor data
+                cond = tf.io.parse_tensor(example['raw_image_cond'], out_type=tf.float32).numpy()
+                targ = tf.io.parse_tensor(example['raw_image_targ'], out_type=tf.float32).numpy()
 
-        # Check input (condition) frames
-        for t in range(cond_np.shape[0]):
-            frame = cond_np[t, :, :, 0]
-            invalid_mask = (frame <= value_threshold)
-            dark_ratio = np.sum(invalid_mask) / frame.size
-            total_frames += 1
-            if dark_ratio > percent_thresh:
-                print(f"[COND] Sample {sample_index}, Frame {t}, dark_ratio: {dark_ratio:.2f}")
-                black_frame_count += 1
-                sample_has_black_frame = True
+                cond_shape = [
+                    int(example['window_cond'].numpy()),
+                    int(example['height_cond'].numpy()),
+                    int(example['width_cond'].numpy()),
+                    int(example['depth_cond'].numpy()),
+                ]
+                targ_shape = [
+                    int(example['window_targ'].numpy()),
+                    int(example['height_targ'].numpy()),
+                    int(example['width_targ'].numpy()),
+                    int(example['depth_targ'].numpy()),
+                ]
 
-        # Check target frames
-        for t in range(targ_np.shape[0]):
-            frame = targ_np[t, :, :, 0]
-            invalid_mask = (frame <= value_threshold)
-            dark_ratio = np.sum(invalid_mask) / frame.size
-            total_frames += 1
-            if dark_ratio > percent_thresh:
-                print(f"[TARG] Sample {sample_index}, Frame {t}, dark_ratio: {dark_ratio:.2f}")
-                black_frame_count += 1
-                sample_has_black_frame = True
+                cond = np.reshape(cond, cond_shape)
+                targ = np.reshape(targ, targ_shape)
 
-        if sample_has_black_frame:
-            black_sample_count += 1
+                sample_has_black_frame = False
 
-        total_samples += 1
+                # Check cond frames
+                for t in range(cond.shape[0]):
+                    frame = cond[t, :, :, 0]
+                    dark_ratio = np.sum(frame <= value_threshold) / frame.size
+                    total_frames += 1
+                    if dark_ratio > percent_thresh:
+                        print(f"[COND] {tfrecord_path.name}, Sample {sample_index}, Frame {t}, dark_ratio: {dark_ratio:.2f}")
+                        black_frame_count += 1
+                        sample_has_black_frame = True
+
+                # Check targ frames
+                for t in range(targ.shape[0]):
+                    frame = targ[t, :, :, 0]
+                    dark_ratio = np.sum(frame <= value_threshold) / frame.size
+                    total_frames += 1
+                    if dark_ratio > percent_thresh:
+                        print(f"[TARG] {tfrecord_path.name}, Sample {sample_index}, Frame {t}, dark_ratio: {dark_ratio:.2f}")
+                        black_frame_count += 1
+                        sample_has_black_frame = True
+
+                if sample_has_black_frame:
+                    black_sample_count += 1
+
+                total_samples += 1
+
+        except Exception as e:
+            print(f"Error reading {tfrecord_path.name}: {e}")
 
     print(f"Total samples checked: {total_samples}")
     print(f"Total frames checked: {total_frames}")
