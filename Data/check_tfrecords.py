@@ -34,7 +34,6 @@ def check_black_samples_like_raw_filter(tfrecord_dir, pattern="*.tfrecords", val
             for sample_index, raw_record in enumerate(dataset):
                 example = parse_record(raw_record)
 
-                # Decode tensor data
                 cond = tf.io.parse_tensor(example['raw_image_cond'], out_type=tf.float32).numpy()
                 targ = tf.io.parse_tensor(example['raw_image_targ'], out_type=tf.float32).numpy()
 
@@ -105,7 +104,6 @@ def check_black_samples_first_8_frames(tfrecord_dir, pattern="*.tfrecords", valu
             for sample_index, raw_record in enumerate(dataset):
                 example = parse_record(raw_record)
 
-                # Decode tensor data
                 cond = tf.io.parse_tensor(example['raw_image_cond'], out_type=tf.float32).numpy()
                 targ = tf.io.parse_tensor(example['raw_image_targ'], out_type=tf.float32).numpy()
 
