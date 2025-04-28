@@ -76,32 +76,6 @@ def write_tfrecord(INPUT_PATH, batches, windows, height, width, folder, output_p
             start_time = label_list[id + i]
             end_time = label_list[id + i + 3]
 
-            # Check for night coverage (> 50% NaN or -1)
-            # with Dataset(all_file_full_path_list[id + i]) as nc_file:
-            #     ele_sds_raw = nc_file.variables['sds'][0, :, :]
-            #     ele_sds = ele_sds_raw.filled(-1) 
-            #     total_pixels = ele_sds.size
-            #     invalid_mask = np.logical_or(np.isnan(ele_sds), ele_sds <= 0)
-            #     dark_ratio = np.sum(invalid_mask) / total_pixels
-            #     if dark_ratio > 0.5:
-            #         print(f'Skipping due to >50% darkness: {label_list[id + i]}')
-            #         continue
-
-            # Check for night coverage (> 50% NaN or -1) in the first 8 frames
-            # too_dark = False
-            # for j in range(8):
-            #     with Dataset(all_file_full_path_list[id + i + j]) as nc_file:
-            #         ele_sds = nc_file.variables['sds'][0, :, :].filled(-1)
-            #         total_pixels = ele_sds.size
-            #         invalid_mask = np.logical_or(np.isnan(ele_sds), ele_sds <= 0)
-            #         dark_ratio = np.sum(invalid_mask) / total_pixels
-            #         if dark_ratio > 0.5:
-            #             print(f"Skipping sample due to >50% darkness at frame {j}: {label_list[id + i + j]} (dark_ratio={dark_ratio:.2f})")
-            #             too_dark = True
-            #             break
-            # if too_dark:
-            #     continue
-
             with Dataset(all_file_full_path_list[id + i]) as nc_file_start, Dataset(all_file_full_path_list[id + i + windows]) as nc_file_end:
                 if np.any(nc_file_start.variables['sds'][0,:,:] <= 0):
                     print('remove start ' + str(label_list[id + i]))

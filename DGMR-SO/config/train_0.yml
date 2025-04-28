@@ -1,6 +1,6 @@
 model_identification:
   model_name: "solar_nowcasting"
-  model_version: 1
+  model_version: 2
 
 pre_trained_identification:
   model_name: "0921"
