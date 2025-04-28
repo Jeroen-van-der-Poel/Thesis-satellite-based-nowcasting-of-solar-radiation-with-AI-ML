@@ -14,6 +14,7 @@ The original paper: https://www.sciencedirect.com/science/article/pii/S0038092X2
 ### Installation
 
 !IMPORTANT make sure conda, cuda and cuDNN are avaialble/downloaded!
+For Virtual Machine on EUMETSAT, follow these steps: https://confluence.ecmwf.int/display/EWCLOUDKB/EUMETSAT+-+GPU+support
 
 1. Clone the GitHub repository
 2. Move into DGMR_SO folder
