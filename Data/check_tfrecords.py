@@ -19,7 +19,7 @@ def parse_record(raw_record):
     }
     return tf.io.parse_single_example(raw_record, feature_description)
 
-def check_black_samples_like_raw_filter(tfrecord_dir, pattern="*.tfrecords", value_threshold=0.0, percent_thresh=0.5):
+def check_black_samples(tfrecord_dir, pattern="*.tfrecords", value_threshold=0.0, percent_thresh=0.5):
     print(f"Scanning TFRecords in: {tfrecord_dir}")
     tfrecord_files = list(Path(tfrecord_dir).rglob(pattern))
 
@@ -181,44 +181,44 @@ def check_tfrecords(directory):
         except Exception as e:
             print(f"Failed to remove {cor}: {e}")
 
-#check_tfrecords('/data1/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/train_data')
-#check_tfrecords('/data1/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/val_data')
-#check_tfrecords('/data1/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/test_data')
+check_tfrecords('/data1/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/train_data')
+check_tfrecords('/data1/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/val_data')
+check_tfrecords('/data1/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/test_data')
 
-# check_black_samples_like_raw_filter(
+# check_black_samples(
 #     tfrecord_dir=Path('/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/train_data'), 
 #     pattern="*.tfrecords",
 #     value_threshold=0.0,
 #     percent_thresh=0.5
 # )
 
-# check_black_samples_like_raw_filter(
+# check_black_samples(
 #     tfrecord_dir=Path('/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/val_data'), 
 #     pattern="*.tfrecords",
 #     value_threshold=0.0,
 #     percent_thresh=0.5
 # )
 
-# check_black_samples_like_raw_filter(
+# check_black_samples(
 #     tfrecord_dir=Path('/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/test_data'), 
 #     pattern="*.tfrecords",
 #     value_threshold=0.0,
 #     percent_thresh=0.5
 # )
 
-check_black_samples_first_8_frames(
-    tfrecord_dir='/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/train_data',
-    value_threshold=0.0,
-    percent_thresh=0.5
-)
+# check_black_samples_first_8_frames(
+#     tfrecord_dir='/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/train_data',
+#     value_threshold=0.0,
+#     percent_thresh=0.5
+# )
 
-check_black_samples_first_8_frames(
-    tfrecord_dir='/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/val_data',
-    value_threshold=0.0,
-    percent_thresh=0.5
-)
-check_black_samples_first_8_frames(
-    tfrecord_dir='/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/test_data',
-    value_threshold=0.0,
-    percent_thresh=0.5
-)
+# check_black_samples_first_8_frames(
+#     tfrecord_dir='/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/val_data',
+#     value_threshold=0.0,
+#     percent_thresh=0.5
+# )
+# check_black_samples_first_8_frames(
+#     tfrecord_dir='/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/test_data',
+#     value_threshold=0.0,
+#     percent_thresh=0.5
+# )
