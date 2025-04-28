@@ -63,7 +63,7 @@ Usage:
 python check_tfrecord.py
 ```
 
-### Data augmentation
+### Step 3. Data augmentation
 After the data processing and quality control, the ```data_pipleine.py``` file is eventually used by the models to make use of the TFRecord datasets. 
 It performs:
 - Random cropping
