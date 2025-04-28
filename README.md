@@ -18,17 +18,39 @@ For Virtual Machine on EUMETSAT, follow these steps: https://confluence.ecmwf.in
 
 1. Clone the GitHub repository
 2. Move into DGMR_SO folder
-3. Create conda environment: "conda create -n dgmr_env python=3.9"
-4. Activate conda environment: "conda activate dgmr_env"
+3. Create conda environment: ```conda create -n dgmr_env python=3.9```
+4. Activate conda environment: ```conda activate dgmr_env```
 5. Install the required packages:
-     - "pip install tensorflow[and-cuda]"
-     - "pip install matplotlib"
-     - "pip install dm-sonnet"
-     - "pip install pyyaml"
+     - ```pip install tensorflow[and-cuda]```
+     - ```pip install matplotlib```
+     - ```pip install dm-sonnet```
+     - ```pip install pyyaml```
+     - ```pip install tensorboard```
 
 After these steps you should be able the execute the next steps.
 
 ### Training
+Before training an instance of DGMR-SO, make sure the train, validation and test sets are in designated folders in the /Data directory. Furthermore, make sure you are in the DGMR-SO directory and have created an virtual environment desribed in the section above.    
+Afterwards typ the following command in the console:  
+```
+python train.py
+```
+Or on EUMETSAT: 
+```
+sudo -E /home/'user'/miniforge3/envs/dgmr_env/bin/python3 train.py
+```
+
+This command will execute the full training process for 500.000 steps (or otherwise defined in the train.yml). There is a high change the full 500.00 steps are not necessary. We recommend the use of tensorbaord to watch and evaluate the training process closely.  
+When working on a EUMETSAT Virtual Machine and run tensorboard locally, make sure you connect to the VM as follows:  
+```
+ssh -L 6006:localhost:6006 'user'@'IP_of_VM'
+```
+When connected succesfully run the following command to load and view tensorboard:
+```
+tensorboard --logdir='directory_to_train_logs' --port=6006 --host=localhost
+```
+
+### Inference
 
 ## EarthFormer
 Earthformer is a space-time transformer architecture designed for Earth system forecasting tasks, such as weather nowcasting and precipitation prediction. Unlike traditional CNN or ConvLSTM-based models, Earthformer leverages spatiotemporal attention mechanisms to effectively capture both short- and long-range dependencies across space and time. The transformer Utilizes axial attention and factorized self-attention to reduce complexity while preserving global context. In this project, Earthformer is adapted to nowcast Surface Solar Irradiance (SSI) using satellite-derived input data.
