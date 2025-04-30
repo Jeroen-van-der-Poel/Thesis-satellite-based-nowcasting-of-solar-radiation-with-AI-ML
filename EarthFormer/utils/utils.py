@@ -7,7 +7,11 @@ import sys
 import functools
 import uuid
 import requests
+import yaml
 
+def read_yaml(file_path) -> str:
+    with open(file_path, "r") as f:
+        return yaml.safe_load(f)
 
 if not sys.platform.startswith('win32'):
     # refer to https://github.com/untitaker/python-atomicwrites

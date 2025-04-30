@@ -46,3 +46,14 @@ class SolarTFRecordTorchDataset(Dataset):
         targ_tensor = torch.from_numpy(targ).float()
 
         return cond_tensor, targ_tensor, date
+
+
+
+#For testing purposes only
+ds = SolarTFRecordTorchDataset(
+    trecord_path='/data1/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/train_data/val_data.tfrecords',
+    index_path='/data1/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/train_data/val_data.tfrecords.index'
+)
+
+cond, targ, date = ds[0]
+print(cond.shape, targ.shape, date)
