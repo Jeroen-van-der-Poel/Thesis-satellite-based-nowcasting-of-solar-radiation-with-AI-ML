@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np
 import os
 from pathlib import Path
-from tfrecord_shards_for_nowcasting import Nowcasting_tfrecord
+from Data.utils.tfrecord_shards_for_nowcasting import Nowcasting_tfrecord
 
 def parse_record(raw_record):
     feature_description = {
