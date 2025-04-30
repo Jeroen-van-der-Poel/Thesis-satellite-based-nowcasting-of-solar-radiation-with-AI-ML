@@ -1,6 +1,6 @@
 from torch.utils.data import DataLoader
 import pytorch_lightning as pl
-from ed_dataset import SolarTFRecordTorchDataset
+from ef_dataset import SolarTFRecordTorchDataset
 
 class SolarLightningDataModule(pl.LightningDataModule):
     def __init__(self, train_path, val_path, batch_size):

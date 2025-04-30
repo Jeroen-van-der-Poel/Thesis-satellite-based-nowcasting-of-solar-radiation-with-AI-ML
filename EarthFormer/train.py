@@ -3,7 +3,7 @@ from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor, EarlyStopping
 from pytorch_lightning.loggers import CSVLogger, TensorBoardLogger
 from solar_datamodule import SolarLightningDataModule 
-from earthformer.cuboid_transformer.cuboid_transformer import CuboidTransformerModel
+from cuboid_transformer.cuboid_transformer import CuboidTransformerModel
 import pytorch_lightning as pl
 from omegaconf import OmegaConf
 from argparse import Namespace
