@@ -6,7 +6,7 @@ import io
 from tfrecord.torch.dataset import TFRecordDataset
 
 class SolarTFRecordTorchDataset(Dataset):
-    def __init__(self, tfrecord_path, index_path):
+    def __init__(self, tfrecord_path, index_path=None):
         self.description = {
             "window_cond": "float",
             "height_cond": "float",
@@ -24,7 +24,8 @@ class SolarTFRecordTorchDataset(Dataset):
             data_path=tfrecord_path,
             index_path=index_path,
             description=self.description,
-            shuffle_queue_size=None
+            shuffle_queue_size=None,
+            compression_type="GZIP",
         )
 
     def __len__(self):
@@ -51,7 +52,7 @@ class SolarTFRecordTorchDataset(Dataset):
 
 #For testing purposes only
 ds = SolarTFRecordTorchDataset(
-    trecord_path='/data1/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/train_data/val_data.tfrecords',
+    tfrecord_path='/data1/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/train_data/val_data.tfrecords',
     index_path='/data1/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/train_data/val_data.tfrecords.index'
 )
 
