@@ -70,8 +70,8 @@ setup(
     license='Apache-2.0',
 
     # Package info
-    packages=find_packages(),
-    package_dir={"": ""},
+    packages=find_packages(where='.'),
+    package_dir={"": "."},
     zip_safe=True,
     include_package_data=True,
     install_requires=requirements,
