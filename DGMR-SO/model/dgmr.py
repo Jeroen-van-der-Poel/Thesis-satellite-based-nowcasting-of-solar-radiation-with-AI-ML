@@ -108,6 +108,7 @@ class DGMR(tf.keras.Model):
                     tf.summary.scalar("val_disc_loss", val_disc_loss, step=step)
 
                 if (step % 5000 == 0):
+                    ckpt_save_path = ckpt_manager.save()
                     targets_1,input1, target_8, input8, target_16, input16, obv_img, pred_img = self.data_process(val_input[:1], val_target[:1])
                     obv_img = np.squeeze(obv_img,axis=(0))
                     pred_img = np.squeeze(pred_img,axis=(0))
@@ -187,15 +188,7 @@ class DGMR(tf.keras.Model):
 
             num_batches += 1
             tf.print(f"Time per step:  {time.time() - temp_time} seconds")
-
-            if step and (step % 100 == 0):
-                tf.print("Gen Loss: ", gen_loss.numpy(), " Disc Loss: ", disc_loss.numpy())
-                # val loss
-                # TODO evaluate with evaluation metrics
-
-            if step and (step % 2000 == 0):
-                ckpt_save_path = ckpt_manager.save()
-
+                
             if step and (step % 5 == 0):
                 with train_writer.as_default():
                     tf.summary.scalar("Gen_loss", gen_loss, step=step)
