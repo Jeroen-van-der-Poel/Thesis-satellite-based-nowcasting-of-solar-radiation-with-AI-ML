@@ -2,7 +2,7 @@ from tfrecord.tools import tfrecord2idx
 import os
 from glob import glob
 
-# This script indexes TFRecord files in a specified directory. Only use this for EartFormer not needed for DGMR_SO
+# This script indexes TFRecord files in a specified directory. Only use this for EarthFormer not needed for DGMR_SO
 
 def index_tfrecords(tfrecord_dir):
     tfrecord_files = glob(os.path.join(tfrecord_dir, '*.tfrecords'))
@@ -16,5 +16,5 @@ def index_tfrecords(tfrecord_dir):
 
 if __name__ == "__main__":
     #index_tfrecords('/data1/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/train_data')
-    index_tfrecords('/data1/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/val_data')
-    #index_tfrecords('/data1/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/test_data')
+    #index_tfrecords('/data1/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/val_data')
+    index_tfrecords('/data1/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/test_data')
