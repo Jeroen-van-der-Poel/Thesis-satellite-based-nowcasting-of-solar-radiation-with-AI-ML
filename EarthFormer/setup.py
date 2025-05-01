@@ -20,7 +20,7 @@ def find_version(*file_paths):
     raise RuntimeError("Unable to find version string.")
 
 
-VERSION = find_version('src', 'earthformer', '__init__.py')
+VERSION = find_version('src', 'EarthFormer', '__init__.py')
 
 if VERSION.endswith('dev'):
     VERSION = VERSION + datetime.today().strftime('%Y%m%d')
