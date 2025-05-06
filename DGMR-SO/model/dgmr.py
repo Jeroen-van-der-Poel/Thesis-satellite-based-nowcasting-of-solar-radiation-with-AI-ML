@@ -13,8 +13,8 @@ class DGMR(tf.keras.Model):
         self.global_step = 0
         self.generator_obj = Generator(lead_time=lead_time, time_delta=time_delta)
         self.discriminator_obj = Discriminator()
-        self.crop_height = 256
-        self.crop_width = 256
+        self.crop_height = 128
+        self.crop_width = 128
 
     @tf.function
     def __call__(self, tensor, is_training=False):
