@@ -60,11 +60,12 @@ class NetCDFNowcastingDataset(Dataset):
                     norm = norm.T
 
                     if i < 8:
-                        sds_new = sds.filled(-1)
+                        sds_new = sds.filled(-1) if hasattr(sds, 'filled') else sds
                         total_pixels = sds_new.size
                         invalid_mask = np.logical_or(np.isnan(sds_new), sds_new <= 0)
                         dark_ratio = np.sum(invalid_mask) / total_pixels
                         if dark_ratio > 0.5:
+                            print(f"Too dark at index {idx+i}: {dark_ratio:.2f}")
                             too_dark = True
                             break
 
