@@ -37,26 +37,43 @@ class NetCDFNowcastingDataset(Dataset):
         return len(self.file_paths) - self.window
 
     def __getitem__(self, idx):
-        x = np.zeros((self.x_frames, self.height, self.width), dtype=np.float32)
-        y = np.zeros((self.y_frames, self.height, self.width), dtype=np.float32)
+        while idx < len(self) - self.window:
+            x = np.zeros((self.x_frames, self.height, self.width), dtype=np.float32)
+            y = np.zeros((self.y_frames, self.height, self.width), dtype=np.float32)
+            too_dark = False
 
-        for i in range(self.window):
-            with NetCDF(self.file_paths[idx + i]) as nc:
-                sds = nc.variables['sds'][0, :, :]
-                sds_cs = nc.variables['sds_cs'][0, :, :]
-                sds_cs[sds_cs < 0] = 0
-                norm = sds / np.maximum(sds_cs, 1e-6)
-                #norm[np.isnan(norm)] = 0
-                #norm[norm < 0] = 0
-                norm = np.clip(norm, 0, 1)
-                norm = norm.T  # Shape: (H, W)
+            for i in range(self.window):
+                with NetCDF(self.file_paths[idx + i]) as nc:
+                    sds = nc.variables['sds'][0, :, :]
+                    sds_cs = nc.variables['sds_cs'][0, :, :]
+                    sds_cs[sds_cs < 0] = 0
+                    norm = sds / np.maximum(sds_cs, 1e-6)
+                    #norm[np.isnan(norm)] = 0
+                    #norm[norm < 0] = 0
+                    norm = np.clip(norm, 0, 1)  # Ensure values are between 0 and 1
+                    norm = norm.T  # (H, W)
 
-                if i < self.x_frames:
-                    x[i] = norm
-                else:
-                    y[i - self.x_frames] = norm
+                    if i < 8:
+                        sds_new = sds.filled(-1) 
+                        total_pixels = sds_new.size
+                        invalid_mask = np.logical_or(np.isnan(sds_new), sds_new <= 0)
+                        dark_ratio = np.sum(invalid_mask) / total_pixels
+                        if dark_ratio > 0.5:
+                            too_dark = True
+                            break
 
-        return torch.from_numpy(x), torch.from_numpy(y)
+                    if i < self.x_frames:
+                        x[i] = norm
+                    else:
+                        y[i - self.x_frames] = norm
+
+            if too_dark:
+                idx += 1
+                continue  # Try next index
+            else:
+                return torch.from_numpy(x), torch.from_numpy(y)
+
+        raise IndexError("No valid sample found from this index onward.")
 
 
 
