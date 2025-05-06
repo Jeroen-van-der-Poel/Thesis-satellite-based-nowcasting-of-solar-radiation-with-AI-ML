@@ -38,6 +38,14 @@ class NetCDFNowcastingDataset(Dataset):
 
     def __getitem__(self, idx):
         while idx < len(self) - self.window:
+            # Check for missing timesteps
+            start_time = self.timestamps[idx]
+            end_time = self.timestamps[idx + self.window - 1]
+            expected_interval = datetime.timedelta(minutes=(self.window - 1) * 15)
+            if end_time - start_time != expected_interval:
+                idx += 1
+                continue
+
             x = np.zeros((self.x_frames, self.height, self.width), dtype=np.float32)
             y = np.zeros((self.y_frames, self.height, self.width), dtype=np.float32)
             too_dark = False
@@ -47,14 +55,12 @@ class NetCDFNowcastingDataset(Dataset):
                     sds = nc.variables['sds'][0, :, :]
                     sds_cs = nc.variables['sds_cs'][0, :, :]
                     sds_cs[sds_cs < 0] = 0
-                    norm = sds / np.maximum(sds_cs, 1e-6)
-                    #norm[np.isnan(norm)] = 0
-                    #norm[norm < 0] = 0
-                    norm = np.clip(norm, 0, 1)  # Ensure values are between 0 and 1
-                    norm = norm.T  # (H, W)
+                    norm = sds / sds_cs
+                    norm = np.clip(norm, 0, 1)
+                    norm = norm.T
 
                     if i < 8:
-                        sds_new = sds.filled(-1) 
+                        sds_new = sds.filled(-1)
                         total_pixels = sds_new.size
                         invalid_mask = np.logical_or(np.isnan(sds_new), sds_new <= 0)
                         dark_ratio = np.sum(invalid_mask) / total_pixels
@@ -69,11 +75,12 @@ class NetCDFNowcastingDataset(Dataset):
 
             if too_dark:
                 idx += 1
-                continue 
+                continue
             else:
                 return torch.from_numpy(x), torch.from_numpy(y)
 
         raise IndexError("No valid sample found from this index onward.")
+
 
 
 
