@@ -81,6 +81,44 @@ class NetCDFNowcastingDataset(Dataset):
                 return torch.from_numpy(x), torch.from_numpy(y)
 
         raise IndexError("No valid sample found from this index onward.")
+    
+    def count_valid_samples(self, check_timestamps=False):
+        valid_count = 0
+        idx = 0
+        expected_interval = datetime.timedelta(minutes=15 * self.window)
+
+        while idx < len(self.file_paths) - self.window:
+            too_dark = False
+
+            if check_timestamps:
+                time_start = self.timestamps[idx]
+                time_end = self.timestamps[idx + self.window]
+                if (time_end - time_start) != expected_interval:
+                    idx += 1
+                    continue
+
+            for i in range(self.window):
+                with NetCDF(self.file_paths[idx + i]) as nc:
+                    sds = nc.variables['sds'][0, :, :]
+                    if i < 8:
+                        sds_new = sds.filled(-1)
+                        total_pixels = sds_new.size
+                        invalid_mask = np.logical_or(np.isnan(sds_new), sds_new <= 0)
+                        dark_ratio = np.sum(invalid_mask) / total_pixels
+                        if dark_ratio > 0.5:
+                            too_dark = True
+                            break
+
+            if too_dark:
+                idx += 1
+                continue
+            else:
+                valid_count += 1
+                idx += 1  
+
+        print(f"Valid rolling windows: {valid_count}")
+        return valid_count
+
 
 
 
@@ -95,3 +133,5 @@ print("Input shape:", x.shape)  # Expected: (4, 390, 256)
 print("Target shape:", y.shape)  # Expected: (16, 390, 256)
 print("Input min/max:", x.min().item(), x.max().item())
 print("Target min/max:", y.min().item(), y.max().item())
+
+dataset.count_valid_samples(check_timestamps=True)
