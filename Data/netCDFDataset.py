@@ -69,7 +69,7 @@ class NetCDFNowcastingDataset(Dataset):
 
             if too_dark:
                 idx += 1
-                continue  # Try next index
+                continue 
             else:
                 return torch.from_numpy(x), torch.from_numpy(y)
 
@@ -77,20 +77,13 @@ class NetCDFNowcastingDataset(Dataset):
 
 
 
-# Update this to point to your NetCDF root directory
 root_dir = "/net/pc200258/nobackup_1/users/meirink/Jeroen/raw_train_data/"
-
-# Instantiate dataset
 dataset = NetCDFNowcastingDataset(root_dir=root_dir)
 
-# Print dataset length
-print(f"Dataset contains {len(dataset)} samples.")
 
-# Load one sample
+print(f"Dataset contains {len(dataset)} samples.")
 x, y = dataset[0]
 print("Input shape:", x.shape)  # Expected: (4, 390, 256)
 print("Target shape:", y.shape)  # Expected: (16, 390, 256)
-
-# Check value ranges
 print("Input min/max:", x.min().item(), x.max().item())
 print("Target min/max:", y.min().item(), y.max().item())

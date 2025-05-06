@@ -28,21 +28,17 @@ def check_darkness(x_tensor):
     return True
 
 # Run checks
-all_ok = True
+valid_sample_count = 0
 for idx, (x, y) in enumerate(tqdm(loader, desc="Validating dataset")):
     x, y = x.squeeze(), y.squeeze()
 
-    if not check_tensor_range(x, "Input") or not check_tensor_range(y, "Target"):
-        all_ok = False
-        break
-    if not check_darkness(x):
-        all_ok = False
+    if check_tensor_range(x, "Input") and check_tensor_range(y, "Target") and check_darkness(x):
+        valid_sample_count += 1
+    else:
+        print(f"Issue at sample index: {idx}")
+        continue 
+
+    if MAX_CHECK is not None and idx >= MAX_CHECK:
         break
 
-    if idx >= MAX_CHECK:
-        break
-
-if all_ok:
-    print("All checked samples are valid.")
-else:
-    print("Found issues in some samples.")
+print(f"Total valid rolling window samples: {valid_sample_count}")
