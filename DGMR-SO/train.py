@@ -43,7 +43,7 @@ prof_dir = str(ROOT / "logs" / (str(MODEL_NAME) + '_v' + str(MODEL_VERSION)) / "
 # profiler_writer = tf.summary.create_file_writer(prof_dir)
 
 # INIT MODEL
-disc_optimizer = Adam(learning_rate=2E-4, beta_1=0.0, beta_2=0.999)
+disc_optimizer = Adam(learning_rate=3E-4, beta_1=0.0, beta_2=0.999)
 gen_optimizer = Adam(learning_rate=1E-5, beta_1=0.0, beta_2=0.999)
 loss_hinge_gen = Loss_hing_gen()
 loss_hinge_disc = Loss_hing_disc()
