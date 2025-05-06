@@ -82,7 +82,7 @@ class NetCDFNowcastingDataset(Dataset):
 
         raise IndexError("No valid sample found from this index onward.")
     
-    def count_valid_samples(self, check_timestamps=False):
+    def count_valid_samples(self):
         valid_count = 0
         idx = 0
         expected_interval = datetime.timedelta(minutes=15 * self.window)
@@ -90,12 +90,11 @@ class NetCDFNowcastingDataset(Dataset):
         while idx < len(self.file_paths) - self.window:
             too_dark = False
 
-            if check_timestamps:
-                time_start = self.timestamps[idx]
-                time_end = self.timestamps[idx + self.window]
-                if (time_end - time_start) != expected_interval:
-                    idx += 1
-                    continue
+            time_start = self.timestamps[idx]
+            time_end = self.timestamps[idx + self.window]
+            if (time_end - time_start) != expected_interval:
+                idx += 1
+                continue
 
             for i in range(self.window):
                 with NetCDF(self.file_paths[idx + i]) as nc:
@@ -134,4 +133,4 @@ print("Target shape:", y.shape)  # Expected: (16, 390, 256)
 print("Input min/max:", x.min().item(), x.max().item())
 print("Target min/max:", y.min().item(), y.max().item())
 
-dataset.count_valid_samples(check_timestamps=True)
+dataset.count_valid_samples()
