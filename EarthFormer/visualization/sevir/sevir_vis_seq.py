@@ -4,8 +4,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.colors import ListedColormap
 from matplotlib.patches import Patch
-from ...utils.layout import change_layout_np
-from .sevir_cmap import get_cmap, VIL_COLORS, VIL_LEVELS
+from utils.layout import change_layout_np
+from sevir_cmap import get_cmap, VIL_COLORS, VIL_LEVELS
 
 
 HMF_COLORS = np.array([
