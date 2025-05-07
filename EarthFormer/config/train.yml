@@ -1,60 +1,29 @@
 dataset:
-  dataset_name: "knmi_dataset"
+  dataset_name: "netcdf"
+  train_path: "~/projects/raw_train_data/"
+  test_path: "~/projects/raw_test_data/"
   img_height: 390
   img_width: 256
   in_len: 4
   out_len: 16
   seq_len: 20
   plot_stride: 2
-  interval_real_time: 5
+  interval_real_time: 15
   sample_mode: "sequent"
-  stride: 16 
+  stride: 16
   layout: "NTHWC"
-  metrics_mode: "0"  # <- double-check if this makes sense for solar
+  start_date: null
+  train_val_split_date: null
+  train_test_split_date: null
+  end_date: null
+  metrics_mode: "0"
   metrics_list: ['csi', 'pod', 'sucr', 'bias']
-  threshold_list: [16, 74, 133, 160, 181, 219]
+  threshold_list: [0.1, 0.3, 0.5, 0.7, 0.9]
 
 layout:
   in_len: 4
   out_len: 16
   layout: "NTHWC"
-
-optim:
-  total_batch_size: 32
-  micro_batch_size: 2
-  seed: 0
-  method: "adamw"
-  lr: 0.001
-  wd: 0.0
-  gradient_clip_val: 1.0
-  max_epochs: 100
-  lr_scheduler_mode: "cosine"
-  min_lr_ratio: 1.0e-3
-  warmup_min_lr_ratio: 0.0
-  warmup_percentage: 0.2
-  early_stop: true
-  early_stop_mode: "min"
-  early_stop_patience: 20
-  save_top_k: 1
-
-logging:
-  logging_prefix: "Cuboid_knmi"
-  monitor_lr: true
-  monitor_device: false
-  track_grad_norm: -1
-  use_wandb: false
-
-trainer:
-  check_val_every_n_epoch: 1
-  log_step_ratio: 0.001
-  precision: 32
-
-vis:
-  train_example_data_idx_list: [0]
-  val_example_data_idx_list: [80]
-  test_example_data_idx_list: [0, 80, 160, 240, 320, 400]
-  eval_example_only: false
-  plot_stride: 2
 
 model:
   input_shape: [4, 390, 256, 1]
@@ -106,3 +75,40 @@ model:
   conv_init_mode: "0"
   down_up_linear_init_mode: "0"
   norm_init_mode: "0"
+
+optim:
+  total_batch_size: 32
+  micro_batch_size: 2
+  seed: 0
+  method: "adamw"
+  lr: 0.001
+  wd: 0.0
+  gradient_clip_val: 1.0
+  max_epochs: 100
+  lr_scheduler_mode: "cosine"
+  min_lr_ratio: 1.0e-3
+  warmup_min_lr_ratio: 0.0
+  warmup_percentage: 0.2
+  early_stop: true
+  early_stop_mode: "min"
+  early_stop_patience: 20
+  save_top_k: 1
+
+logging:
+  logging_prefix: "Cuboid_knmi"
+  monitor_lr: true
+  monitor_device: false
+  track_grad_norm: -1
+  use_wandb: false
+
+trainer:
+  check_val_every_n_epoch: 1
+  log_step_ratio: 0.001
+  precision: 32
+
+vis:
+  train_example_data_idx_list: [0]
+  val_example_data_idx_list: [80]
+  test_example_data_idx_list: [0, 80, 160, 240, 320, 400]
+  eval_example_only: false
+  plot_stride: 2

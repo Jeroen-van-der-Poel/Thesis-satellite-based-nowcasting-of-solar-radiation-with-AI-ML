@@ -44,6 +44,7 @@ class NetCDFNowcastingDataset(Dataset):
             expected_interval = datetime.timedelta(minutes=(self.window - 1) * 15)
             if end_time - start_time != expected_interval:
                 idx += 1
+                print(f'Skip sample starting from: {start_time}')
                 continue
 
             x = np.zeros((self.x_frames, self.height, self.width), dtype=np.float32)
@@ -59,13 +60,14 @@ class NetCDFNowcastingDataset(Dataset):
                     norm = np.clip(norm, 0, 1)
                     norm = norm.T
 
+                    # Check for dark pixels
                     if i < 8:
                         sds_new = sds.filled(-1) if hasattr(sds, 'filled') else sds
                         total_pixels = sds_new.size
                         invalid_mask = np.logical_or(np.isnan(sds_new), sds_new <= 0)
                         dark_ratio = np.sum(invalid_mask) / total_pixels
                         if dark_ratio > 0.5:
-                            print(f"Too dark at {self.timestamps[idx + i]} in file {os.path.basename(self.file_paths[idx + i])} (dark_ratio={dark_ratio:.2f})")
+                            print(f"Too dark at {self.timestamps[idx + i]} (dark_ratio={dark_ratio:.2f})")
                             too_dark = True
                             break
 
@@ -78,7 +80,9 @@ class NetCDFNowcastingDataset(Dataset):
                 idx += 1
                 continue
             else:
-                return torch.from_numpy(x), torch.from_numpy(y)
+                seq = torch.cat([x, y], dim=0).unsqueeze(-1)  # Shape: [20, H, W, 1]
+                return {"vil": seq}
+
 
         raise IndexError("No valid sample found from this index onward.")
     
