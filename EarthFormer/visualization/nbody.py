@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from matplotlib import pyplot as plt
-from ..utils.layout import change_layout_np
+from utils.layout import change_layout_np
 
 
 def save_example_vis_results(
