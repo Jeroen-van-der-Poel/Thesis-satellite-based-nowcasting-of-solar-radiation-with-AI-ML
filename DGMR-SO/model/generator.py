@@ -156,6 +156,8 @@ class Sampler(snt.Module):
         hs = [tf.nn.relu(self._bn(h, is_training=is_training)) for h in hs]
         hs = [self._output_conv(h, is_training=is_training) for h in hs]
         hs = [tf.nn.depth_to_space(h, 2) for h in hs]
+        # activation
+        hs = [tf.nn.sigmoid(h) for h in hs]
 
         return tf.stack(hs, axis=1)
 
