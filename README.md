@@ -2,11 +2,8 @@
 
 This repository contains code and a data pipeline for experimenting with state-of-the-art deep learning models for short-term solar radiation nowcasting, using geostationary satellite images. It includes implementations and training workflows for both **DGMR-SO** and **Earthformer** architectures.
 
-## Data Preperation
-Inside the ```/Data``` folder of this repository, you'll find scripts used to prepare, validate, and process the raw satellite data into a format suitable for training the deep learning models described below. This section outlines what each file does and how to use them effectively.
-
-### Step 1. Data processing
-The first step is transforming the raw NetCDF (.nc) satellite files into .tfrecords, a format compatible with DGMR-SO and EarthFormer.
+## Raw Data Preperation
+Inside the ```/RawData``` folder of this repository, you'll find the script used to prepare the raw satellite data with the region of choice.
 
 #### msgcpp_reduce_subset.py
 Creates a geographic subset of the original data, focusing on a specific region that includes the Netherlands, Belgium, France, England, and parts of neighboring countries.  
@@ -16,7 +13,34 @@ python msgcpp_reduce_subset.py
 ```
 Once the subset is generated, split it into a training and testing set. For convenience, place them in folders called: ```raw_train_data``` and ```raw_test_data```.
 
-#### data_preperation_to_tfr.py
+## DGMR-SO 
+DGMR-SO is an adapted version of the Deep Generative Model for Radar (DGMR) by Google DeepMind, tailored for satellite-based **Surface Solar Irradiance (SSI)** nowcasting. Instead of radar data, this implementation uses geostationary satellite imagery from the SEVIRI instrument aboard the Meteosat-11 satellite, normalized to represent clear-sky index for improved stability. The task is to predict the next 4 hours (16 future timesteps) of SSI based on the past 1 hour (4 timesteps) using rolling windows.
+
+The original paper: https://www.sciencedirect.com/science/article/pii/S0038092X24005619#b0240
+
+### Installation
+!IMPORTANT make sure conda, cuda and cuDNN are avaialble/downloaded!  
+For Virtual Machine on EUMETSAT, follow these steps: https://confluence.ecmwf.int/display/EWCLOUDKB/EUMETSAT+-+GPU+support
+
+1. Clone the GitHub repository
+2. Move into DGMR_SO folder
+3. Create conda environment: ```conda create -n dgmr_env python=3.9 -y```
+4. Activate conda environment: ```conda activate dgmr_env```
+5. Install the required packages:
+     - ```pip install tensorflow[and-cuda]```
+     - ```pip install matplotlib```
+     - ```pip install dm-sonnet```
+     - ```pip install pyyaml```
+     - ```pip install tensorboard```
+
+After these steps you should be able the execute the next steps.
+
+### Data preperation
+
+#### Step 1. Data processing
+The first step is transforming the raw NetCDF (.nc) satellite files into .tfrecords, a format compatible with DGMR-SO and EarthFormer.
+
+##### data_preperation_to_tfr.py
 Converts the subset .nc files into TFRecord format.
 - Uses sliding windows of 20 frames: 4 past frames and 16 future frames.
 - Removes windows if:
@@ -31,7 +55,7 @@ python data_preperation_tfr.py
 ```
 Update the script with the correct input/output paths and match the height and width to your selected geographic region.
 
-#### select_val_split.py
+##### select_val_split.py
 Splits the training data into training and validation sets using an 80/20 random split. Before execution, make sure the paths are correclty defined.  
 Usage:
 ```
@@ -39,10 +63,10 @@ python select_val_split.py
 ```
 The TFRecord files should now be organized in the folders: ```train_data```, ```val_data``` and ```test_data``` in the ```/Data``` folder.
 
-### Step 2. Data quality control 
+#### Step 2. Data quality control 
 These scripts validate the integrity and usability of the generated TFRecords and check for any remaining data issues.
 
-#### data_control.py
+##### data_control.py
 - Compares the number of raw .nc samples to the number of generated TFRecords.
 - Calculates the total dataset size in GB.
 - Verifies normalization steps were correctly applied.
@@ -52,7 +76,7 @@ Usage:
 python data_control.py
 ```
 
-#### check_tfrecords.py
+##### check_tfrecords.py
 - Confirms none of the TFRecords are corrupted.
 - Includes helper functions to:
      - Count how many samples have >50% darkness.
@@ -63,35 +87,13 @@ Usage:
 python check_tfrecord.py
 ```
 
-### Step 3. Data augmentation
+#### Step 3. Data augmentation
 After the data processing and quality control, the ```data_pipleine.py``` file is eventually used by the models to make use of the TFRecord datasets. 
 It performs:
 - Random cropping
 - Flipping (horizontal & vertical)
 - Normalization
 - Any other augmentations described in the report
-
-## DGMR-SO 
-DGMR-SO is an adapted version of the Deep Generative Model for Radar (DGMR) by Google DeepMind, tailored for satellite-based **Surface Solar Irradiance (SSI)** nowcasting. Instead of radar data, this implementation uses geostationary satellite imagery from the SEVIRI instrument aboard the Meteosat-11 satellite, normalized to represent clear-sky index for improved stability. The task is to predict the next 4 hours (16 future timesteps) of SSI based on the past 1 hour (4 timesteps) using rolling windows.
-
-The original paper: https://www.sciencedirect.com/science/article/pii/S0038092X24005619#b0240
-
-### Installation
-!IMPORTANT make sure conda, cuda and cuDNN are avaialble/downloaded!  
-For Virtual Machine on EUMETSAT, follow these steps: https://confluence.ecmwf.int/display/EWCLOUDKB/EUMETSAT+-+GPU+support
-
-1. Clone the GitHub repository
-2. Move into DGMR_SO folder
-3. Create conda environment: ```conda create -n dgmr_env python=3.9```
-4. Activate conda environment: ```conda activate dgmr_env```
-5. Install the required packages:
-     - ```pip install tensorflow[and-cuda]```
-     - ```pip install matplotlib```
-     - ```pip install dm-sonnet```
-     - ```pip install pyyaml```
-     - ```pip install tensorboard```
-
-After these steps you should be able the execute the next steps.
 
 ### Training
 Before training an instance of DGMR-SO, make sure the train, validation and test sets are in designated folders in the /Data directory. Furthermore, make sure you are in the DGMR-SO directory and have created an virtual environment desribed in the section above.    
@@ -125,8 +127,8 @@ The original paper: https://www.amazon.science/publications/earthformer-explorin
 !IMPORTANT make sure conda, cuda and cuDNN are avaialble/downloaded!  
 For Virtual Machine on EUMETSAT, follow these steps: https://confluence.ecmwf.int/display/EWCLOUDKB/EUMETSAT+-+GPU+support
 1. Clone the GitHub repository
-2. Move into DEarthFormer folder
-3. Create conda environment: ```conda create -n ef_env python=3.9```
+2. Move into EarthFormer folder
+3. Create conda environment: ```conda create -n ef_env python=3.9 -y```
 4. Activate conda environment: ```conda activate ef_env```
 5. Install the required packages:
      - ```pip install torch==1.12.1+cu116 torchvision==0.13.1+cu116 --index-url https://download.pytorch.org/whl/cu116```
@@ -138,5 +140,7 @@ For Virtual Machine on EUMETSAT, follow these steps: https://confluence.ecmwf.in
 8. Edit setup file  ```sudo nano setup.py```
 9. Comment out the line: check_cuda_torch_binary_us_bare_metal(CUDA_HOME), and save and exit
 10. While in the apex folder run: ```CUDA_HOME=/usr/local/cuda pip install --no-build-isolation --no-cache-dir --global-option="--cpp_ext" --global-option"--cuda_ext" .```
+
+After these steps you should be able the execute the next steps.
 
 ### Training
