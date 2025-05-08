@@ -19,6 +19,7 @@ def save_batched_pt(dataset, output_dir, batch_size):
     for idx in range(len(dataset)):
         try:
             sample = dataset[idx]
+            sample["vil"] = sample["vil"].half()  # Convert tensor to float16
             batch.append(sample)
             total_valid_samples += 1
             if len(batch) == batch_size:
