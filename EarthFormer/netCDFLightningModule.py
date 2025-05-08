@@ -22,7 +22,8 @@ class NetCDFLightningDataModule(pl.LightningDataModule):
         if self.train_dataset is None:
             print(f"Loading training dataset from {self.train_path}...")
             train_dataset = NetCDFNowcastingDataset(root_dir=self.train_path)
-
+            print(f"Loaded {len(train_dataset)} samples for training/validation.")
+            
             # Filter valid indices using __getitem__
             valid_indices = []
             for idx in range(len(train_dataset)):
