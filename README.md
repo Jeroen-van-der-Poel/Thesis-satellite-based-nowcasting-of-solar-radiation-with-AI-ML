@@ -122,5 +122,21 @@ Earthformer is a space-time transformer architecture designed for Earth system f
 The original paper: https://www.amazon.science/publications/earthformer-exploring-space-time-transformers-for-earth-system-forecasting
 
 ### Installation
+!IMPORTANT make sure conda, cuda and cuDNN are avaialble/downloaded!  
+For Virtual Machine on EUMETSAT, follow these steps: https://confluence.ecmwf.int/display/EWCLOUDKB/EUMETSAT+-+GPU+support
+1. Clone the GitHub repository
+2. Move into DEarthFormer folder
+3. Create conda environment: ```conda create -n ef_env python=3.9```
+4. Activate conda environment: ```conda activate ef_env```
+5. Install the required packages:
+     - ```pip install torch==1.12.1+cu116 torchvision==0.13.1+cu116 --index-url https://download.pytorch.org/whl/cu116```
+     - ```pip install pytorch_lightning==1.6.4```
+     - ```pip install xarray netcdf4 opencv-python earthnet==0.3.9```
+     - ```pip install -U -e . --no-build-isolation```
+6. Outside of the root project folder clone apex : ```git clone https://github.com/NVIDIA/apex.git```
+7. Move into apex folder
+8. Edit setup file  ```sudo nano setup.py```
+9. Comment out the line: check_cuda_torch_binary_us_bare_metal(CUDA_HOME), and save and exit
+10. While in the apex folder run: ```CUDA_HOME=/usr/local/cuda pip install --no-build-isolation --no-cache-dir --global-option="--cpp_ext" --global-option"--cuda_ext" .```
 
 ### Training
