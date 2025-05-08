@@ -83,9 +83,7 @@ class NetCDFNowcastingDataset(Dataset):
                 x_tensor = torch.from_numpy(x)
                 y_tensor = torch.from_numpy(y)
                 seq = torch.cat([x_tensor, y_tensor], dim=0).unsqueeze(-1)  # Shape: [20, H, W, 1]
-                print(f'seq shape: {seq.shape}')
                 return {"vil": seq}
-
 
         raise IndexError("No valid sample found from this index onward.")
     
