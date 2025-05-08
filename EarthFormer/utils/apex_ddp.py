@@ -1,7 +1,8 @@
 # Find the original code and discussion at https://github.com/PyTorchLightning/pytorch-lightning/discussions/10922
 # We will need to use the AMP implementation from apex because https://discuss.pytorch.org/t/using-torch-utils-checkpoint-checkpoint-with-dataparallel/78452
 
-from apex.parallel import DistributedDataParallel
+#from apex.parallel import DistributedDataParallel
+from torch.nn.parallel import DistributedDataParallel
 from pytorch_lightning.strategies.ddp import DDPStrategy
 from pytorch_lightning.overrides.base import (
     _LightningModuleWrapperBase,
