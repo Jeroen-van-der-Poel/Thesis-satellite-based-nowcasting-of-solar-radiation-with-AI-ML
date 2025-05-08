@@ -3,14 +3,15 @@ import os
 
 class PreprocessedPTDataset(torch.utils.data.Dataset):
     def __init__(self, pt_dir):
-        self.file_paths = sorted([
-            os.path.join(pt_dir, fname)
-            for fname in os.listdir(pt_dir)
-            if fname.endswith(".pt")
-        ])
+        self.samples = []
+        for fname in sorted(os.listdir(pt_dir)):
+            if fname.endswith(".pt"):
+                path = os.path.join(pt_dir, fname)
+                batch = torch.load(path)
+                self.samples.extend(batch)  # Unpack the list of samples
 
     def __len__(self):
-        return len(self.file_paths)
+        return len(self.samples)
 
     def __getitem__(self, idx):
-        return torch.load(self.file_paths[idx])
+        return self.samples[idx]

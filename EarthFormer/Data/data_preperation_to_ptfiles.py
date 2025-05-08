@@ -22,7 +22,7 @@ def save_batched_pt(dataset, output_dir, batch_size):
             batch.append(sample)
             total_valid_samples += 1
             if len(batch) == batch_size:
-                torch.save(batch, os.path.join(output_dir, f"{sample_id:06d}.pt"))
+                torch.save(batch, os.path.join(output_dir, f"{sample_id:06d}.pt"), _use_new_zipfile_serialization=True)
                 sample_id += 1
                 batch = []
         except IndexError:
