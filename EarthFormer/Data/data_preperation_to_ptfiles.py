@@ -7,8 +7,8 @@ output_dir_test = '/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellit
 os.makedirs(output_dir_train, exist_ok=True)
 os.makedirs(output_dir_test, exist_ok=True)
 
-train_dataset = NetCDFNowcastingDataset(root_dir='/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/raw_train_data/')
-test_dataset = NetCDFNowcastingDataset(root_dir='/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/raw_test_data/')
+train_dataset = NetCDFNowcastingDataset(root_dir='/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_train_data/')
+test_dataset = NetCDFNowcastingDataset(root_dir='/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_test_data/')
 sample_id = 0
 
 for dataset, output_dir in [(train_dataset, output_dir_train), (test_dataset, output_dir_test)]:
