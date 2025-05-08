@@ -6,11 +6,13 @@ from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 from torch.utils.data import Subset, random_split
 from Data.netCDFDataset import NetCDFNowcastingDataset
+from Data.ptDataset import PreprocessedPTDataset
 
 class NetCDFLightningDataModule(pl.LightningDataModule):
-    def __init__(self, train_path, test_path, batch_size=8, num_workers=4):
+    def __init__(self, train_path, val_path, test_path, batch_size=8, num_workers=4):
         super().__init__()
         self.train_path = train_path
+        self.val_path = val_path
         self.test_path = test_path
         self.batch_size = batch_size
         self.num_workers = num_workers
@@ -21,25 +23,14 @@ class NetCDFLightningDataModule(pl.LightningDataModule):
     def setup(self, stage=None):
         if self.train_dataset is None:
             print(f"Loading training dataset from {self.train_path}...")
-            train_dataset = NetCDFNowcastingDataset(root_dir=self.train_path)
-            print(f"Loaded {len(train_dataset)} samples for training/validation.")
-            
-            # Filter valid indices using __getitem__
-            valid_indices = []
-            for idx in range(len(train_dataset)):
-                try:
-                    _ = train_dataset[idx]  # Triggers the dark/missing checks
-                    valid_indices.append(idx)
-                except IndexError:
-                    continue
-            print(f"Found {len(valid_indices)} valid samples for training/validation.")
-
-            valid_train_dataset = Subset(train_dataset, valid_indices)
-            val_split = int(0.2 * len(valid_train_dataset))
-            train_split = len(valid_train_dataset) - val_split
-            self.train_dataset, self.val_dataset = torch.utils.data.random_split(valid_train_dataset, [train_split, val_split], generator=torch.Generator().manual_seed(42))
+            train_dataset = PreprocessedPTDataset(pt_dir=self.train_path)
+            print(f"Loaded {len(train_dataset)} samples for training.")
+        if(self.val_dataset is None):
+            print(f"Loading validation dataset from {self.val_path}...")
+            val_dataset = PreprocessedPTDataset(pt_dir=self.val_path)
+            print(f"Loaded {len(val_dataset)} samples for validation.")
         if self.test_dataset is None:
-            self.test_dataset = NetCDFNowcastingDataset(root_dir=self.test_path)
+            self.test_dataset = PreprocessedPTDataset(pt_dir=self.test_path)
 
     def train_dataloader(self):
         return DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=self.num_workers, pin_memory=True)

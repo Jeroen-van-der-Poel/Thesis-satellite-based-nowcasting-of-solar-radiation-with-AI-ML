@@ -19,7 +19,8 @@ def main():
 
     # Directory with input/output
     datadir_in_base = '/nobackup_1/users/meirink/msgcpp_aws/for_hkv/'
-    datadir_out_base = '/net/pc200258/nobackup_1/users/meirink/Jeroen/'
+    datadir_out_base = '/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/raw_train_data/'
+    #datadir_out_base = '/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/raw_test_data/'
     
     # Satellite and coverage
     #    SEVIR + AODC, SEVIR + IODC, ABI__ + EAST, AHI__ + PRIM

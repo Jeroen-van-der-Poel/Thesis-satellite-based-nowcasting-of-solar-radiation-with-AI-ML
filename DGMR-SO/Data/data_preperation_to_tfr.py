@@ -136,10 +136,10 @@ def write_tfrecord(INPUT_PATH, batches, windows, height, width, folder, output_p
         id = id + batches
 
 if __name__ == "__main__":
-    TRAIN_INPUT_PATH = '/net/pc200258/nobackup_1/users/meirink/Jeroen/raw_train_data/'
-    TEST_INPUT_PATH = '/net/pc200258/nobackup_1/users/meirink/Jeroen/raw_test_data/'
-    OUTPUT_PATH_train = Path('/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/train_data')
-    OUTPUT_PATH_test = Path('/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/test_data')
+    TRAIN_INPUT_PATH = '/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/raw_train_data/'
+    TEST_INPUT_PATH = '/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/raw_test_data/'
+    OUTPUT_PATH_train = Path('/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/DGMR-SO/Data/train_data')
+    OUTPUT_PATH_test = Path('/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/DGMR-SO/Data/test_data')
 
     batches = 200
     windows = 20

@@ -3,10 +3,10 @@ import random
 import shutil
 
 # Train data path
-train_tfrecord_path = '/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/train_data'
+train_tfrecord_path = '/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/DGMR-SO/Data/train_data'
 
 # Validation output path
-val_tfrecord_path = '/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/val_data'
+val_tfrecord_path = '/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/DGMR-SO/Data/val_data'
 os.makedirs(val_tfrecord_path, exist_ok=True)
 
 # Get all TFRecord files
