@@ -14,6 +14,7 @@ sample_id = 0
 for dataset, output_dir in [(train_dataset, output_dir_train), (test_dataset, output_dir_test)]:
     sample_id = 0 
     for idx in range(len(dataset)):
+        print(f"Processing sample {idx} of {len(dataset)}")
         try:
             sample = dataset[idx]
             torch.save(sample, os.path.join(output_dir, f"{sample_id:06d}.pt"))
