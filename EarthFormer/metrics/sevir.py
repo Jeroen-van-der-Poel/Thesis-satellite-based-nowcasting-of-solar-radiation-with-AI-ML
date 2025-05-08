@@ -3,7 +3,6 @@ import numpy as np
 import torch
 from torchmetrics import Metric
 from .skill_scores import _threshold
-from ..datasets.sevir.sevir_dataloader import SEVIRDataLoader
 
 
 class SEVIRSkillScore(Metric):
@@ -129,13 +128,8 @@ class SEVIRSkillScore(Metric):
         return hits, misses, fas
 
     def preprocess(self, pred, target):
-        if self.preprocess_type == "sevir":
-            pred = SEVIRDataLoader.process_data_dict_back(
-                data_dict={'vil': pred.detach().float()})['vil']
-            target = SEVIRDataLoader.process_data_dict_back(
-                data_dict={'vil': target.detach().float()})['vil']
-        else:
-            raise NotImplementedError
+        pred = pred.detach().float()
+        target = target.detach().float()
         return pred, target
 
     def update(self, pred: torch.Tensor, target: torch.Tensor):
