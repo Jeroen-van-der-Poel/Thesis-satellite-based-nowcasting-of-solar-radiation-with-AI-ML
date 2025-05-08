@@ -126,15 +126,15 @@ class NetCDFNowcastingDataset(Dataset):
 
 
 
-root_dir = "/net/pc200258/nobackup_1/users/meirink/Jeroen/raw_train_data/"
-dataset = NetCDFNowcastingDataset(root_dir=root_dir)
+# root_dir = "/net/pc200258/nobackup_1/users/meirink/Jeroen/raw_train_data/"
+# dataset = NetCDFNowcastingDataset(root_dir=root_dir)
 
 
-print(f"Dataset contains {len(dataset)} samples.")
-x, y = dataset[0]
-print("Input shape:", x.shape)  # Expected: (4, 390, 256)
-print("Target shape:", y.shape)  # Expected: (16, 390, 256)
-print("Input min/max:", x.min().item(), x.max().item())
-print("Target min/max:", y.min().item(), y.max().item())
+# print(f"Dataset contains {len(dataset)} samples.")
+# x, y = dataset[0]
+# print("Input shape:", x.shape)  # Expected: (4, 390, 256)
+# print("Target shape:", y.shape)  # Expected: (16, 390, 256)
+# print("Input min/max:", x.min().item(), x.max().item())
+# print("Target min/max:", y.min().item(), y.max().item())
 
-dataset.count_valid_samples()
+# dataset.count_valid_samples()
