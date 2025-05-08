@@ -80,6 +80,9 @@ class NetCDFNowcastingDataset(Dataset):
                 idx += 1
                 continue
             else:
+                x_tensor = torch.from_numpy(x)
+                y_tensor = torch.from_numpy(y)
+                print(f"x shape: {x_tensor.shape}, y shape: {y_tensor.shape}")
                 seq = torch.cat([x, y], dim=0).unsqueeze(-1)  # Shape: [20, H, W, 1]
                 return {"vil": seq}
 
