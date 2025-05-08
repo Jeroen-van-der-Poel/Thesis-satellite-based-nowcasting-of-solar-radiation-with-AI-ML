@@ -1,6 +1,6 @@
 import os
 import torch
-from Data.netCDFDataset import NetCDFNowcastingDataset
+from netCDFDataset import NetCDFNowcastingDataset
 
 output_dir_train = '/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/EarthFormer/Data/train_data'
 output_dir_test = '/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/EarthFormer/Data/test_data'
