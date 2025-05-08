@@ -24,7 +24,7 @@ For Virtual Machine on EUMETSAT, follow these steps: https://confluence.ecmwf.in
 
 1. Clone the GitHub repository
 2. Move into DGMR_SO folder
-3. Create conda environment: ```conda create -n dgmr_env python=3.9```
+3. Create conda environment: ```conda create -n dgmr_env python=3.9 -y```
 4. Activate conda environment: ```conda activate dgmr_env```
 5. Install the required packages:
      - ```pip install tensorflow[and-cuda]```
@@ -127,8 +127,8 @@ The original paper: https://www.amazon.science/publications/earthformer-explorin
 !IMPORTANT make sure conda, cuda and cuDNN are avaialble/downloaded!  
 For Virtual Machine on EUMETSAT, follow these steps: https://confluence.ecmwf.int/display/EWCLOUDKB/EUMETSAT+-+GPU+support
 1. Clone the GitHub repository
-2. Move into DEarthFormer folder
-3. Create conda environment: ```conda create -n ef_env python=3.9```
+2. Move into EarthFormer folder
+3. Create conda environment: ```conda create -n ef_env python=3.9 -y```
 4. Activate conda environment: ```conda activate ef_env```
 5. Install the required packages:
      - ```pip install torch==1.12.1+cu116 torchvision==0.13.1+cu116 --index-url https://download.pytorch.org/whl/cu116```
