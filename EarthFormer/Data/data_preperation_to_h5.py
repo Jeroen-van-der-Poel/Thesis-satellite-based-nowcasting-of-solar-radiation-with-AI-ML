@@ -4,6 +4,8 @@ import torch
 from netCDFDataset import NetCDFNowcastingDataset
 import numpy as np
 import psutil
+import gc
+import time
 
 output_dir_train = '/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/EarthFormer/Data/train_data'
 output_dir_test = '/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/EarthFormer/Data/test_data'
@@ -19,11 +21,12 @@ def save_batched_hdf5(dataset, output_dir, batch_size):
     sample_id = 0
     batch = []
     total_valid_samples = 0
+    pid = os.getpid()
+    process = psutil.Process(pid)
 
     for idx in range(len(dataset)):
         try:
             sample = dataset[idx]
-            print(f"Open files: {len(psutil.Process().open_files())}")
             vil_tensor = sample["vil"].numpy()  # (20, H, W, 1)
             batch.append(vil_tensor)
             total_valid_samples += 1
@@ -38,6 +41,17 @@ def save_batched_hdf5(dataset, output_dir, batch_size):
                     print(f"Failed to write {file_path}: {e}")
                 batch = []
                 sample_id += 1
+
+                # Monitor memory and open file handles
+                mem = process.memory_info().rss / (1024 ** 2)  # in MB
+                print(f"[File {sample_id:06d}] Memory usage: {mem:.2f} MB")
+                print(f"Open files: {len(process.open_files())}")
+
+                # Clean up
+                del array
+                gc.collect()
+                time.sleep(0.01)
+
         except IndexError:
             continue
 
