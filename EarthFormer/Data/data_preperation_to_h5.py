@@ -3,6 +3,7 @@ import h5py
 import torch
 from netCDFDataset import NetCDFNowcastingDataset
 import numpy as np
+import psutil
 
 output_dir_train = '/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/EarthFormer/Data/train_data'
 output_dir_test = '/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/EarthFormer/Data/test_data'
@@ -22,6 +23,7 @@ def save_batched_hdf5(dataset, output_dir, batch_size):
     for idx in range(len(dataset)):
         try:
             sample = dataset[idx]
+            print(f"Open files: {len(psutil.Process().open_files())}")
             vil_tensor = sample["vil"].numpy()  # (20, H, W, 1)
             batch.append(vil_tensor)
             total_valid_samples += 1
@@ -29,8 +31,11 @@ def save_batched_hdf5(dataset, output_dir, batch_size):
             if len(batch) == batch_size:
                 array = np.stack(batch, axis=0)  # Shape: (500, 20, H, W, 1)
                 file_path = os.path.join(output_dir, f"{sample_id:06d}.h5")
-                with h5py.File(file_path, 'w') as hf:
-                    hf.create_dataset("vil", data=array, compression="gzip", dtype='f2')
+                try:
+                    with h5py.File(file_path, 'w') as hf:
+                        hf.create_dataset("vil", data=array, compression="gzip", dtype='f2')
+                except Exception as e:
+                    print(f"Failed to write {file_path}: {e}")
                 batch = []
                 sample_id += 1
         except IndexError:
