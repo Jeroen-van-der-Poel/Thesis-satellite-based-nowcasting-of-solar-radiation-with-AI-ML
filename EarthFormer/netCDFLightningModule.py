@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 from torch.utils.data import Subset, random_split
 from Data.netCDFDataset import NetCDFNowcastingDataset
-from Data.ptDataset import PreprocessedPTDataset
+from Data.h5Dataset import PreprocessedHDF5Dataset
 
 class NetCDFLightningDataModule(pl.LightningDataModule):
     def __init__(self, train_path, val_path, test_path, batch_size=8, num_workers=4):
@@ -23,14 +23,16 @@ class NetCDFLightningDataModule(pl.LightningDataModule):
     def setup(self, stage=None):
         if self.train_dataset is None:
             print(f"Loading training dataset from {self.train_path}...")
-            train_dataset = PreprocessedPTDataset(pt_dir=self.train_path)
-            print(f"Loaded {len(train_dataset)} samples for training.")
+            self.train_dataset = PreprocessedHDF5Dataset(pt_dir=self.train_path)
+            print(f"Loaded {len(self.train_dataset)} samples for training.")
         if(self.val_dataset is None):
             print(f"Loading validation dataset from {self.val_path}...")
-            val_dataset = PreprocessedPTDataset(pt_dir=self.val_path)
-            print(f"Loaded {len(val_dataset)} samples for validation.")
+            self.val_dataset = PreprocessedHDF5Dataset(pt_dir=self.val_path)
+            print(f"Loaded {len(self.val_dataset)} samples for validation.")
         if self.test_dataset is None:
-            self.test_dataset = PreprocessedPTDataset(pt_dir=self.test_path)
+            print(f"Loading test dataset from {self.val_path}...")
+            self.test_dataset = PreprocessedHDF5Dataset(pt_dir=self.test_path)
+            print(f"Loaded {len(self.test_dataset)} samples for testing.")
 
     def train_dataloader(self):
         return DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=self.num_workers, pin_memory=True)
