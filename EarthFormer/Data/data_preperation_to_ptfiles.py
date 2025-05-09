@@ -3,13 +3,13 @@ import h5py
 import torch
 from netCDFDataset import NetCDFNowcastingDataset
 
-output_dir_train = '/your/path/to/train_data_hdf5'
-output_dir_test = '/your/path/to/test_data_hdf5'
+output_dir_train = '/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/EarthFormer/Data/train_data'
+output_dir_test = '/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/EarthFormer/Data/test_data'
 os.makedirs(output_dir_train, exist_ok=True)
 os.makedirs(output_dir_test, exist_ok=True)
 
-train_dataset = NetCDFNowcastingDataset(root_dir='/your/path/to/raw_train_data/')
-test_dataset = NetCDFNowcastingDataset(root_dir='/your/path/to/raw_test_data/')
+train_dataset = NetCDFNowcastingDataset(root_dir='/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_train_data/')
+test_dataset = NetCDFNowcastingDataset(root_dir='/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_test_data/')
 
 samples_per_file = 500
 
