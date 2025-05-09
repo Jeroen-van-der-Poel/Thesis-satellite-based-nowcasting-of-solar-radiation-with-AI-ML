@@ -22,7 +22,7 @@ def save_batched_hdf5(dataset, output_dir, batch_size):
     for idx in range(len(dataset)):
         try:
             sample = dataset[idx]
-            sample_data = sample["vil"].numpy()  # shape: [20, H, W, 1]
+            sample_data = sample["vil"].half().numpy()  # shape: [20, H, W, 1]
 
             # Create new file if starting a new batch
             if sample_in_file == 0:
