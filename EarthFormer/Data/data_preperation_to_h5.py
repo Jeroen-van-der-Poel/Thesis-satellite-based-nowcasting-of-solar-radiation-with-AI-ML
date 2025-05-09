@@ -2,6 +2,7 @@ import os
 import h5py
 import torch
 from netCDFDataset import NetCDFNowcastingDataset
+import numpy as np
 
 output_dir_train = '/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/EarthFormer/Data/train_data'
 output_dir_test = '/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/EarthFormer/Data/test_data'
@@ -32,7 +33,7 @@ def save_batched_hdf5(dataset, output_dir, batch_size):
                 hf = h5py.File(hf_path, 'w')
 
             dataset_name = f'sample_{sample_in_file:03d}'
-            hf.create_dataset(dataset_name, data=sample_data, compression="gzip")
+            hf.create_dataset(dataset_name, data=sample_data.astype(np.float16), compression="gzip")
             sample_in_file += 1
             total_valid_samples += 1
 
