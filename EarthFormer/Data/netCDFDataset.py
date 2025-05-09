@@ -4,7 +4,6 @@ from netCDF4 import Dataset as NetCDF
 import numpy as np
 import os
 import datetime
-from torch.utils.data import DataLoader
 
 class NetCDFNowcastingDataset(Dataset):
     def __init__(self, root_dir, window=20, x_frames=4, y_frames=16, height=390, width=256):
@@ -15,6 +14,7 @@ class NetCDFNowcastingDataset(Dataset):
         self.height = height
         self.width = width
         self.file_paths, self.timestamps = self._load_all_files_sorted()
+        self.valid_indices = self._filter_valid_indices()
 
     def _load_all_files_sorted(self):
         paths, times = [], []
@@ -33,109 +33,65 @@ class NetCDFNowcastingDataset(Dataset):
         times, paths = zip(*sorted_pairs)
         return list(paths), list(times)
 
+    def _filter_valid_indices(self):
+        valid = []
+        expected_interval = datetime.timedelta(minutes=(self.window - 1) * 15)
+        for idx in range(len(self.file_paths) - self.window):
+            try:
+                start_time = self.timestamps[idx]
+                end_time = self.timestamps[idx + self.window - 1]
+                if end_time - start_time != expected_interval:
+                    continue
+
+                too_dark = False
+                for i in range(self.window):
+                    with NetCDF(self.file_paths[idx + i]) as nc:
+                        sds = nc.variables['sds'][0, :, :]
+                        if i < 8:
+                            sds_new = sds.filled(-1) if hasattr(sds, 'filled') else sds
+                            total_pixels = sds_new.size
+                            invalid_mask = np.logical_or(np.isnan(sds_new), sds_new <= 0)
+                            dark_ratio = np.sum(invalid_mask) / total_pixels
+                            if dark_ratio > 0.5:
+                                too_dark = True
+                                break
+
+                if not too_dark:
+                    valid.append(idx)
+            except Exception as e:
+                print(f"Skipping index {idx} due to error: {e}")
+                continue
+
+        print(f"Filtered {len(valid)} valid samples.")
+        return valid
+
     def __len__(self):
-        return len(self.file_paths) - self.window
+        return len(self.valid_indices)
 
-    def __getitem__(self, idx):
-        while idx < len(self) - self.window:
-            # Check for missing timesteps
-            start_time = self.timestamps[idx]
-            end_time = self.timestamps[idx + self.window - 1]
-            expected_interval = datetime.timedelta(minutes=(self.window - 1) * 15)
-            if end_time - start_time != expected_interval:
-                idx += 1
-                print(f'Skip sample starting from: {start_time}')
-                continue
+    def __getitem__(self, i):
+        idx = self.valid_indices[i]
+        x = np.zeros((self.x_frames, self.height, self.width), dtype=np.float32)
+        y = np.zeros((self.y_frames, self.height, self.width), dtype=np.float32)
 
-            x = np.zeros((self.x_frames, self.height, self.width), dtype=np.float32)
-            y = np.zeros((self.y_frames, self.height, self.width), dtype=np.float32)
-            too_dark = False
+        for i in range(self.window):
+            with NetCDF(self.file_paths[idx + i]) as nc:
+                sds = nc.variables['sds'][0, :, :]
+                sds_cs = nc.variables['sds_cs'][0, :, :]
+                sds_cs[sds_cs < 0] = 0
+                norm = sds / sds_cs
+                norm = np.clip(norm, 0, 1)
+                norm = norm.T
 
-            for i in range(self.window):
-                with NetCDF(self.file_paths[idx + i]) as nc:
-                    sds = nc.variables['sds'][0, :, :]
-                    sds_cs = nc.variables['sds_cs'][0, :, :]
-                    sds_cs[sds_cs < 0] = 0
-                    norm = sds / sds_cs
-                    norm = np.clip(norm, 0, 1)
-                    norm = norm.T
+                if i < self.x_frames:
+                    x[i] = norm
+                else:
+                    y[i - self.x_frames] = norm
 
-                    # Check for dark pixels
-                    if i < 8:
-                        sds_new = sds.filled(-1) if hasattr(sds, 'filled') else sds
-                        total_pixels = sds_new.size
-                        invalid_mask = np.logical_or(np.isnan(sds_new), sds_new <= 0)
-                        dark_ratio = np.sum(invalid_mask) / total_pixels
-                        if dark_ratio > 0.5:
-                            print(f"Too dark at {self.timestamps[idx + i]} (dark_ratio={dark_ratio:.2f})")
-                            too_dark = True
-                            break
+        x_tensor = torch.from_numpy(x)
+        y_tensor = torch.from_numpy(y)
+        seq = torch.cat([x_tensor, y_tensor], dim=0).unsqueeze(-1)  # [20, H, W, 1]
+        return {"vil": seq}
 
-                    if i < self.x_frames:
-                        x[i] = norm
-                    else:
-                        y[i - self.x_frames] = norm
-
-            if too_dark:
-                idx += 1
-                continue
-            else:
-                x_tensor = torch.from_numpy(x)
-                y_tensor = torch.from_numpy(y)
-                seq = torch.cat([x_tensor, y_tensor], dim=0).unsqueeze(-1)  # Shape: [20, H, W, 1]
-                return {"vil": seq}
-
-        raise IndexError("No valid sample found from this index onward.")
-    
     def count_valid_samples(self):
-        valid_count = 0
-        idx = 0
-        expected_interval = datetime.timedelta(minutes=15 * self.window)
-
-        while idx < len(self.file_paths) - self.window:
-            too_dark = False
-
-            time_start = self.timestamps[idx]
-            time_end = self.timestamps[idx + self.window]
-            if (time_end - time_start) != expected_interval:
-                idx += 1
-                continue
-
-            for i in range(self.window):
-                with NetCDF(self.file_paths[idx + i]) as nc:
-                    sds = nc.variables['sds'][0, :, :]
-                    if i < 8:
-                        sds_new = sds.filled(-1)
-                        total_pixels = sds_new.size
-                        invalid_mask = np.logical_or(np.isnan(sds_new), sds_new <= 0)
-                        dark_ratio = np.sum(invalid_mask) / total_pixels
-                        if dark_ratio > 0.5:
-                            too_dark = True
-                            break
-
-            if too_dark:
-                idx += 1
-                continue
-            else:
-                valid_count += 1
-                idx += 1  
-
-        print(f"Valid rolling windows: {valid_count}")
-        return valid_count
-
-
-
-
-
-# root_dir = "/net/pc200258/nobackup_1/users/meirink/Jeroen/raw_train_data/"
-# dataset = NetCDFNowcastingDataset(root_dir=root_dir)
-
-
-# print(f"Dataset contains {len(dataset)} samples.")
-# x, y = dataset[0]
-# print("Input shape:", x.shape)  # Expected: (4, 390, 256)
-# print("Target shape:", y.shape)  # Expected: (16, 390, 256)
-# print("Input min/max:", x.min().item(), x.max().item())
-# print("Target min/max:", y.min().item(), y.max().item())
-
-# dataset.count_valid_samples()
+        print(f"Total valid samples: {len(self.valid_indices)}")
+        return len(self.valid_indices)
