@@ -22,7 +22,7 @@ def save_batched_hdf5(dataset, output_dir, batch_size):
     for idx in range(len(dataset)):
         try:
             sample = dataset[idx]
-            vil_tensor = sample["vil"].half().numpy()  # (20, H, W, 1) → float16 NumPy
+            vil_tensor = sample["vil"].numpy()  # (20, H, W, 1)
             batch.append(vil_tensor)
             total_valid_samples += 1
 
