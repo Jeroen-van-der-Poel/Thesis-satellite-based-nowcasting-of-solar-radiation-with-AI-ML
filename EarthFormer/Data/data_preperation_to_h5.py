@@ -31,8 +31,18 @@ def save_batched_hdf5(dataset, output_dir, batch_size):
     for idx in range(len(dataset)):
         try:
             sample = dataset[idx]  # Uses only valid indices now
-            vil_tensor = sample["vil"].cpu().numpy()  # [20, H, W, 1]
-            batch.append(vil_tensor)
+            vil_tensor = sample["vil"]
+
+            # Clone to ensure it detaches from any graph and avoids PyTorch refs
+            vil_array = vil_tensor.clone().detach().cpu().numpy()
+
+            # Immediately delete everything PyTorch-related
+            del vil_tensor
+            del sample
+            torch.cuda.empty_cache()  # if using CUDA (safe even if not)
+            gc.collect()
+
+            batch.append(vil_array)
             total_valid_samples += 1
 
             if len(batch) == batch_size:
@@ -42,6 +52,7 @@ def save_batched_hdf5(dataset, output_dir, batch_size):
                     hf.create_dataset("vil", data=array, compression="gzip", dtype='f2')
 
                 sample_id += 1
+                del array
                 batch.clear()
                 gc.collect()
 
