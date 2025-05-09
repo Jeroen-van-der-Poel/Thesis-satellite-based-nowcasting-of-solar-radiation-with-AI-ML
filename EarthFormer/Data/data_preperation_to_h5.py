@@ -27,7 +27,9 @@ def save_batched_hdf5(dataset, output_dir, batch_size):
     for idx in range(len(dataset)):
         try:
             sample = dataset[idx]
-            vil_tensor = sample["vil"].numpy()  # (20, H, W, 1)
+            vil_tensor = sample["vil"].detach().cpu().numpy()
+            del sample
+            gc.collect()
             batch.append(vil_tensor)
             total_valid_samples += 1
 
@@ -37,6 +39,9 @@ def save_batched_hdf5(dataset, output_dir, batch_size):
                 try:
                     with h5py.File(file_path, 'w') as hf:
                         hf.create_dataset("vil", data=array, compression="gzip", dtype='f2')
+                        del array
+                        del batch
+                        gc.collect()
                 except Exception as e:
                     print(f"Failed to write {file_path}: {e}")
                 batch = []
@@ -46,11 +51,6 @@ def save_batched_hdf5(dataset, output_dir, batch_size):
                 mem = process.memory_info().rss / (1024 ** 2)  # in MB
                 print(f"[File {sample_id:06d}] Memory usage: {mem:.2f} MB")
                 print(f"Open files: {len(process.open_files())}")
-
-                # Clean up
-                del array
-                gc.collect()
-                time.sleep(0.01)
 
         except IndexError:
             continue
