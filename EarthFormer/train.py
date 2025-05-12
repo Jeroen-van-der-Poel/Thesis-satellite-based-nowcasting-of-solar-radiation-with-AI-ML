@@ -208,9 +208,8 @@ class CuboidPLModule(pl.LightningModule):
     def get_dataset_config():
         oc = OmegaConf.create()
         oc.dataset_name = "netcdf"
-        oc.train_path = "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/EarthFormer/Data/train_data"
-        oc.val_path = "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/EarthFormer/Data/val_data"
-        oc.test_path = "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/EarthFormer/Data/test_data"    
+        oc.train_path = "~/projects/raw_train_data/"
+        oc.test_path = "~/projects/raw_test_data/"
         oc.img_height = 390
         oc.img_width = 256
         oc.in_len = 4
@@ -489,10 +488,9 @@ class CuboidPLModule(pl.LightningModule):
 
     @staticmethod
     def get_datamodule(dataset_oc, micro_batch_size: int = 1, num_workers: int = 8):
-        train_path = os.path.expanduser(dataset_oc.get("train_path", "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/EarthFormer/Data/train_data/"))
-        val_path = os.path.expanduser(dataset_oc.get("val_path", "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/EarthFormer/Data/val_data/"))
-        test_path = os.path.expanduser(dataset_oc.get("test_path", "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/EarthFormer/Data/test_data/"))
-        return NetCDFLightningDataModule(train_path=train_path, val_path=val_path, test_path=test_path, batch_size=micro_batch_size, num_workers=num_workers)
+        train_path = os.path.expanduser(dataset_oc.get("train_path", "~/projects/raw_train_data/"))
+        test_path = os.path.expanduser(dataset_oc.get("test_path", "~/projects/raw_test_data/"))
+        return NetCDFLightningDataModule(train_path=train_path, test_path=test_path, batch_size=micro_batch_size, num_workers=num_workers)
 
     @property
     def in_slice(self):

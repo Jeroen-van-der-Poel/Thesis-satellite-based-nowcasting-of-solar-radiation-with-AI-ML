@@ -74,8 +74,8 @@ class NetCDFNowcastingDataset(Dataset):
         x = np.zeros((self.x_frames, self.height, self.width), dtype=np.float32)
         y = np.zeros((self.y_frames, self.height, self.width), dtype=np.float32)
 
-        for i in range(self.window):
-            with NetCDF(self.file_paths[idx + i]) as nc:
+        for j in range(self.window):
+            with NetCDF(self.file_paths[idx + j]) as nc:
                 sds = nc.variables['sds'][0, :, :]
                 sds_cs = nc.variables['sds_cs'][0, :, :]
                 sds_cs[sds_cs < 0] = 0
@@ -83,10 +83,10 @@ class NetCDFNowcastingDataset(Dataset):
                 norm = np.clip(norm, 0, 1)
                 norm = norm.T
 
-                if i < self.x_frames:
-                    x[i] = norm
+                if j < self.x_frames:
+                    x[j] = norm
                 else:
-                    y[i - self.x_frames] = norm
+                    y[j - self.x_frames] = norm
 
         x_tensor = torch.from_numpy(x)
         y_tensor = torch.from_numpy(y)

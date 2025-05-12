@@ -6,13 +6,11 @@ from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 from torch.utils.data import Subset, random_split
 from Data.netCDFDataset import NetCDFNowcastingDataset
-from Data.h5Dataset import PreprocessedHDF5Dataset
 
 class NetCDFLightningDataModule(pl.LightningDataModule):
-    def __init__(self, train_path, val_path, test_path, batch_size=8, num_workers=4):
+    def __init__(self, train_path, test_path, batch_size=8, num_workers=4):
         super().__init__()
         self.train_path = train_path
-        self.val_path = val_path
         self.test_path = test_path
         self.batch_size = batch_size
         self.num_workers = num_workers
@@ -23,15 +21,18 @@ class NetCDFLightningDataModule(pl.LightningDataModule):
     def setup(self, stage=None):
         if self.train_dataset is None:
             print(f"Loading training dataset from {self.train_path}...")
-            self.train_dataset = PreprocessedHDF5Dataset(pt_dir=self.train_path)
-            print(f"Loaded {len(self.train_dataset)} samples for training.")
-        if(self.val_dataset is None):
-            print(f"Loading validation dataset from {self.val_path}...")
-            self.val_dataset = PreprocessedHDF5Dataset(pt_dir=self.val_path)
-            print(f"Loaded {len(self.val_dataset)} samples for validation.")
+            self.train_dataset = NetCDFNowcastingDataset(root_dir=self.train_path)
+            print(f"Loaded {len(self.train_dataset)} samples for training/validation.")
+
+            print(f"Loading validation dataset from...")
+            val_split = int(0.2 * len(self.train_dataset))
+            train_split = len(self.train_dataset) - val_split
+            self.train_dataset, self.val_dataset = torch.utils.data.random_split(self.train_dataset, [train_split, val_split], generator=torch.Generator().manual_seed(42))
+            print(f"Split into {len(self.train_dataset)} training and {len(self.val_dataset)} validation samples.")
+
         if self.test_dataset is None:
-            print(f"Loading test dataset from {self.val_path}...")
-            self.test_dataset = PreprocessedHDF5Dataset(pt_dir=self.test_path)
+            print(f"Loading testing dataset from {self.test_path}...")
+            self.test_dataset = NetCDFNowcastingDataset(root_dir=self.test_path)
             print(f"Loaded {len(self.test_dataset)} samples for testing.")
 
     def train_dataloader(self):
