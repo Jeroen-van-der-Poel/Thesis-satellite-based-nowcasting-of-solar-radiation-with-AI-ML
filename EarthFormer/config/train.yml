@@ -1,8 +1,7 @@
 dataset:
   dataset_name: "netcdf"
-  train_path: "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/EarthFormer/Data/train_data"
-  val_path: "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/EarthFormer/Data/val_data"
-  test_path: "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/EarthFormer/Data/test_data"
+  train_path: "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_train_data/"
+  test_path: "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_test_data/"
   img_height: 390
   img_width: 256
   in_len: 4
