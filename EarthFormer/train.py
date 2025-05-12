@@ -26,7 +26,7 @@ from utils.checkpoint import pl_ckpt_to_pytorch_state_dict, s3_download_pretrain
 from utils.layout import layout_to_in_out_slice
 from visualization.sevir.sevir_vis_seq import save_example_vis_results
 from cuboid_transformer.cuboid_transformer import CuboidTransformerModel
-from utils.apex_ddp import ApexDDPStrategy
+#from utils.apex_ddp import ApexDDPStrategy
 
 from netCDFLightningModule import NetCDFLightningDataModule
 from metrics.sevir import SEVIRSkillScore
