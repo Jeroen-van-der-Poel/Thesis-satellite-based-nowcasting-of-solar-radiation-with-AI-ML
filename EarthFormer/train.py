@@ -208,7 +208,7 @@ class CuboidPLModule(pl.LightningModule):
     def get_dataset_config():
         oc = OmegaConf.create()
         oc.dataset_name = "netcdf"
-        oc.train_path = "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_train_data/"
+        oc.train_path = "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_train_data/2021"
         oc.test_path = "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_test_data/"
         oc.img_height = 390
         oc.img_width = 256
@@ -692,7 +692,7 @@ class CuboidPLModule(pl.LightningModule):
 
 def get_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--save', default='tmp_sevir', type=str)
+    parser.add_argument('--save', default='tmp_netcdf', type=str)
     parser.add_argument('--gpus', default=1, type=int)
     parser.add_argument('--cfg', default=None, type=str)
     parser.add_argument('--test', action='store_true')
@@ -706,7 +706,7 @@ def main():
     parser = get_parser()
     args = parser.parse_args()
     if args.pretrained:
-        args.cfg = os.path.abspath(os.path.join(os.path.dirname(__file__), "earthformer_sevir_v1.yaml"))
+        args.cfg = os.path.abspath(os.path.join(os.path.dirname(__file__), "earthformer_sevir_v1.yaml")) # TODO: update this to the correct path
     if args.cfg is not None:
         oc_from_file = OmegaConf.load(open(args.cfg, "r"))
         dataset_oc = OmegaConf.to_object(oc_from_file.dataset)

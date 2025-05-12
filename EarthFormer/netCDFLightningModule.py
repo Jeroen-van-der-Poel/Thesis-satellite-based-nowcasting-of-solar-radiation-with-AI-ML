@@ -2,6 +2,7 @@ import os
 import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parents[1]))
+import torch
 from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 from torch.utils.data import Subset, random_split
