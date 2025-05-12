@@ -233,11 +233,11 @@ class CuboidPLModule(pl.LightningModule):
     @classmethod
     def get_model_config(cls):
         cfg = OmegaConf.create()
-        dataset_oc = OmegaConf.to_object(cls.get_dataset_config())
-        height = dataset_oc['img_height']
-        width = dataset_oc['img_width']
-        in_len = dataset_oc['in_len']
-        out_len = dataset_oc['out_len']
+        dataset_oc = cls.get_dataset_config()
+        height = dataset_oc.img_height
+        width = dataset_oc.img_width
+        in_len = dataset_oc.in_len
+        out_len = dataset_oc.out_len
         data_channels = 1
         cfg.input_shape = (in_len, height, width, data_channels)
         cfg.target_shape = (out_len, height, width, data_channels)
