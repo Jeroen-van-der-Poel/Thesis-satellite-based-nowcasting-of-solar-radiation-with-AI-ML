@@ -402,7 +402,14 @@ class CuboidPLModule(pl.LightningModule):
             }
         else:
             raise NotImplementedError
-        return {'optimizer': optimizer, 'lr_scheduler': lr_scheduler_config}
+        return {
+            'optimizer': optimizer,
+            'lr_scheduler': {
+                'scheduler': lr_scheduler_config['scheduler'],
+                'interval': lr_scheduler_config['interval'],
+                'frequency': lr_scheduler_config['frequency'],
+            }
+        }
 
     def set_trainer_kwargs(self, **kwargs):
         r"""
