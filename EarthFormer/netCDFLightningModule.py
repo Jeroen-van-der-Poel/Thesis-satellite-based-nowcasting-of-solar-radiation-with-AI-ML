@@ -18,6 +18,7 @@ class NetCDFLightningDataModule(pl.LightningDataModule):
         self.train_dataset = None
         self.val_dataset = None
         self.test_dataset = None
+        self.num_train_samples = None
 
     def setup(self, stage=None):
         if self.train_dataset is None:
@@ -30,6 +31,7 @@ class NetCDFLightningDataModule(pl.LightningDataModule):
             train_split = len(self.train_dataset) - val_split
             self.train_dataset, self.val_dataset = torch.utils.data.random_split(self.train_dataset, [train_split, val_split], generator=torch.Generator().manual_seed(42))
             print(f"Split into {len(self.train_dataset)} training and {len(self.val_dataset)} validation samples.")
+            self.num_train_samples = len(self.train_dataset)
 
         if self.test_dataset is None:
             print(f"Loading testing dataset from {self.test_path}...")
