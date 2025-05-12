@@ -455,7 +455,7 @@ class CuboidPLModule(pl.LightningModule):
             accelerator="gpu",
             # strategy="ddp",
             #strategy=ApexDDPStrategy(find_unused_parameters=False, delay_allreduce=True),
-            strategy="auto",
+            strategy=None,
             # optimization
             max_epochs=self.oc.optim.max_epochs,
             check_val_every_n_epoch=self.oc.trainer.check_val_every_n_epoch,
