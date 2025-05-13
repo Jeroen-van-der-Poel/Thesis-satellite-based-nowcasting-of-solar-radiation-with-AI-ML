@@ -563,7 +563,7 @@ class CuboidPLModule(pl.LightningModule):
                 pred_seq=y_hat,
                 mode="val"
             )
-            if self.precision == 16:
+            if str(self.trainer.precision) == "16":
                 y_hat = y_hat.float()
             step_mse = self.valid_mse(y_hat, y)
             step_mae = self.valid_mae(y_hat, y)
@@ -608,7 +608,7 @@ class CuboidPLModule(pl.LightningModule):
                 pred_seq=y_hat,
                 mode="test"
             )
-            if self.precision == 16:
+            if str(self.trainer.precision) == "16":
                 y_hat = y_hat.float()
             step_mse = self.test_mse(y_hat, y)
             step_mae = self.test_mae(y_hat, y)
