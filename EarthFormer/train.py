@@ -574,7 +574,7 @@ class CuboidPLModule(pl.LightningModule):
                      prog_bar=True, on_step=True, on_epoch=False)
         return None
 
-    def validation_epoch_end(self, outputs):
+    def on_validation_epoch_end(self, outputs):
         valid_mse = self.valid_mse.compute()
         valid_mae = self.valid_mae.compute()
         self.log('valid_frame_mse_epoch', valid_mse,
@@ -619,7 +619,7 @@ class CuboidPLModule(pl.LightningModule):
                      prog_bar=True, on_step=True, on_epoch=False)
         return None
 
-    def test_epoch_end(self, outputs):
+    def on_test_epoch_end(self, outputs):
         test_mse = self.test_mse.compute()
         test_mae = self.test_mae.compute()
         self.log('test_frame_mse_epoch', test_mse,
