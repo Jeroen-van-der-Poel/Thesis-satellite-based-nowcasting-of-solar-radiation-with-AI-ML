@@ -572,7 +572,7 @@ class CuboidPLModule(pl.LightningModule):
                      prog_bar=True, on_step=True, on_epoch=False)
             self.log('valid_frame_mae_step', step_mae,
                      prog_bar=True, on_step=True, on_epoch=False)
-        return None
+        return {"y_hat": y_hat.detach(), "target": y.detach()}
 
     def on_validation_epoch_end(self, outputs):
         valid_mse = self.valid_mse.compute()
@@ -617,7 +617,7 @@ class CuboidPLModule(pl.LightningModule):
                      prog_bar=True, on_step=True, on_epoch=False)
             self.log('test_frame_mae_step', step_mae,
                      prog_bar=True, on_step=True, on_epoch=False)
-        return None
+        return {"y_hat": y_hat.detach(), "target": y.detach()}
 
     def on_test_epoch_end(self, outputs):
         test_mse = self.test_mse.compute()
