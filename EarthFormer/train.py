@@ -565,9 +565,9 @@ class CuboidPLModule(pl.LightningModule):
             )
             if str(self.trainer.precision) == "16":
                 y_hat = y_hat.float()
-            step_mse = self.valid_mse(y_hat, y)
-            step_mae = self.valid_mae(y_hat, y)
-            self.valid_score.update(y_hat, y)
+            step_mse = self.valid_mse(y_hat.contiguous(), y.contiguous())
+            step_mae = self.valid_mae(y_hat.contiguous(), y.contiguous())
+            self.valid_score.update(y_hat.contiguous(), y.contiguous())
             self.log('valid_frame_mse_step', step_mse,
                      prog_bar=True, on_step=True, on_epoch=False)
             self.log('valid_frame_mae_step', step_mae,
@@ -610,9 +610,9 @@ class CuboidPLModule(pl.LightningModule):
             )
             if str(self.trainer.precision) == "16":
                 y_hat = y_hat.float()
-            step_mse = self.test_mse(y_hat, y)
-            step_mae = self.test_mae(y_hat, y)
-            self.test_score.update(y_hat, y)
+            step_mse = self.test_mse(y_hat.contiguous(), y.contiguous())
+            step_mae = self.test_mae(y_hat.contiguous(), y.contiguous())
+            self.test_score.update(y_hat.contiguous(), y.contiguous())
             self.log('test_frame_mse_step', step_mse,
                      prog_bar=True, on_step=True, on_epoch=False)
             self.log('test_frame_mae_step', step_mae,
