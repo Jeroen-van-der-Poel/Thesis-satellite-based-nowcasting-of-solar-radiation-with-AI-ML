@@ -208,7 +208,7 @@ class CuboidPLModule(pl.LightningModule):
     def get_dataset_config():
         oc = OmegaConf.create()
         oc.dataset_name = "netcdf"
-        oc.train_path = "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_train_data/2021"
+        oc.train_path = "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_train_data/"
         oc.test_path = "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_test_data/"
         oc.img_height = 390
         oc.img_width = 256
