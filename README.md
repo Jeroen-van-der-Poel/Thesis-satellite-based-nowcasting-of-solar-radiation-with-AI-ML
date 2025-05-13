@@ -133,7 +133,7 @@ For Virtual Machine on EUMETSAT, follow these steps: https://confluence.ecmwf.in
 5. Install the required packages:
      - ```pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121```
      - ```pip install pytorch_lightning==2.5.1```
-     - ```pip install torchmetrcis==2.5.1```
+     - ```pip install torchmetrics==2.5.1```
      - ```pip install xarray netcdf4 opencv-python earthnet==0.3.9```
      - ```pip install -U -e . --no-build-isolation```
 
