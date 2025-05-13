@@ -455,7 +455,7 @@ class CuboidPLModule(pl.LightningModule):
             # log
             logger=logger,
             log_every_n_steps=log_every_n_steps,
-            track_grad_norm=self.oc.logging.track_grad_norm,
+            #track_grad_norm=self.oc.logging.track_grad_norm,
             # save
             default_root_dir=self.save_dir,
             # ddp
@@ -541,6 +541,9 @@ class CuboidPLModule(pl.LightningModule):
             pred_seq=y_hat,
             mode="train"
         )
+        for name, param in self.named_parameters():
+            if param.grad is not None:
+                self.log(f"grad_norm/{name}", param.grad.norm())
         self.log('train_loss', loss,
                  on_step=True, on_epoch=False)
         return loss
