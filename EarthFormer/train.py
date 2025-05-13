@@ -31,6 +31,8 @@ from cuboid_transformer.cuboid_transformer import CuboidTransformerModel
 from netCDFLightningModule import NetCDFLightningDataModule
 from metrics.sevir import SEVIRSkillScore
 
+torch.set_float32_matmul_precision('medium')
+print(torch.get_float32_matmul_precision())
 
 _curr_dir = os.path.realpath(os.path.dirname(os.path.realpath(__file__)))
 exps_dir = os.path.join(_curr_dir, "experiments")
