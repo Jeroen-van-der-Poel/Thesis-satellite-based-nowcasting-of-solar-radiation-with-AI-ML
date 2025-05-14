@@ -237,43 +237,51 @@ class DGMR(tf.keras.Model):
 
     def data_process(self, batch_inputs2, batch_targets2):
         predict_labels = self.generator_obj(batch_inputs2)
+        predict_labels = predict_labels.numpy()
+        
+        predict_labels_16 = predict_labels[:, 15:, :, :, :]
+        predict_labels_16 = np.squeeze(predict_labels_16)
 
-        def extract_and_mask(tensor, timestep):
-            # Select specific timestep (e.g., 0, 7, 15)
-            sliced = tensor[:, timestep:timestep+1, :, :, :]  # Keep dims
-            sliced = tf.squeeze(sliced, axis=1)
-            flat = tf.reshape(sliced, [-1])
+        batch_targets2 = batch_targets2.numpy()
+        batch_targets2_16 = batch_targets2[:, 15:, :, :, :]
+        batch_targets2_16 = np.squeeze(batch_targets2_16)
+        predict_labels_16 = predict_labels_16.flatten()
+        batch_targets2_16 = batch_targets2_16.flatten()
 
-            return flat
+        mask_obs_16 = np.where(batch_targets2_16 <= 0, 0, 1)
+        mask_sim_16 = np.where(predict_labels_16 <= 0, 0, 1)
+        mask_16 = np.where((mask_obs_16 + mask_sim_16) <= 1, 0, 1).astype(bool)
+        batch_targets2_16 = batch_targets2_16[mask_16]
+        predict_labels_16 = predict_labels_16[mask_16]
 
-        def apply_mask(pred, target):
-            mask_obs = tf.cast(target > 0.0, tf.float32)
-            mask_sim = tf.cast(pred > 0.0, tf.float32)
-            valid_mask = tf.cast(mask_obs + mask_sim >= 1.0, tf.bool)
+        predict_labels_8 = predict_labels[:, 7:8, :, :, :]
+        predict_labels_8 = np.squeeze(predict_labels_8)
 
-            pred_masked = tf.boolean_mask(pred, valid_mask)
-            target_masked = tf.boolean_mask(target, valid_mask)
+        batch_targets2_8 = batch_targets2[:, 7:8, :, :, :]
+        batch_targets2_8 = np.squeeze(batch_targets2_8)
+        predict_labels_8 = predict_labels_8.flatten()
+        batch_targets2_8 = batch_targets2_8.flatten()
 
-            return target_masked, pred_masked
+        mask_obs_8 = np.where(batch_targets2_8 <= 0, 0, 1)
+        mask_sim_8 = np.where(predict_labels_8 <= 0, 0, 1)
+        mask_8 = np.where((mask_obs_8 + mask_sim_8) <= 1, 0, 1).astype(bool)
+        batch_targets2_8 = batch_targets2_8[mask_8]
+        predict_labels_8 = predict_labels_8[mask_8]
+        
+        predict_labels_1 = predict_labels[:, 0:1, :, :, :]
+        predict_labels_1 = np.squeeze(predict_labels_1)
 
-        # Full tensors for selected timesteps
-        t1_pred = extract_and_mask(predict_labels, 0)
-        t1_true = extract_and_mask(batch_targets2, 0)
-        t8_pred = extract_and_mask(predict_labels, 7)
-        t8_true = extract_and_mask(batch_targets2, 7)
-        t16_pred = extract_and_mask(predict_labels, 15)
-        t16_true = extract_and_mask(batch_targets2, 15)
+        batch_targets2_1 = batch_targets2[:, 0:1, :, :, :]
+        batch_targets2_1 = np.squeeze(batch_targets2_1)
+        predict_labels_1 = predict_labels_1.flatten()
+        batch_targets2_1 = batch_targets2_1.flatten()
 
-        all_pred = tf.reshape(predict_labels, [-1])
-        all_true = tf.reshape(batch_targets2, [-1])
-
-        # Masked
-        t1_true_masked, t1_pred_masked = apply_mask(t1_pred, t1_true)
-        t8_true_masked, t8_pred_masked = apply_mask(t8_pred, t8_true)
-        t16_true_masked, t16_pred_masked = apply_mask(t16_pred, t16_true)
-
-        return t1_true_masked, t1_pred_masked, t8_true_masked, t8_pred_masked, t16_true_masked, t16_pred_masked, all_true, all_pred
-
+        mask_obs_1 = np.where(batch_targets2_1 <= 0, 0, 1)
+        mask_sim_1 = np.where(predict_labels_1 <= 0, 0, 1)
+        mask_1 = np.where((mask_obs_1 + mask_sim_1) <= 1, 0, 1).astype(bool)
+        batch_targets2_1 = batch_targets2_1[mask_1]
+        predict_labels_1 = predict_labels_1[mask_1]
+        return batch_targets2_1,predict_labels_1,batch_targets2_8, predict_labels_8, batch_targets2_16, predict_labels_16, batch_targets2, predict_labels
 
     @tf.function
     def val_step(self, batch_inputs1, batch_targets1, targ_mask1, batch_inputs2, batch_targets2, targ_mask2):

@@ -3,11 +3,6 @@ import sonnet as snt
 import functools
 from keras import layers
 from sonnet.src.conv import ConvND
-from tensorflow.keras import mixed_precision 
-
-def cast_to_compute_dtype(tensor):
-    compute_dtype = mixed_precision.global_policy().compute_dtype
-    return tf.cast(tensor, compute_dtype)
 
 def downsample_avg_pool(x):
     """Utility function for downsampling by 2x2 average pooling."""
@@ -99,7 +94,7 @@ class SNConv2D(ConvND):
             outputs = tf.nn.bias_add(
                 outputs, self.b, data_format=self.data_format)
 
-        return cast_to_compute_dtype(outputs)
+        return tf.cast(outputs, tf.float32)
 
 class SNConv3D(ConvND):
     """2D convolution with spectral normalisation."""
@@ -141,7 +136,7 @@ class SNConv3D(ConvND):
             outputs = tf.nn.bias_add(
                 outputs, self.b, data_format=self.data_format)
 
-        return cast_to_compute_dtype(outputs)
+        return tf.cast(outputs, tf.float32)
 
 class Linear(snt.Module):
     """Simple linear layer.
@@ -156,7 +151,7 @@ class Linear(snt.Module):
         self._linear = snt.Linear(output_size=output_size)
 
     def __call__(self, tensor):
-        return cast_to_compute_dtype(self._linear(tensor))
+        return tf.cast(self._linear(tensor), tf.float32)
 
 class BatchNorm(snt.Module):
     """Batch normalization."""
@@ -169,7 +164,7 @@ class BatchNorm(snt.Module):
             create_scale=calc_sigma, create_offset=True)
 
     def __call__(self, tensor, is_training=True):
-        return cast_to_compute_dtype(self._batch_norm(tensor, is_training=is_training))
+        return tf.cast(self._batch_norm(tensor, is_training=is_training), tf.float32)
 
 class ApplyAlongAxis(snt.Module):
     """Layer for applying an operation on each element, along a specified axis."""
