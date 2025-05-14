@@ -4,11 +4,14 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 import tensorflow as tf
 from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.mixed_precision import LossScaleOptimizer, set_global_policy
 from Data.data_pipeline import Dataset
 from model.dgmr import DGMR
 from utils.losses import Loss_hing_disc, Loss_hing_gen
 import os
 from utils.utils import *
+
+set_global_policy('mixed_float16')  # This line enables mixed precision
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 os.environ['TF_XLA_FLAGS'] = '--tf_xla_enable_xla_devices'
@@ -42,9 +45,15 @@ print("Log directory:", str(ROOT / "logs" / (str(MODEL_NAME) + '_v' + str(MODEL_
 prof_dir = str(ROOT / "logs" / (str(MODEL_NAME) + '_v' + str(MODEL_VERSION)) / "profiler/")
 # profiler_writer = tf.summary.create_file_writer(prof_dir)
 
+# mixed precision
+base_disc_opt = Adam(learning_rate=2E-4, beta_1=0.0, beta_2=0.999)
+base_gen_opt = Adam(learning_rate=1E-5, beta_1=0.0, beta_2=0.999)
+
 # INIT MODEL
-disc_optimizer = Adam(learning_rate=2E-4, beta_1=0.0, beta_2=0.999)
-gen_optimizer = Adam(learning_rate=1E-5, beta_1=0.0, beta_2=0.999)
+disc_optimizer = LossScaleOptimizer(base_disc_opt)
+gen_optimizer = LossScaleOptimizer(base_gen_opt)
+
+
 loss_hinge_gen = Loss_hing_gen()
 loss_hinge_disc = Loss_hing_disc()
 
