@@ -389,9 +389,8 @@ class DGMR(tf.keras.Model):
 
             gen_disc_loss = self.gen_loss(tf.concat(generated_scores, axis=0))
             gen_loss = gen_disc_loss + 1 * grid_cell_reg
-            scaled_gen_loss = self.gen_optimizer.get_scaled_loss(gen_loss)
 
-        gen_grads = gen_tape.gradient(scaled_gen_loss, self.generator_obj.trainable_variables)
+        gen_grads = gen_tape.gradient(gen_loss, self.generator_obj.trainable_variables)
         self.gen_optimizer.apply_gradients(zip(gen_grads, self.generator_obj.trainable_variables))
 
         return gen_loss
