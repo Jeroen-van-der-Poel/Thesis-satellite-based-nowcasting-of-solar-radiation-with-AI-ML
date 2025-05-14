@@ -357,49 +357,32 @@ class DGMR(tf.keras.Model):
         #tf.print("Debugging: disc_step: ", "Disc step has started", str(datetime.datetime.now()))
         with tf.GradientTape() as disc_tape:
             batch_predictions = self.generator_obj(batch_inputs, is_training=is_training)
-            '''batch_predictions = tf.where(
-                tf.equal(targ_mask, True), batch_predictions, -1)'''
             gen_sequence = tf.concat([batch_inputs[..., :1], batch_predictions], axis=1)
             real_sequence = tf.concat([batch_inputs[..., :1], batch_targets], axis=1)
-            # gen_sequence = tf.cast(gen_sequence, tf.double)
-            # real_sequence = tf.cast(real_sequence, tf.double)
             concat_inputs = tf.concat([real_sequence, gen_sequence], axis=0)
-
             concat_outputs = self.discriminator_obj(concat_inputs, is_training=is_training)
 
             score_real, score_generated = tf.split(concat_outputs, 2, axis=0)
             disc_loss = self.disc_loss(score_generated, score_real)
 
         disc_grads = disc_tape.gradient(disc_loss, self.discriminator_obj.trainable_variables)
-
-        # Aggregate the gradients from the full batch.
-        '''replica_ctx_disc = tf.distribute.get_replica_context()
-        disc_grads = replica_ctx_disc.all_reduce(
-            tf.distribute.ReduceOp.MEAN, disc_grads)'''
-
+        disc_grads = self.disc_optimizer.get_unscaled_gradients(disc_grads)
         self.disc_optimizer.apply_gradients(zip(disc_grads, self.discriminator_obj.trainable_variables))
 
-        # tf.print("Debugging: disc_step: ", "Disc step ended", str(datetime.datetime.now()))
         return disc_loss
 
     def gen_step(self, batch_inputs, batch_targets, targ_mask, is_training=True):
-        #tf.print("Debugging: gen_step: ", "Gen step has started", str(datetime.datetime.now()))
         with tf.GradientTape() as gen_tape:
             num_samples_per_input = 1  # FIXME it was 6.
             gen_samples = [self.generator_obj(batch_inputs, is_training=is_training)
                            for _ in range(num_samples_per_input)]
 
             grid_cell_reg = grid_cell_regularizer(tf.stack(gen_samples, axis=0), batch_targets)
-            '''gen_samples = [tf.where(
-                tf.equal(targ_mask, True), gen_sample, -1) for gen_sample in gen_samples]'''
-            gen_sequences = [tf.concat([batch_inputs[..., :1], x], axis=1)
-                             for x in gen_samples]
+            gen_sequences = [tf.concat([batch_inputs[..., :1], x], axis=1) for x in gen_samples]
             real_sequence = tf.concat([batch_inputs[..., :1], batch_targets], axis=1)
 
             generated_scores = []
             for g_seq in gen_sequences:
-                # real_sequence = tf.cast(real_sequence,tf.double)
-                # g_seq = tf.cast(g_seq, tf.double)
                 concat_inputs = tf.concat([real_sequence, g_seq], axis=0)
                 concat_outputs = self.discriminator_obj(concat_inputs, is_training=is_training)
                 score_real, score_generated = tf.split(concat_outputs, 2, axis=0)
@@ -407,18 +390,12 @@ class DGMR(tf.keras.Model):
 
             gen_disc_loss = self.gen_loss(tf.concat(generated_scores, axis=0))
             gen_loss = gen_disc_loss + 1 * grid_cell_reg
+            scaled_gen_loss = self.gen_optimizer.get_scaled_loss(gen_loss)
 
-        gen_grads = gen_tape.gradient(gen_loss, self.generator_obj.trainable_variables)
-
-        # Aggregate the gradients from the full batch.
-        '''replica_ctx_disc = tf.distribute.get_replica_context()
-        disc_grads = replica_ctx_disc.all_reduce(
-            tf.distribute.ReduceOp.MEAN, disc_grads)'''
-
+        gen_grads = gen_tape.gradient(scaled_gen_loss, self.generator_obj.trainable_variables)
+        gen_grads = self.gen_optimizer.get_unscaled_gradients(gen_grads)
         self.gen_optimizer.apply_gradients(zip(gen_grads, self.generator_obj.trainable_variables))
 
-        # tf.print("Debugging: gen_loss -> ", gen_loss)
-        # tf.print("Debugging: gen_step: ", "Gen step has ended", str(datetime.datetime.now()))
         return gen_loss
 
 def grid_cell_regularizer(generated_samples, batch_targets):

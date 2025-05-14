@@ -162,6 +162,7 @@ class SpatialDiscriminator(snt.Module):
         output = tf.reshape(output, [b, n, 1])
         output = tf.reduce_sum(output, keepdims=True, axis=1)
 
+        output = tf.cast(output, tf.float32)
         return output
 
 class TemporalDiscriminator(snt.Module):
@@ -221,6 +222,7 @@ class TemporalDiscriminator(snt.Module):
 
         # Take the sum across the t samples. Note: we apply the ReLU to (1 - score_real) and (1 + score_generated) in the loss.
         output = tf.reshape(output, [b, t, 1])
+        output = tf.cast(output, tf.float32)
         scores = tf.reduce_sum(output, keepdims=True, axis=1)
 
         return scores
