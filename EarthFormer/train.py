@@ -544,11 +544,7 @@ class CuboidPLModule(pl.LightningModule):
             pred_seq=y_hat,
             mode="train"
         )
-        for name, param in self.named_parameters():
-            if param.grad is not None:
-                self.log(f"grad_norm/{name}", param.grad.norm())
-        self.log('train_loss', loss,
-                 on_step=True, on_epoch=False)
+        self.log('train_loss', loss, on_step=True, on_epoch=False)
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -754,7 +750,7 @@ def main():
     trainer_kwargs = pl_module.set_trainer_kwargs(
         devices=args.gpus,
         accumulate_grad_batches=accumulate_grad_batches,
-        precision=16,
+        precision="16-mixed",
     )
     trainer = Trainer(**trainer_kwargs)
     if args.pretrained:
