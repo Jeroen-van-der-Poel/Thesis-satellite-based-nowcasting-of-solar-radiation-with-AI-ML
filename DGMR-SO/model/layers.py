@@ -94,7 +94,7 @@ class SNConv2D(ConvND):
             outputs = tf.nn.bias_add(
                 outputs, self.b, data_format=self.data_format)
 
-        return tf.cast(outputs, tf.float32)
+        return outputs
 
 class SNConv3D(ConvND):
     """2D convolution with spectral normalisation."""
@@ -136,7 +136,7 @@ class SNConv3D(ConvND):
             outputs = tf.nn.bias_add(
                 outputs, self.b, data_format=self.data_format)
 
-        return tf.cast(outputs, tf.float32)
+        return outputs
 
 class Linear(snt.Module):
     """Simple linear layer.
@@ -151,7 +151,7 @@ class Linear(snt.Module):
         self._linear = snt.Linear(output_size=output_size)
 
     def __call__(self, tensor):
-        return tf.cast(self._linear(tensor), tf.float32)
+        return self._linear(tensor)
 
 class BatchNorm(snt.Module):
     """Batch normalization."""
@@ -164,7 +164,7 @@ class BatchNorm(snt.Module):
             create_scale=calc_sigma, create_offset=True)
 
     def __call__(self, tensor, is_training=True):
-        return tf.cast(self._batch_norm(tensor, is_training=is_training), tf.float32)
+        return self._batch_norm(tensor, is_training=is_training)
 
 class ApplyAlongAxis(snt.Module):
     """Layer for applying an operation on each element, along a specified axis."""
