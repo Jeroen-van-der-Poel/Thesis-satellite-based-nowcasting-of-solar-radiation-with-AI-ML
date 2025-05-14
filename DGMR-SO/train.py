@@ -37,7 +37,7 @@ training_steps = cfg['model_params']['steps']
 # tf.config.set_soft_device_placement(True)
 # gpu_devices_list = tf.config.list_physical_devices('GPU')
 
-batch_size = 16
+batch_size = 32
 train_data,train_dataset_aug = Dataset(Path('/data1/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/train_data'), batch_size=batch_size)
 val_data,val_data_val = Dataset(Path('/data1/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/val_data'), batch_size=batch_size)
 
