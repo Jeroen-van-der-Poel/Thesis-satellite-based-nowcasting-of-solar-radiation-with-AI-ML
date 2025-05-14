@@ -31,6 +31,7 @@ from cuboid_transformer.cuboid_transformer import CuboidTransformerModel
 from netCDFLightningModule import NetCDFLightningDataModule
 from metrics.sevir import SEVIRSkillScore
 
+
 torch.set_float32_matmul_precision('medium')
 print(torch.get_float32_matmul_precision())
 
@@ -753,6 +754,7 @@ def main():
     trainer_kwargs = pl_module.set_trainer_kwargs(
         devices=args.gpus,
         accumulate_grad_batches=accumulate_grad_batches,
+        precision=16,
     )
     trainer = Trainer(**trainer_kwargs)
     if args.pretrained:
