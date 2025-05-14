@@ -366,7 +366,6 @@ class DGMR(tf.keras.Model):
             disc_loss = self.disc_loss(score_generated, score_real)
 
         disc_grads = disc_tape.gradient(disc_loss, self.discriminator_obj.trainable_variables)
-        disc_grads = self.disc_optimizer.get_unscaled_gradients(disc_grads)
         self.disc_optimizer.apply_gradients(zip(disc_grads, self.discriminator_obj.trainable_variables))
 
         return disc_loss
@@ -393,7 +392,6 @@ class DGMR(tf.keras.Model):
             scaled_gen_loss = self.gen_optimizer.get_scaled_loss(gen_loss)
 
         gen_grads = gen_tape.gradient(scaled_gen_loss, self.generator_obj.trainable_variables)
-        gen_grads = self.gen_optimizer.get_unscaled_gradients(gen_grads)
         self.gen_optimizer.apply_gradients(zip(gen_grads, self.generator_obj.trainable_variables))
 
         return gen_loss
