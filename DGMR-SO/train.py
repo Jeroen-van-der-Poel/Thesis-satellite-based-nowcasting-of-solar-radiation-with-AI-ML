@@ -4,7 +4,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 import tensorflow as tf
 from tensorflow.keras.optimizers import Adam
-from tensorflow.keras import mixed_precision
+from tensorflow.keras.mixed_precision import set_global_policy
 from Data.data_pipeline import Dataset
 from model.dgmr import DGMR
 from utils.losses import Loss_hing_disc, Loss_hing_gen
@@ -12,7 +12,7 @@ import os
 from utils.utils import *
 
 # Enables mixed precision
-mixed_precision.set_global_policy('mixed_float16')
+set_global_policy('mixed_float16')
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 os.environ['TF_XLA_FLAGS'] = '--tf_xla_enable_xla_devices'
@@ -37,7 +37,7 @@ training_steps = cfg['model_params']['steps']
 # tf.config.set_soft_device_placement(True)
 # gpu_devices_list = tf.config.list_physical_devices('GPU')
 
-batch_size = 32
+batch_size = 16
 train_data,train_dataset_aug = Dataset(Path('/data1/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/train_data'), batch_size=batch_size)
 val_data,val_data_val = Dataset(Path('/data1/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/val_data'), batch_size=batch_size)
 
