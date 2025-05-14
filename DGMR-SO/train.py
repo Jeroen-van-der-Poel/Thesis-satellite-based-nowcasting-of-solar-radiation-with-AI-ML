@@ -13,6 +13,7 @@ from utils.utils import *
 
 # Enables mixed precision
 set_global_policy('mixed_float16')
+tf.config.optimizer.set_jit(True)
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 os.environ['TF_XLA_FLAGS'] = '--tf_xla_enable_xla_devices'
