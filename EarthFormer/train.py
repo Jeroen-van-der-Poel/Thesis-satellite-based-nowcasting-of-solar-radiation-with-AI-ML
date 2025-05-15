@@ -544,7 +544,7 @@ class CuboidPLModule(pl.LightningModule):
             pred_seq=y_hat,
             mode="train"
         )
-        self.log('train_loss', loss, on_step=True, on_epoch=False)
+        self.log('train_loss', loss, on_step=False, on_epoch=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -570,9 +570,9 @@ class CuboidPLModule(pl.LightningModule):
             step_mae = self.valid_mae(y_hat, y)
             self.valid_score.update(y_hat, y)
             self.log('valid_frame_mse_step', step_mse,
-                     prog_bar=True, on_step=True, on_epoch=False)
+                     prog_bar=True, on_step=False, on_epoch=True)
             self.log('valid_frame_mae_step', step_mae,
-                     prog_bar=True, on_step=True, on_epoch=False)
+                     prog_bar=True, on_step=False, on_epoch=True)
         return None
 
     def on_validation_epoch_end(self, outputs=None):
