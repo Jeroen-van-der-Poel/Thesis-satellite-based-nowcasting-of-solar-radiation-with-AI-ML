@@ -6,7 +6,7 @@ import torch
 from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 from torch.utils.data import Subset, random_split
-from Data.netCDFDataset import NetCDFNowcastingDataset
+from RawData.netCDFDataset import NetCDFNowcastingDataset
 
 class NetCDFLightningDataModule(pl.LightningDataModule):
     def __init__(self, train_path, test_path, batch_size=8, num_workers=4):

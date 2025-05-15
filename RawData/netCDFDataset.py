@@ -80,6 +80,7 @@ class NetCDFNowcastingDataset(Dataset):
                     sds = nc.variables['sds'][0, :, :]
                     sds_cs = nc.variables['sds_cs'][0, :, :]
                     sds_cs[sds_cs < 0] = 0
+                    # Transpose to match (height, width) convention
                     norm = np.clip(sds / sds_cs, 0, 1).T
                     if j < self.x_frames:
                         x[j] = norm
