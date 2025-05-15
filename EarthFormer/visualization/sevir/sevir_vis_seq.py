@@ -181,3 +181,4 @@ def save_example_vis_results(
         plot_stride=plot_stride, fs=fs, norm=norm)
     plt.savefig(fig_path)
     plt.close(fig)
+    plt.close('all')
