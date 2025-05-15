@@ -9,7 +9,7 @@ from torch.utils.data import Subset, random_split
 from RawData.netCDFDataset import NetCDFNowcastingDataset
 
 class NetCDFLightningDataModule(pl.LightningDataModule):
-    def __init__(self, train_path, test_path, batch_size=8, num_workers=8):
+    def __init__(self, train_path, test_path, batch_size=8, num_workers=16):
         super().__init__()
         self.train_path = train_path
         self.test_path = test_path
