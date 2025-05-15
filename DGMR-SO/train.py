@@ -1,7 +1,7 @@
-# import tensorflow.compat.v1 as tf
 import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parents[1]))
+
 import tensorflow as tf
 from tensorflow.keras.optimizers import Adam
 from Data.data_pipeline import Dataset
@@ -18,20 +18,13 @@ for gpu in gpus:
 print('GPU:', gpus)
 
 cfg = read_yaml(Path('./config/' + 'train' + '.yml'))
-
 MODEL_NAME = cfg['model_identification']['model_name']
 MODEL_VERSION = cfg['model_identification']['model_version']
 ROOT = get_project_root()
-CHECKPOINT_DIR = ROOT / 'Checkpoints' / \
-    (str(MODEL_NAME) + '_v' + str(MODEL_VERSION))
+CHECKPOINT_DIR = ROOT / 'Checkpoints' / (str(MODEL_NAME) + '_v' + str(MODEL_VERSION))
 make_dirs([CHECKPOINT_DIR])
 
 training_steps = cfg['model_params']['steps']
-
-# tf.config.threading.set_inter_op_parallelism_threads(1)
-# tf.config.threading.set_intra_op_parallelism_threads(18)
-# tf.config.set_soft_device_placement(True)
-# gpu_devices_list = tf.config.list_physical_devices('GPU')
 
 batch_size = 16
 train_data,train_dataset_aug = Dataset(Path('/data1/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/Data/train_data'), batch_size=batch_size)
@@ -40,14 +33,12 @@ val_data,val_data_val = Dataset(Path('/data1/Thesis-satellite-based-nowcasting-o
 train_writer = tf.summary.create_file_writer(str(ROOT / "logs" / (str(MODEL_NAME) + '_v' + str(MODEL_VERSION)) / "train/"))
 print("Log directory:", str(ROOT / "logs" / (str(MODEL_NAME) + '_v' + str(MODEL_VERSION)) / "train/"))
 prof_dir = str(ROOT / "logs" / (str(MODEL_NAME) + '_v' + str(MODEL_VERSION)) / "profiler/")
-# profiler_writer = tf.summary.create_file_writer(prof_dir)
 
 disc_optimizer = Adam(learning_rate=2E-4, beta_1=0.0, beta_2=0.999)
 gen_optimizer = Adam(learning_rate=1E-5, beta_1=0.0, beta_2=0.999)
 loss_hinge_gen = Loss_hing_gen()
 loss_hinge_disc = Loss_hing_disc()
 
-# with strategy.scope() :
 tf.keras.backend.clear_session()
 my_model = DGMR(lead_time=240, time_delta=15)
 my_model.trainable = True
