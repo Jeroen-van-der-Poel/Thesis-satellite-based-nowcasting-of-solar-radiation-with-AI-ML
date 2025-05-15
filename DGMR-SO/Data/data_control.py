@@ -1,8 +1,6 @@
 import os
-import glob
 import tensorflow as tf
-import datetime
-from Data.utils.tfrecord_shards_for_nowcasting import Nowcasting_tfrecord
+from utils.tfrecord_shards_for_nowcasting import Nowcasting_tfrecord
 import matplotlib.pyplot as plt
 import random
 import numpy as np
