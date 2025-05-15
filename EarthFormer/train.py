@@ -564,8 +564,8 @@ class CuboidPLModule(pl.LightningModule):
             )
             if str(self.trainer.precision) == "16":
                 y_hat = y_hat.float()
-            # y_hat = y_hat.contiguous()
-            # y = y.contiguous()
+            y_hat = y_hat.contiguous()
+            y = y.contiguous()
             step_mse = self.valid_mse(y_hat, y)
             step_mae = self.valid_mae(y_hat, y)
             self.valid_score.update(y_hat, y)
