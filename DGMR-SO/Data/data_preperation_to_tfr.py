@@ -1,5 +1,9 @@
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parents[2]))
+
 import numpy as np
-from Data.utils.tfrecord_shards_for_nowcasting import Nowcasting_tfrecord
+from utils.tfrecord_shards_for_nowcasting import Nowcasting_tfrecord
 from pathlib import Path
 from RawData.netCDFDataset import NetCDFNowcastingDataset
 
