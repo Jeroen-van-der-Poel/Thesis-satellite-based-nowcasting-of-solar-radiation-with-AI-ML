@@ -15,7 +15,6 @@ class NetCDFNowcastingDataset(Dataset):
         self.width = width
         self.file_paths, self.timestamps = self._load_all_files_sorted()
         self.valid_indices = self._filter_valid_indices()
-        self.cache = {}
 
     def _load_all_files_sorted(self):
         paths, times = [], []
@@ -71,23 +70,22 @@ class NetCDFNowcastingDataset(Dataset):
         return len(self.valid_indices)
 
     def __getitem__(self, i):
-        if i not in self.cache:
-            idx = self.valid_indices[i]
-            x = np.zeros((self.x_frames, self.height, self.width), dtype=np.float32)
-            y = np.zeros((self.y_frames, self.height, self.width), dtype=np.float32)
-            for j in range(self.window):
-                with NetCDF(self.file_paths[idx + j]) as nc:
-                    sds = nc.variables['sds'][0, :, :]
-                    sds_cs = nc.variables['sds_cs'][0, :, :]
-                    sds_cs[sds_cs < 0] = 0
-                    # Transpose to match (height, width) convention
-                    norm = np.clip(sds / sds_cs, 0, 1).T
-                    if j < self.x_frames:
-                        x[j] = norm
-                    else:
-                        y[j - self.x_frames] = norm
-            self.cache[i] = torch.cat([torch.from_numpy(x), torch.from_numpy(y)], dim=0).unsqueeze(-1)
-        return {"vil": self.cache[i]}
+        idx = self.valid_indices[i]
+        x = np.zeros((self.x_frames, self.height, self.width), dtype=np.float32)
+        y = np.zeros((self.y_frames, self.height, self.width), dtype=np.float32)
+        for j in range(self.window):
+            with NetCDF(self.file_paths[idx + j]) as nc:
+                sds = nc.variables['sds'][0, :, :]
+                sds_cs = nc.variables['sds_cs'][0, :, :]
+                sds_cs[sds_cs < 0] = 0
+                # Transpose to match (height, width) convention
+                norm = np.clip(sds / sds_cs, 0, 1).T
+                if j < self.x_frames:
+                    x[j] = norm
+                else:
+                    y[j - self.x_frames] = norm
+        tensor = torch.cat([torch.from_numpy(x), torch.from_numpy(y)], dim=0).unsqueeze(-1)
+        return {"vil": tensor}
 
     def count_valid_samples(self):
         print(f"Total valid samples: {len(self.valid_indices)}")

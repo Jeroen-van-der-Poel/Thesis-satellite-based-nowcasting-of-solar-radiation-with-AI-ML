@@ -9,7 +9,7 @@ from torch.utils.data import Subset, random_split
 from RawData.netCDFDataset import NetCDFNowcastingDataset
 
 class NetCDFLightningDataModule(pl.LightningDataModule):
-    def __init__(self, train_path, test_path, batch_size=8, num_workers=14):
+    def __init__(self, train_path, test_path, batch_size=8, num_workers=8):
         super().__init__()
         self.train_path = train_path
         self.test_path = test_path
@@ -39,10 +39,10 @@ class NetCDFLightningDataModule(pl.LightningDataModule):
             print(f"Loaded {len(self.test_dataset)} samples for testing.")
 
     def train_dataloader(self):
-        return DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=self.num_workers, pin_memory=True)
+        return DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=self.num_workers, pin_memory=False)
 
     def val_dataloader(self):
-        return DataLoader(self.val_dataset, batch_size=self.batch_size, shuffle=False, num_workers=self.num_workers, pin_memory=True)
+        return DataLoader(self.val_dataset, batch_size=self.batch_size, shuffle=False, num_workers=self.num_workers, pin_memory=False)
 
     def test_dataloader(self):
-        return DataLoader(self.test_dataset, batch_size=self.batch_size, shuffle=False, num_workers=self.num_workers, pin_memory=True)
+        return DataLoader(self.test_dataset, batch_size=self.batch_size, shuffle=False, num_workers=self.num_workers, pin_memory=False)

@@ -27,7 +27,7 @@ from utils.layout import layout_to_in_out_slice
 from visualization.sevir.sevir_vis_seq import save_example_vis_results
 from cuboid_transformer.cuboid_transformer import CuboidTransformerModel
 #from utils.apex_ddp import ApexDDPStrategy
-
+import psutil
 from netCDFLightningModule import NetCDFLightningDataModule
 from metrics.sevir import SEVIRSkillScore
 
@@ -498,7 +498,7 @@ class CuboidPLModule(pl.LightningModule):
         return int(epoch * num_samples / total_batch_size)
 
     @staticmethod
-    def get_datamodule(dataset_oc, micro_batch_size: int = 1, num_workers: int = 14):
+    def get_datamodule(dataset_oc, micro_batch_size: int = 1, num_workers: int = 8):
         train_path = os.path.expanduser(dataset_oc.get("train_path", "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_train_data/2021"))
         test_path = os.path.expanduser(dataset_oc.get("test_path", "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_test_data/"))
         return NetCDFLightningDataModule(train_path=train_path, test_path=test_path, batch_size=micro_batch_size, num_workers=num_workers)
@@ -527,8 +527,10 @@ class CuboidPLModule(pl.LightningModule):
         output = self.torch_nn_module(in_seq)
         loss = F.mse_loss(output, out_seq)
         return output, loss
+    
 
     def training_step(self, batch, batch_idx):
+        log_memory(prefix=f"Training Step {batch_idx}")
         data_seq = batch['vil'].contiguous()
         x = data_seq[self.in_slice]
         y = data_seq[self.out_slice]
@@ -548,6 +550,7 @@ class CuboidPLModule(pl.LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
+        log_memory(prefix=f"Validation Step {batch_idx}")
         data_seq = batch['vil'].contiguous()
         x = data_seq[self.in_slice]
         y = data_seq[self.out_slice]
@@ -702,6 +705,15 @@ class CuboidPLModule(pl.LightningModule):
                     label=self.oc.logging.logging_prefix,
                     interval_real_time=self.oc.dataset.interval_real_time)
 
+def log_memory(prefix=""):
+    if torch.cuda.is_available():
+        allocated = torch.cuda.memory_allocated() / 1024 ** 2  # MB
+        reserved = torch.cuda.memory_reserved() / 1024 ** 2    # MB
+        print(f"[{prefix}] CUDA Memory - Allocated: {allocated:.2f} MB | Reserved: {reserved:.2f} MB")
+    process = psutil.Process()
+    ram = process.memory_info().rss / 1024 ** 2  # Resident Set Size in MB
+    print(f"[{prefix}] CPU Memory - RSS: {ram:.2f} MB")
+
 def get_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('--save', default='tmp_netcdf', type=str)
@@ -736,7 +748,7 @@ def main():
     dm = CuboidPLModule.get_datamodule(
         dataset_oc=dataset_oc,
         micro_batch_size=micro_batch_size,
-        num_workers=14,)
+        num_workers=8,)
     #dm.prepare_data()
     dm.setup()
     accumulate_grad_batches = total_batch_size // (micro_batch_size * args.gpus)
