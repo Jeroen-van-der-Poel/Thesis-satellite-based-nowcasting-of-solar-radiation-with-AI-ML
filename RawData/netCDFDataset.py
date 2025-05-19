@@ -4,6 +4,7 @@ from netCDF4 import Dataset as NetCDF
 import numpy as np
 import os
 import datetime
+import gc
 
 class NetCDFNowcastingDataset(Dataset):
     def __init__(self, root_dir, window=20, x_frames=4, y_frames=16, height=390, width=256):
@@ -85,7 +86,10 @@ class NetCDFNowcastingDataset(Dataset):
                 else:
                     y[j - self.x_frames] = norm
         tensor = torch.cat([torch.from_numpy(x), torch.from_numpy(y)], dim=0).unsqueeze(-1)
+
         del x, y, norm, sds, sds_cs  # help GC
+        gc.collect()  
+        
         return {"vil": tensor}
 
     def count_valid_samples(self):
