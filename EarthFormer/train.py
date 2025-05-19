@@ -530,7 +530,7 @@ class CuboidPLModule(pl.LightningModule):
     
 
     def training_step(self, batch, batch_idx):
-        log_memory(prefix=f"Training Step {batch_idx}")
+        #log_memory(prefix=f"Training Step {batch_idx}")
         data_seq = batch['vil'].contiguous()
         x = data_seq[self.in_slice]
         y = data_seq[self.out_slice]
@@ -550,7 +550,7 @@ class CuboidPLModule(pl.LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        log_memory(prefix=f"Validation Step {batch_idx}")
+        #log_memory(prefix=f"Validation Step {batch_idx}")
         data_seq = batch['vil'].contiguous()
         x = data_seq[self.in_slice]
         y = data_seq[self.out_slice]

@@ -39,10 +39,10 @@ class NetCDFLightningDataModule(pl.LightningDataModule):
             print(f"Loaded {len(self.test_dataset)} samples for testing.")
 
     def train_dataloader(self):
-        return DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=4, persistent_workers=False, pin_memory=False, multiprocessing_context='fork')
+        return DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=2, persistent_workers=False, pin_memory=False, multiprocessing_context='fork')
 
     def val_dataloader(self):
-        return DataLoader(self.val_dataset, batch_size=self.batch_size, shuffle=False, num_workers=4, persistent_workers=False, pin_memory=False, multiprocessing_context='fork')
+        return DataLoader(self.val_dataset, batch_size=self.batch_size, shuffle=False, num_workers=2, persistent_workers=False, pin_memory=False, multiprocessing_context='fork')
 
     def test_dataloader(self):
-        return DataLoader(self.test_dataset, batch_size=self.batch_size, shuffle=False, num_workers=4, persistent_workers=False, pin_memory=False, multiprocessing_context='fork')
+        return DataLoader(self.test_dataset, batch_size=self.batch_size, shuffle=False, num_workers=2, persistent_workers=False, pin_memory=False, multiprocessing_context='fork')
