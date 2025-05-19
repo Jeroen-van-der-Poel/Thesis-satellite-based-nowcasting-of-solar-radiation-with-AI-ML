@@ -18,7 +18,7 @@ dataset:
   end_date: null
   metrics_mode: "0"
   metrics_list: ['csi', 'pod', 'sucr', 'bias']
-  threshold_list: [0.1, 0.3, 0.5, 0.7, 0.9]
+  threshold_list: [16, 74, 133, 160, 181, 219]
 
 layout:
   in_len: 4

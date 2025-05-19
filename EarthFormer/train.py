@@ -229,7 +229,7 @@ class CuboidPLModule(pl.LightningModule):
         # oc.end_date = None
         oc.metrics_mode = "0"
         oc.metrics_list = ['csi', 'pod', 'sucr', 'bias']
-        oc.threshold_list = [0.1, 0.3, 0.5, 0.7, 0.9]
+        oc.threshold_list = [16, 74, 133, 160, 181, 219]
         return oc
 
     
@@ -704,6 +704,7 @@ class CuboidPLModule(pl.LightningModule):
                     plot_stride=self.oc.vis.plot_stride,
                     label=self.oc.logging.logging_prefix,
                     interval_real_time=self.oc.dataset.interval_real_time)
+                del in_seq, target_seq, pred_seq  # helps GC
 
 def log_memory(prefix=""):
     if torch.cuda.is_available():
