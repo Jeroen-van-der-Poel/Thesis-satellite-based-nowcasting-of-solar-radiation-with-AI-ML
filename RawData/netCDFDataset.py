@@ -32,7 +32,7 @@ class NetCDFNowcastingDataset(Dataset):
                     continue
         sorted_pairs = sorted(zip(times, paths))
         times, paths = zip(*sorted_pairs)
-        return list(paths), list(times)
+        return np.array(paths), np.array(times)
 
     def _filter_valid_indices(self):
         valid = []
@@ -65,7 +65,7 @@ class NetCDFNowcastingDataset(Dataset):
                 continue
 
         print(f"Filtered {len(valid)} valid samples.")
-        return valid
+        return np.array(valid, dtype=np.int32)
 
     def __len__(self):
         return len(self.valid_indices)
@@ -90,6 +90,7 @@ class NetCDFNowcastingDataset(Dataset):
         # Help GC
         del x, y, norm, sds, sds_cs  
         gc.collect()  
+        torch.cuda.empty_cache()
 
         return {"vil": tensor}
 
