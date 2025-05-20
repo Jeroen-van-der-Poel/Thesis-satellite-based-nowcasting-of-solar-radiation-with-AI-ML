@@ -1,6 +1,6 @@
 dataset:
   dataset_name: "netcdf"
-  train_path: "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_train_data/"
+  train_path: "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_train_data/2021/"
   test_path: "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_test_data/"
   img_height: 390
   img_width: 256
