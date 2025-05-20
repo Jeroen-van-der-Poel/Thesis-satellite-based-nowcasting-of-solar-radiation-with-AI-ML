@@ -1,6 +1,6 @@
 dataset:
   dataset_name: "netcdf"
-  train_path: "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_train_data/2021"
+  train_path: "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_train_data/"
   test_path: "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_test_data/"
   img_height: 390
   img_width: 256
@@ -95,7 +95,7 @@ optim:
   save_top_k: 1
 
 logging:
-  logging_prefix: "Cuboid_knmi"
+  logging_prefix: "Cuboid_knmi_1"
   monitor_lr: true
   monitor_device: false
   track_grad_norm: -1
@@ -107,8 +107,8 @@ trainer:
   precision: 32
 
 vis:
-  train_example_data_idx_list: [0]
-  val_example_data_idx_list: [80]
+  train_example_data_idx_list: [0, ]
+  val_example_data_idx_list: [80, ]
   test_example_data_idx_list: [0, 80, 160, 240, 320, 400]
   eval_example_only: false
   plot_stride: 2
