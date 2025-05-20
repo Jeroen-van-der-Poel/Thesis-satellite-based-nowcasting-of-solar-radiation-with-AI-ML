@@ -9,8 +9,8 @@ from torch.utils.data import DataLoader, random_split
 from RawData.netCDFDataset import NetCDFNowcastingDataset
 from tqdm import tqdm
 
-def save_dataset_to_hdf5(dataset, hdf5_path, batch_size=1):
-    loader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=0)
+def save_dataset_to_hdf5(dataset, hdf5_path, batch_size=16):
+    loader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=4)
     total_samples = len(dataset)
     sample_shape = dataset[0]["vil"].shape  # (T, H, W, 1)
 
@@ -33,7 +33,7 @@ def save_dataset_to_hdf5(dataset, hdf5_path, batch_size=1):
 
 
 if __name__ == "__main__":
-    raw_train_path = "/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_train_data/"
+    raw_train_path = "/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_train_data/2021/"
     raw_test_path = "/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_test_data/"
 
     output_train_h5 = "/net/pc200258/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/EarthFormer/Data/train_data/train_data.h5"
