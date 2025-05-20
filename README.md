@@ -3,7 +3,7 @@
 This repository contains code and a data pipeline for experimenting with state-of-the-art deep learning models for short-term solar radiation nowcasting, using geostationary satellite images. It includes implementations and training workflows for both **DGMR-SO** and **Earthformer** architectures.
 
 ## Raw Data Preperation
-Inside the ```/RawData``` folder of this repository, you'll find the script used to prepare the raw satellite data with the region of choice.
+Inside the ```/RawData``` folder of this repository, you'll find the script used to prepare the raw satellite data with the region of choice. Furthermore this folder contains the dataset class used to prepare the rolling windows.
 
 #### msgcpp_reduce_subset.py
 Creates a geographic subset of the original data, focusing on a specific region that includes the Netherlands, Belgium, France, England, and parts of neighboring countries.  
@@ -12,6 +12,14 @@ Usage:
 python msgcpp_reduce_subset.py
 ```
 Once the subset is generated, split it into a training and testing set. For convenience, place them in folders called: ```raw_train_data``` and ```raw_test_data```.
+
+#### netCDFDataset.py
+Defines a custom PyTorch Dataset class (NetCDFNowcastingDataset) for loading and preprocessing satellite data stored in NetCDF files. This dataset creates sliding temporal windows of input and target frames for nowcasting tasks.  
+Main features:
+ - Loads time-sequenced NetCDF files sorted by timestamp.
+ - Automatically filters out invalid samples (files with too many dark pixels or broken time intervals).
+ - Returns data in the shape required for model input: a concatenated tensor of input and target sequences.
+
 
 ## DGMR-SO 
 DGMR-SO is an adapted version of the Deep Generative Model for Radar (DGMR) by Google DeepMind, tailored for satellite-based **Surface Solar Irradiance (SSI)** nowcasting. Instead of radar data, this implementation uses geostationary satellite imagery from the SEVIRI instrument aboard the Meteosat-11 satellite, normalized to represent clear-sky index for improved stability. The task is to predict the next 4 hours (16 future timesteps) of SSI based on the past 1 hour (4 timesteps) using rolling windows.
@@ -37,17 +45,10 @@ After these steps you should be able the execute the next steps.
 
 ### Data preperation
 
-#### Step 1. Data processing
-The first step is transforming the raw NetCDF (.nc) satellite files into .tfrecords, a format compatible with DGMR-SO and EarthFormer.
-
 ##### data_preperation_to_tfr.py
-Converts the subset .nc files into TFRecord format.
-- Uses sliding windows of 20 frames: 4 past frames and 16 future frames.
-- Removes windows if:
-     - Any of the first 8 frames contain more than 50% darkness (e.g., night).
-     - The time sequence is incomplete (e.g., due to missing files).
-- Normalizes satellite radiation values using clear-sky radiation (SDS / SDS_CS).
-- Requires the helper file tfrecord_shards_for_nowcasting.py. his file is custom made to create TFRecords which are suitable for nowcasting.  
+Converts the subset .nc files into TFRecord format, using the NetCDFNowcastingDataset class.
+- Requires the helper file tfrecord_shards_for_nowcasting.py. This file is custom made to create TFRecords which are suitable for nowcasting.
+- Creates a 80/20 split for the train and validation dataset.  
 
 Usage:
 ```
@@ -55,32 +56,14 @@ python data_preperation_tfr.py
 ```
 Update the script with the correct input/output paths and match the height and width to your selected geographic region.
 
-##### select_val_split.py
-Splits the training data into training and validation sets using an 80/20 random split. Before execution, make sure the paths are correclty defined.  
-Usage:
-```
-python select_val_split.py
-```
-The TFRecord files should now be organized in the folders: ```train_data```, ```val_data``` and ```test_data``` in the ```/Data``` folder.
-
-#### Step 2. Data quality control 
-These scripts validate the integrity and usability of the generated TFRecords and check for any remaining data issues.
-
-##### data_control.py
-- Compares the number of raw .nc samples to the number of generated TFRecords.
-- Calculates the total dataset size in GB.
-- Verifies normalization steps were correctly applied.
-
-Usage:
-```
-python data_control.py
-```
-
 ##### check_tfrecords.py
-- Confirms none of the TFRecords are corrupted.
-- Includes helper functions to:
-     - Count how many samples have >50% darkness.
-     - Check if any remaining samples contain invalid frames in the first 8 time steps.
+A diagnostic and data validation script for checking the integrity and quality of the datasets stored in TFRecord format.  
+This script performs the following:
+- File corruption detection. 
+- Dark frame analysis. Checks the first 8 frames (4 input + 4 target) of each sample for excessively dark pixels.
+- NaN/Inf/all-zero detection.
+- Shape validation.
+- Pixel distribution histogram.
  
 Usage:  
 ```
@@ -90,10 +73,10 @@ python check_tfrecord.py
 #### Step 3. Data augmentation
 After the data processing and quality control, the ```data_pipleine.py``` file is eventually used by the models to make use of the TFRecord datasets. 
 It performs:
-- Random cropping
-- Flipping (horizontal & vertical)
-- Normalization
-- Any other augmentations described in the report
+- Random cropping.
+- Flipping (horizontal & vertical).
+- Normalization.
+- Any other augmentations described in the report.
 
 ### Training
 Before training an instance of DGMR-SO, make sure the train, validation and test sets are in designated folders in the /Data directory. Furthermore, make sure you are in the DGMR-SO directory and have created an virtual environment desribed in the section above.    
@@ -106,7 +89,7 @@ Or on EUMETSAT:
 sudo -E /home/'user'/miniforge3/envs/dgmr_env/bin/python3 train.py
 ```
 
-This command will execute the full training process for 500.000 steps (or otherwise defined in the train.yml). There is a high change the full 500.00 steps are not necessary. We recommend the use of tensorbaord to watch and evaluate the training process closely.  
+This command will execute the full training process for 500.000 steps (or otherwise defined in the train.yml). There is a high change the full 500.00 steps are not necessary. We recommend the use of tensorboard to watch and evaluate the training process closely.  
 When working on a EUMETSAT Virtual Machine and you wat to run tensorboard locally, make sure you connect to the VM as follows:  
 ```
 ssh -L 6006:localhost:6006 'user'@'IP_of_VM'
@@ -116,10 +99,8 @@ When connected succesfully run the following command to load and view tensorboar
 tensorboard --logdir='directory_to_train_logs' --port=6006 --host=localhost
 ```
 
-### Inference
-
 ## EarthFormer
-Earthformer is a space-time transformer architecture designed for Earth system forecasting tasks, such as weather nowcasting and precipitation prediction. Unlike traditional CNN or ConvLSTM-based models, Earthformer leverages spatiotemporal attention mechanisms to effectively capture both short- and long-range dependencies across space and time. The transformer Utilizes axial attention and factorized self-attention to reduce complexity while preserving global context. In this project, Earthformer is adapted to nowcast Surface Solar Irradiance (SSI) using satellite-derived input data.
+EarthFormer is a space-time transformer architecture designed for Earth system forecasting tasks, such as weather nowcasting and precipitation prediction. Unlike traditional CNN or ConvLSTM-based models, EarthFormer leverages spatiotemporal attention mechanisms to effectively capture both short- and long-range dependencies across space and time. The transformer Utilizes axial attention and factorized self-attention to reduce complexity while preserving global context. In this project, EarthFormer is adapted to nowcast Surface Solar Irradiance (SSI) using satellite-derived input data.
 
 The original paper: https://www.amazon.science/publications/earthformer-exploring-space-time-transformers-for-earth-system-forecasting
 
@@ -140,3 +121,12 @@ For Virtual Machine on EUMETSAT, follow these steps: https://confluence.ecmwf.in
 After these steps you should be able the execute the next steps.
 
 ### Training
+Before training an instance of EarthFormer, make sure the train, validation and test sets are in designated folders in the /Data directory. Furthermore, make sure you are in the EarthFormer directory and have created an virtual environment desribed in the section above.    
+Afterwards typ the following command in the console: 
+```
+python train.py
+```
+Or on EUMETSAT: 
+```
+sudo -E /home/'user'/miniforge3/envs/ef_env/bin/python3 train.py
+```
