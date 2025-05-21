@@ -24,7 +24,7 @@ def save_dataset_to_hdf5(dataset, hdf5_path, batch_size=16):
         idx = 0
         with torch.no_grad():
             for batch in tqdm(loader, desc=f"Saving to {os.path.basename(hdf5_path)}"):
-                data = batch["vil"].numpy()
+                data = batch.numpy()
                 for i in range(data.shape[0]):
                     dset[idx] = data[i]
                     idx += 1

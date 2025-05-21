@@ -579,7 +579,6 @@ class CuboidPLModule(pl.LightningModule):
         return None
 
     def on_validation_epoch_end(self, outputs=None):
-        print("[DEBUG] on_validation_epoch_end triggered")
         valid_mse = self.valid_mse.compute()
         valid_mae = self.valid_mae.compute()
         self.log('valid_frame_mse_epoch', valid_mse,
@@ -589,6 +588,7 @@ class CuboidPLModule(pl.LightningModule):
         self.valid_mse.reset()
         self.valid_mae.reset()
         valid_score = self.valid_score.compute()
+        print("CSI value used for valid_loss_epoch:", valid_score["avg"].get("csi"))
         self.log("valid_loss_epoch", -valid_score["avg"]["csi"],
                  prog_bar=True, on_step=False, on_epoch=True)
         self.log_score_epoch_end(score_dict=valid_score, mode="val")
