@@ -546,7 +546,7 @@ class CuboidPLModule(pl.LightningModule):
             pred_seq=y_hat,
             mode="train"
         )
-        self.log('train_loss', loss, on_step=False, on_epoch=True)
+        self.log('train_loss', loss, on_step=True, on_epoch=False)
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -573,12 +573,13 @@ class CuboidPLModule(pl.LightningModule):
             step_mae = self.valid_mae(y_hat, y)
             self.valid_score.update(y_hat, y)
             self.log('valid_frame_mse_step', step_mse,
-                     prog_bar=True, on_step=False, on_epoch=True)
+                     prog_bar=True, on_step=True, on_epoch=False)
             self.log('valid_frame_mae_step', step_mae,
-                     prog_bar=True, on_step=False, on_epoch=True)
+                     prog_bar=True, on_step=True, on_epoch=False)
         return None
 
     def on_validation_epoch_end(self, outputs=None):
+        print("[DEBUG] on_validation_epoch_end triggered")
         valid_mse = self.valid_mse.compute()
         valid_mae = self.valid_mae.compute()
         self.log('valid_frame_mse_epoch', valid_mse,
@@ -752,6 +753,8 @@ def main():
         num_workers=0,)
     #dm.prepare_data()
     dm.setup()
+    print(f"Train samples: {dm.num_train_samples}")
+    print(dm.train_dataloader().dataset.__len__())
     accumulate_grad_batches = total_batch_size // (micro_batch_size * args.gpus)
     total_num_steps = CuboidPLModule.get_total_num_steps(
         epoch=max_epochs,
@@ -765,7 +768,7 @@ def main():
     trainer_kwargs = pl_module.set_trainer_kwargs(
         devices=args.gpus,
         accumulate_grad_batches=accumulate_grad_batches,
-        precision="16-mixed",
+        precision="32",
     )
     trainer = Trainer(**trainer_kwargs)
     if args.pretrained:
