@@ -26,11 +26,8 @@ from utils.checkpoint import pl_ckpt_to_pytorch_state_dict, s3_download_pretrain
 from utils.layout import layout_to_in_out_slice
 from visualization.sevir.sevir_vis_seq import save_example_vis_results
 from cuboid_transformer.cuboid_transformer import CuboidTransformerModel
-#from utils.apex_ddp import ApexDDPStrategy
 import psutil
 from netCDFLightningModule import NetCDFLightningDataModule
-from metrics.sevir import SEVIRSkillScore
-
 
 torch.set_float32_matmul_precision('medium')
 print(torch.get_float32_matmul_precision())
@@ -164,22 +161,8 @@ class CuboidPLModule(pl.LightningModule):
         self.metrics_mode = oc.dataset.metrics_mode
         self.valid_mse = torchmetrics.MeanSquaredError()
         self.valid_mae = torchmetrics.MeanAbsoluteError()
-        self.valid_score = SEVIRSkillScore(
-            mode=self.metrics_mode,
-            seq_len=self.out_len,
-            layout=self.layout,
-            threshold_list=self.threshold_list,
-            metrics_list=self.metrics_list,
-            eps=1e-4,)
         self.test_mse = torchmetrics.MeanSquaredError()
         self.test_mae = torchmetrics.MeanAbsoluteError()
-        self.test_score = SEVIRSkillScore(
-            mode=self.metrics_mode,
-            seq_len=self.out_len,
-            layout=self.layout,
-            threshold_list=self.threshold_list,
-            metrics_list=self.metrics_list,
-            eps=1e-4,)
 
     def configure_save(self, cfg_file_path=None):
         self.save_dir = os.path.join(exps_dir, self.save_dir)
@@ -218,18 +201,12 @@ class CuboidPLModule(pl.LightningModule):
         oc.in_len = 4
         oc.out_len = 16
         oc.seq_len = 20
-        oc.plot_stride = 2
+        oc.plot_stride = 1
         oc.interval_real_time = 15
         oc.sample_mode = "sequent"
         oc.stride = oc.out_len
         oc.layout = "NTHWC"
-        # oc.start_date = None
-        # oc.train_val_split_date = None
-        # oc.train_test_split_date = None
-        # oc.end_date = None
         oc.metrics_mode = "0"
-        oc.metrics_list = ['csi', 'pod', 'sucr', 'bias']
-        oc.threshold_list = [16, 74, 133, 160, 181, 219]
         return oc
 
     

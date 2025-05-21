@@ -7,7 +7,7 @@ dataset:
   in_len: 4
   out_len: 16
   seq_len: 20
-  plot_stride: 2
+  plot_stride: 1
   interval_real_time: 15
   sample_mode: "sequent"
   stride: 16
@@ -17,8 +17,6 @@ dataset:
   train_test_split_date: null
   end_date: null
   metrics_mode: "0"
-  metrics_list: ['csi', 'pod', 'sucr', 'bias']
-  threshold_list: [16, 74, 133, 160, 181, 219]
 
 layout:
   in_len: 4
