@@ -92,7 +92,7 @@ class NetCDFNowcastingDataset(Dataset):
         gc.collect()  
         torch.cuda.empty_cache()
 
-        return {"vil": tensor}
+        return tensor
 
     def count_valid_samples(self):
         print(f"Total valid samples: {len(self.valid_indices)}")

@@ -531,7 +531,7 @@ class CuboidPLModule(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         #log_memory(prefix=f"Training Step {batch_idx}")
-        data_seq = batch['vil'].contiguous()
+        data_seq = batch.contiguous()
         x = data_seq[self.in_slice]
         y = data_seq[self.out_slice]
         if batch_idx == 0:
@@ -551,7 +551,7 @@ class CuboidPLModule(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         #log_memory(prefix=f"Validation Step {batch_idx}")
-        data_seq = batch['vil'].contiguous()
+        data_seq = batch.contiguous()
         x = data_seq[self.in_slice]
         y = data_seq[self.out_slice]
         micro_batch_size = x.shape[self.layout.find("N")]
@@ -598,7 +598,7 @@ class CuboidPLModule(pl.LightningModule):
                                   mode="val")
 
     def test_step(self, batch, batch_idx):
-        data_seq = batch['vil'].contiguous()
+        data_seq = batch.contiguous()
         x = data_seq[self.in_slice]
         y = data_seq[self.out_slice]
         micro_batch_size = x.shape[self.layout.find("N")]
