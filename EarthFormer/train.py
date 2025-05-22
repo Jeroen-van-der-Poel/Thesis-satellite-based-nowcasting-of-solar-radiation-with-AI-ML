@@ -415,7 +415,7 @@ class CuboidPLModule(pl.LightningModule):
                                         mode=self.oc.optim.early_stop_mode), ]
 
         logger = kwargs.pop("logger", [])
-        tb_logger = pl_loggers.TensorBoardLogger(save_dir=self.save_dir)
+        tb_logger = pl_loggers.TensorBoardLogger(save_dir=self.save_dir, default_hp_metric=False)
         csv_logger = pl_loggers.CSVLogger(save_dir=self.save_dir)
         logger += [tb_logger, csv_logger]
         if self.oc.logging.use_wandb:
