@@ -392,7 +392,7 @@ class CuboidPLModule(pl.LightningModule):
         Default kwargs used when initializing pl.Trainer
         """
         checkpoint_callback = ModelCheckpoint(
-            monitor="valid_loss_epoch",
+            monitor="valid_frame_mse_epoch",
             dirpath=os.path.join(self.save_dir, "checkpoints"),
             filename="model-{epoch:03d}",
             save_top_k=self.oc.optim.save_top_k,
@@ -409,7 +409,7 @@ class CuboidPLModule(pl.LightningModule):
         if self.oc.logging.monitor_device:
             callbacks += [DeviceStatsMonitor(), ]
         if self.oc.optim.early_stop:
-            callbacks += [EarlyStopping(monitor="valid_loss_epoch",
+            callbacks += [EarlyStopping(monitor="valid_frame_mse_epoch",
                                         min_delta=0.0,
                                         patience=self.oc.optim.early_stop_patience,
                                         verbose=False,
@@ -544,7 +544,6 @@ class CuboidPLModule(pl.LightningModule):
             y = y.contiguous()
             step_mse = self.valid_mse(y_hat, y)
             step_mae = self.valid_mae(y_hat, y)
-            self.valid_score.update(y_hat, y)
             self.log('valid_frame_mse_step', step_mse,
                      prog_bar=True, on_step=True, on_epoch=False)
             self.log('valid_frame_mae_step', step_mae,
@@ -560,15 +559,7 @@ class CuboidPLModule(pl.LightningModule):
                  prog_bar=True, on_step=False, on_epoch=True)
         self.valid_mse.reset()
         self.valid_mae.reset()
-        valid_score = self.valid_score.compute()
-        print("CSI value used for valid_loss_epoch:", valid_score["avg"].get("csi"))
-        self.log("valid_loss_epoch", -valid_score["avg"]["csi"],
-                 prog_bar=True, on_step=False, on_epoch=True)
-        self.valid_score.reset()
-        self.save_score_epoch_end(score_dict=valid_score,
-                                  mse=valid_mse,
-                                  mae=valid_mae,
-                                  mode="val")
+        self.save_score_epoch_end(mse=valid_mse, mae=valid_mae, mode="val")
 
     def test_step(self, batch, batch_idx):
         data_seq = batch.contiguous()
@@ -589,7 +580,6 @@ class CuboidPLModule(pl.LightningModule):
                 y_hat = y_hat.float()
             step_mse = self.test_mse(y_hat.contiguous(), y.contiguous())
             step_mae = self.test_mae(y_hat.contiguous(), y.contiguous())
-            self.test_score.update(y_hat.contiguous(), y.contiguous())
             self.log('test_frame_mse_step', step_mse,
                      prog_bar=True, on_step=True, on_epoch=False)
             self.log('test_frame_mae_step', step_mae,
@@ -605,28 +595,19 @@ class CuboidPLModule(pl.LightningModule):
                  prog_bar=True, on_step=False, on_epoch=True)
         self.test_mse.reset()
         self.test_mae.reset()
-        test_score = self.test_score.compute()
-        self.test_score.reset()
-        self.save_score_epoch_end(score_dict=test_score,
-                                  mse=test_mse,
-                                  mae=test_mae,
-                                  mode="test")
+        self.save_score_epoch_end(mse=test_mse, mae=test_mae, mode="test")
 
-
-    def save_score_epoch_end(self,
-                             score_dict: Dict,
-                             mse: Union[np.ndarray, float],
-                             mae: Union[np.ndarray, float],
-                             mode: str = "val"):
+    def save_score_epoch_end(self, mse: Union[np.ndarray, float], mae: Union[np.ndarray, float], mode: str = "val"):
         assert mode in ["val", "test"], f"Wrong mode {mode}. Must be 'val' or 'test'."
         if self.local_rank == 0:
-            save_dict = deepcopy(score_dict)
-            save_dict.update(dict(mse=mse, mae=mae))
+            save_dict = {
+                "mse": mse,
+                "mae": mae
+            }
             if self.scores_dir is not None:
                 save_path = os.path.join(self.scores_dir, f"{mode}_results_epoch_{self.current_epoch}.pkl")
-                f = open(save_path, 'wb')
-                pickle.dump(save_dict, f)
-                f.close()
+                with open(save_path, 'wb') as f:
+                    pickle.dump(save_dict, f)
 
     def save_vis_step_end(
             self,
