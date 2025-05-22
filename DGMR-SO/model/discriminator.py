@@ -162,7 +162,7 @@ class SpatialDiscriminator(snt.Module):
         output = tf.reshape(output, [b, n, 1])
         output = tf.reduce_sum(output, keepdims=True, axis=1)
 
-        return output
+        return tf.cast(output, tf.float32)
 
 class TemporalDiscriminator(snt.Module):
     """Temporal Discriminator."""
@@ -223,4 +223,4 @@ class TemporalDiscriminator(snt.Module):
         output = tf.reshape(output, [b, t, 1])
         scores = tf.reduce_sum(output, keepdims=True, axis=1)
 
-        return scores
+        return tf.cast(scores, tf.float32)

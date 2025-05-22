@@ -1,10 +1,10 @@
-# import sonnet as snt
 import tensorflow as tf
 from model.generator import Generator
 from model.discriminator import Discriminator
 import numpy as np
 import time
 import datetime
+from sonnet.src import mixed_precision as mp
 
 class DGMR(tf.keras.Model):
     def __init__(self, lead_time=240, time_delta=15) -> None:
@@ -12,7 +12,9 @@ class DGMR(tf.keras.Model):
         self.strategy = None
         self.global_step = 0
         self.generator_obj = Generator(lead_time=lead_time, time_delta=time_delta)
+        self.generator_obj.__call__ = mp.modes([tf.float32, tf.float16])(self.generator_obj.__call__)
         self.discriminator_obj = Discriminator()
+        self.discriminator_obj.__call__ = mp.modes([tf.float32, tf.float16])(self.discriminator_obj.__call__)
         self.crop_height = 256
         self.crop_width = 256
 
