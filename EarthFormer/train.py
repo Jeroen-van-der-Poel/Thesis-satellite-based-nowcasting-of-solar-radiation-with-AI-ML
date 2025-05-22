@@ -433,7 +433,7 @@ class CuboidPLModule(pl.LightningModule):
             # save
             default_root_dir=self.save_dir,
             accelerator="gpu",
-            strategy="ddp",
+            strategy="auto",
             # optimization
             max_epochs=self.oc.optim.max_epochs,
             check_val_every_n_epoch=self.oc.trainer.check_val_every_n_epoch,
