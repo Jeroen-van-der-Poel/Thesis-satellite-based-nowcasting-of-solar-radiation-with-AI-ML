@@ -80,7 +80,7 @@ class LBlock(snt.Module):
             sc = inputs
 
         # Residual connection.
-        return h2 + sc
+        return tf.cast(h2 + sc, tf.float16)
 
 def attention_einsum(q, k, v):
     """Apply the attention operator to tensors of shape [h, w, c]."""
