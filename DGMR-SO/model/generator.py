@@ -162,7 +162,7 @@ class Sampler(snt.Module):
         # activation
         hs = [tf.nn.sigmoid(h) for h in hs]
 
-        return tf.cast(tf.stack(hs, axis=1), tf.float32)
+        return tf.cast(tf.stack(hs, axis=1), tf.float16)
 
 class GBlock(snt.Module):
     """Residual generator block without upsampling."""
