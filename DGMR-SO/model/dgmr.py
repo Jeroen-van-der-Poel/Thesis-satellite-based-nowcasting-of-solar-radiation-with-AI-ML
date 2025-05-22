@@ -15,8 +15,8 @@ class DGMR(tf.keras.Model):
         self.generator_obj.__call__ = mp.modes([tf.float32, tf.float16])(self.generator_obj.__call__)
         self.discriminator_obj = Discriminator()
         self.discriminator_obj.__call__ = mp.modes([tf.float32, tf.float16])(self.discriminator_obj.__call__)
-        self.crop_height = 256
-        self.crop_width = 256
+        self.crop_height = 128
+        self.crop_width = 128
 
     @tf.function
     def __call__(self, tensor, is_training=False):
