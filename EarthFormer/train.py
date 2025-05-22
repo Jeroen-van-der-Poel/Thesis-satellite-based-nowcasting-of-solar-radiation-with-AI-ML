@@ -156,9 +156,6 @@ class CuboidPLModule(pl.LightningModule):
 
         self.configure_save(cfg_file_path=oc_file)
         # evaluation
-        self.metrics_list = oc.dataset.metrics_list
-        self.threshold_list = oc.dataset.threshold_list
-        self.metrics_mode = oc.dataset.metrics_mode
         self.valid_mse = torchmetrics.MeanSquaredError()
         self.valid_mae = torchmetrics.MeanAbsoluteError()
         self.test_mse = torchmetrics.MeanSquaredError()
@@ -206,7 +203,6 @@ class CuboidPLModule(pl.LightningModule):
         oc.sample_mode = "sequent"
         oc.stride = oc.out_len
         oc.layout = "NTHWC"
-        oc.metrics_mode = "0"
         return oc
 
     
@@ -568,7 +564,6 @@ class CuboidPLModule(pl.LightningModule):
         print("CSI value used for valid_loss_epoch:", valid_score["avg"].get("csi"))
         self.log("valid_loss_epoch", -valid_score["avg"]["csi"],
                  prog_bar=True, on_step=False, on_epoch=True)
-        self.log_score_epoch_end(score_dict=valid_score, mode="val")
         self.valid_score.reset()
         self.save_score_epoch_end(score_dict=valid_score,
                                   mse=valid_mse,
@@ -611,28 +606,12 @@ class CuboidPLModule(pl.LightningModule):
         self.test_mse.reset()
         self.test_mae.reset()
         test_score = self.test_score.compute()
-        self.log_score_epoch_end(score_dict=test_score, mode="test")
         self.test_score.reset()
         self.save_score_epoch_end(score_dict=test_score,
                                   mse=test_mse,
                                   mae=test_mae,
                                   mode="test")
 
-    def log_score_epoch_end(self, score_dict: Dict, mode: str = "val"):
-        if mode == "val":
-            log_mode_prefix = "valid"
-        elif mode == "test":
-            log_mode_prefix = "test"
-        else:
-            raise ValueError(f"Wrong mode {mode}. Must be 'val' or 'test'.")
-        for metrics in self.metrics_list:
-            for thresh in self.threshold_list:
-                score_mean = np.mean(score_dict[thresh][metrics]).item()
-                self.log(f"{log_mode_prefix}_{metrics}_{thresh}_epoch", score_mean)
-            score_avg_mean = score_dict.get("avg", None)
-            if score_avg_mean is not None:
-                score_avg_mean = np.mean(score_avg_mean[metrics]).item()
-                self.log(f"{log_mode_prefix}_{metrics}_avg_epoch", score_avg_mean)
 
     def save_score_epoch_end(self,
                              score_dict: Dict,
