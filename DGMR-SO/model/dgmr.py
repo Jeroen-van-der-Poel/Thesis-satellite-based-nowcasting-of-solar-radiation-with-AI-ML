@@ -63,6 +63,15 @@ class DGMR(tf.keras.Model):
             batch_inputs3, batch_targets3 = self.random_crop_images(batch_inputs3, batch_targets3, self.crop_height, self.crop_width)
             batch_inputs4, batch_targets4 = self.random_crop_images(batch_inputs4, batch_targets4, self.crop_height, self.crop_width)
 
+            batch_inputs1 = tf.cast(batch_inputs1, tf.float16)
+            batch_targets1 = tf.cast(batch_targets1, tf.float16)
+            batch_inputs2 = tf.cast(batch_inputs2, tf.float16)
+            batch_targets2 = tf.cast(batch_targets2, tf.float16)
+            batch_inputs3 = tf.cast(batch_inputs3, tf.float16)
+            batch_targets3 = tf.cast(batch_targets3, tf.float16)
+            batch_inputs4 = tf.cast(batch_inputs4, tf.float16)
+            batch_targets4 = tf.cast(batch_targets4, tf.float16)
+
             temp_time = time.time()
 
             gen_loss, disc_loss = self.train_step(
@@ -80,6 +89,11 @@ class DGMR(tf.keras.Model):
 
                 val_input, val_target = self.random_crop_images(val_input1, val_target1, self.crop_height, self.crop_width)
                 input, target = self.random_crop_images(val_input2, val_target2, self.crop_height, self.crop_width)
+
+                val_input = tf.cast(val_input, tf.float16)
+                val_target = tf.cast(val_target, tf.float16)
+                input = tf.cast(input, tf.float16)
+                target = tf.cast(target, tf.float16)
 
                 val_gen_loss, val_disc_loss = self.val_step(val_input, val_target, label1, input, target, label2)
                 tf.print("val_gen_loss", val_gen_loss, "val_disc_loss", val_disc_loss)
@@ -115,6 +129,9 @@ class DGMR(tf.keras.Model):
                     val_input1, val_target1, label1 = next(dataset_val_eva)
                     val_target1 = val_target1[:, :, :, :, :]
                     val_input, val_target = self.random_crop_images(val_input1, val_target1, self.crop_height, self.crop_width)
+                    
+                    val_input = tf.cast(val_input, tf.float16)
+                    val_target = tf.cast(val_target, tf.float16)
 
                     targets_1,input1, target_8, input8, target_16, input16, obv_img, pred_img = self.data_process(val_input[:], val_target[:])
                     if len(target_8) == 0 or len(input8) == 0 or len(target_16) == 0 or len(input16) == 0 or len(input1) == 0 or len(targets_1) == 0:
