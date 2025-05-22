@@ -15,8 +15,8 @@ class DGMR(tf.keras.Model):
         self.generator_obj.__call__ = mp.modes([tf.float32, tf.float16])(self.generator_obj.__call__)
         self.discriminator_obj = Discriminator()
         self.discriminator_obj.__call__ = mp.modes([tf.float32, tf.float16])(self.discriminator_obj.__call__)
-        self.crop_height = 128
-        self.crop_width = 128
+        self.crop_height = 256
+        self.crop_width = 256
 
     @tf.function
     def __call__(self, tensor, is_training=False):
@@ -365,9 +365,6 @@ class DGMR(tf.keras.Model):
 
             disc_loss = self.disc_step(batch_inputs4, batch_targets4, targ_mask4)
             gen_loss = self.gen_step(batch_inputs4, batch_targets4, targ_mask4)
-
-            gen_loss = tf.cast(gen_loss, tf.float32)
-            disc_loss = tf.cast(disc_loss, tf.float32)
 
             tf.print("Debugging: total_gen_loss -> ", gen_loss)
             tf.print("Debugging: total_disc_loss -> ", disc_loss)
