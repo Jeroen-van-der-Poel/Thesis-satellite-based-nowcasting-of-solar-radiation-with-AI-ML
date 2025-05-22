@@ -336,6 +336,7 @@ class DGMR(tf.keras.Model):
         num_samples_per_input = 1  # FIXME it was 6.
         gen_samples = [self.generator_obj(batch_inputs, is_training=is_training) for _ in range(num_samples_per_input)]
         gen_samples = [tf.cast(x, tf.float16) for x in gen_samples]
+
         batch_inputs = tf.cast(batch_inputs, tf.float16)
         batch_targets = tf.cast(batch_targets, tf.float16)
 
@@ -377,10 +378,13 @@ class DGMR(tf.keras.Model):
 
     def disc_step(self, batch_inputs, batch_targets, targ_mask, is_training=True):
         #tf.print("Debugging: disc_step: ", "Disc step has started", str(datetime.datetime.now()))
-        batch_inputs = tf.cast(batch_inputs, tf.float16)
-        batch_targets = tf.cast(batch_targets, tf.float16)
         with tf.GradientTape() as disc_tape:
+            batch_inputs = tf.cast(batch_inputs, tf.float16)
+            batch_targets = tf.cast(batch_targets, tf.float16)
+
             batch_predictions = self.generator_obj(batch_inputs, is_training=is_training)
+            batch_predictions = tf.cast(batch_predictions, tf.float16)
+
             gen_sequence = tf.concat([batch_inputs[..., :1], batch_predictions], axis=1)
             real_sequence = tf.concat([batch_inputs[..., :1], batch_targets], axis=1)
             concat_inputs = tf.concat([real_sequence, gen_sequence], axis=0)
@@ -395,9 +399,10 @@ class DGMR(tf.keras.Model):
         return disc_loss
 
     def gen_step(self, batch_inputs, batch_targets, targ_mask, is_training=True):
-        batch_inputs = tf.cast(batch_inputs, tf.float16)
-        batch_targets = tf.cast(batch_targets, tf.float16)
         with tf.GradientTape() as gen_tape:
+            batch_inputs = tf.cast(batch_inputs, tf.float16)
+            batch_targets = tf.cast(batch_targets, tf.float16)
+
             num_samples_per_input = 1  # FIXME it was 6.
             gen_samples = [tf.cast(self.generator_obj(batch_inputs, is_training=is_training), tf.float16) 
                            for _ in range(num_samples_per_input)]
