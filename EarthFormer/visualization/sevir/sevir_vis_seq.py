@@ -158,7 +158,7 @@ def visualize_result(
 def save_example_vis_results(
         save_dir, save_prefix, in_seq, target_seq, pred_seq, label,
         layout='NHWT', interval_real_time: float = 10.0, idx=0,
-        plot_stride=2, fs=10, norm=None):
+        plot_stride=2, fs=10, norm=None, vis_hits_misses_fas=True):
     """
     Parameters
     ----------
@@ -178,7 +178,7 @@ def save_example_vis_results(
     fig, ax = visualize_result(
         in_seq=in_seq, target_seq=target_seq, pred_seq_list=[pred_seq,],
         label_list=[label, ], interval_real_time=interval_real_time, idx=idx,
-        plot_stride=plot_stride, fs=fs, norm=norm)
+        plot_stride=plot_stride, fs=fs, norm=norm, vis_hits_misses_fas=vis_hits_misses_fas)
     plt.savefig(fig_path)
     plt.close(fig)
     plt.close('all')

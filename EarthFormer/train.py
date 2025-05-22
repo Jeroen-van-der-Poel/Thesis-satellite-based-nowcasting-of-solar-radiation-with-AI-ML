@@ -1,23 +1,21 @@
 import warnings
-from typing import Union, Dict
+from typing import Union
 from shutil import copyfile
-from copy import deepcopy
+import os
+import argparse
 import inspect
 import pickle
 import numpy as np
 import torch
+import torchmetrics
 from torch import nn
 from torch.nn import functional as F
 from torch.optim.lr_scheduler import LambdaLR, CosineAnnealingLR
-import torchmetrics
 import pytorch_lightning as pl
 from pytorch_lightning import loggers as pl_loggers
 from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor, DeviceStatsMonitor, Callback
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from omegaconf import OmegaConf
-import os
-import argparse
-from einops import rearrange
 from pytorch_lightning import Trainer, seed_everything
 from config import cfg
 from utils.optim import SequentialLR, warmup_lambda
@@ -26,8 +24,8 @@ from utils.checkpoint import pl_ckpt_to_pytorch_state_dict, s3_download_pretrain
 from utils.layout import layout_to_in_out_slice
 from visualization.sevir.sevir_vis_seq import save_example_vis_results
 from cuboid_transformer.cuboid_transformer import CuboidTransformerModel
-import psutil
 from netCDFLightningModule import NetCDFLightningDataModule
+import psutil
 
 torch.set_float32_matmul_precision('medium')
 print(torch.get_float32_matmul_precision())
@@ -337,6 +335,7 @@ class CuboidPLModule(pl.LightningModule):
         oc.test_example_data_idx_list = [0, 80, 160, 240, 320, 400]
         oc.eval_example_only = False
         oc.plot_stride = dataset_oc.plot_stride
+        oc.plot_hit_miss = False
         return oc
 
     def configure_optimizers(self):
@@ -431,14 +430,10 @@ class CuboidPLModule(pl.LightningModule):
             # log
             logger=logger,
             log_every_n_steps=log_every_n_steps,
-            #track_grad_norm=self.oc.logging.track_grad_norm,
             # save
             default_root_dir=self.save_dir,
-            # ddp
             accelerator="gpu",
-            # strategy="ddp",
-            #strategy=ApexDDPStrategy(find_unused_parameters=False, delay_allreduce=True),
-            strategy="auto",
+            strategy="ddp",
             # optimization
             max_epochs=self.oc.optim.max_epochs,
             check_val_every_n_epoch=self.oc.trainer.check_val_every_n_epoch,
@@ -503,12 +498,9 @@ class CuboidPLModule(pl.LightningModule):
     
 
     def training_step(self, batch, batch_idx):
-        #log_memory(prefix=f"Training Step {batch_idx}")
         data_seq = batch.contiguous()
         x = data_seq[self.in_slice]
         y = data_seq[self.out_slice]
-        if batch_idx == 0:
-            print(f"Training batch shape: {x.shape} -> {y.shape}")
         y_hat, loss = self(x, y)
         micro_batch_size = x.shape[self.layout.find("N")]
         data_idx = int(batch_idx * micro_batch_size)
@@ -523,7 +515,6 @@ class CuboidPLModule(pl.LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        #log_memory(prefix=f"Validation Step {batch_idx}")
         data_seq = batch.contiguous()
         x = data_seq[self.in_slice]
         y = data_seq[self.out_slice]
@@ -641,17 +632,9 @@ class CuboidPLModule(pl.LightningModule):
                     layout=self.layout,
                     plot_stride=self.oc.vis.plot_stride,
                     label=self.oc.logging.logging_prefix,
-                    interval_real_time=self.oc.dataset.interval_real_time)
+                    interval_real_time=self.oc.dataset.interval_real_time,
+                    vis_hits_misses_fas=self.oc.vis.plot_hit_miss)
                 del in_seq, target_seq, pred_seq  # helps GC
-
-def log_memory(prefix=""):
-    if torch.cuda.is_available():
-        allocated = torch.cuda.memory_allocated() / 1024 ** 2  # MB
-        reserved = torch.cuda.memory_reserved() / 1024 ** 2    # MB
-        print(f"[{prefix}] CUDA Memory - Allocated: {allocated:.2f} MB | Reserved: {reserved:.2f} MB")
-    process = psutil.Process()
-    ram = process.memory_info().rss / 1024 ** 2  # Resident Set Size in MB
-    print(f"[{prefix}] CPU Memory - RSS: {ram:.2f} MB")
 
 def get_parser():
     parser = argparse.ArgumentParser()
