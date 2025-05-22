@@ -366,6 +366,9 @@ class DGMR(tf.keras.Model):
             disc_loss = self.disc_step(batch_inputs4, batch_targets4, targ_mask4)
             gen_loss = self.gen_step(batch_inputs4, batch_targets4, targ_mask4)
 
+            gen_loss = tf.cast(gen_loss, tf.float32)
+            disc_loss = tf.cast(disc_loss, tf.float32)
+
             tf.print("Debugging: total_gen_loss -> ", gen_loss)
             tf.print("Debugging: total_disc_loss -> ", disc_loss)
             return gen_loss, disc_loss
