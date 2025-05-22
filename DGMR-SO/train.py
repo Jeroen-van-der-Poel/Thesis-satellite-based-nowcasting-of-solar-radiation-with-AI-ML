@@ -14,7 +14,6 @@ from tensorflow.keras import mixed_precision
 
 # Mixed precision
 mp.enable(tf.float16)
-mixed_precision.set_global_policy('mixed_float16')
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 os.environ['TF_XLA_FLAGS'] = '--tf_xla_enable_xla_devices'

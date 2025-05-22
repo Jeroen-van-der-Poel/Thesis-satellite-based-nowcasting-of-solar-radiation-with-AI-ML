@@ -125,7 +125,7 @@ class SNConv3D(ConvND):
         normed_w = self._spectral_normalizer(self.w, is_training=is_training)
 
         outputs = tf.nn.convolution(
-            tensor,
+            tf.cast(tensor, normed_w.dtype),
             normed_w,
             strides=self.stride,
             padding=self.conv_padding,
@@ -134,7 +134,8 @@ class SNConv3D(ConvND):
 
         if self.with_bias:
             outputs = tf.nn.bias_add(
-                outputs, self.b, data_format=self.data_format)
+                outputs, tf.cast(self.b, outputs.dtype), data_format=self.data_format
+            )
 
         return outputs
 
@@ -164,7 +165,8 @@ class BatchNorm(snt.Module):
             create_scale=calc_sigma, create_offset=True)
 
     def __call__(self, tensor, is_training=True):
-        return self._batch_norm(tensor, is_training=is_training)
+        out = self._batch_norm(tensor, is_training=is_training)
+        return tf.cast(out, tensor.dtype)
 
 class ApplyAlongAxis(snt.Module):
     """Layer for applying an operation on each element, along a specified axis."""
@@ -220,5 +222,6 @@ class SpectralNormalizer(snt.Module):
             u = self.l2_normalize(v_w)
             sigma = tf.stop_gradient(tf.reshape(v_w @ tf.transpose(u), []))
             self.u.assign(u)
-            weights.assign(weights / sigma)
+            sigma = tf.cast(sigma, weights.dtype)
+            weights.assign(tf.cast(weights / sigma, weights.dtype))
         return weights

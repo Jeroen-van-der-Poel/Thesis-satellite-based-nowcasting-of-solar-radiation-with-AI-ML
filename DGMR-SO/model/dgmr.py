@@ -404,7 +404,7 @@ class DGMR(tf.keras.Model):
             batch_targets = tf.cast(batch_targets, tf.float16)
 
             num_samples_per_input = 1  # FIXME it was 6.
-            gen_samples = [tf.cast(self.generator_obj(batch_inputs, is_training=is_training), tf.float16) 
+            gen_samples = [self.generator_obj(batch_inputs, is_training=is_training)
                            for _ in range(num_samples_per_input)]
 
             grid_cell_reg = grid_cell_regularizer(tf.stack(gen_samples, axis=0), batch_targets)
