@@ -78,27 +78,24 @@ def random_crop_images(target_data, label_data, crop_height, crop_width):
 
 # Combines flipping, contrast adjustment, and random cropping in one function
 def augmentation(input_img, target_img, time_stamp):
-  """Perform random augmentations"""
-  # Spatial flips
-  if tf.random.uniform([]) < 0.5:
-    input_img = tf.reverse(input_img, axis=[1])
-    target_img = tf.reverse(target_img, axis=[1])
-  if tf.random.uniform([]) < 0.5:
-    input_img = tf.reverse(input_img, axis=[2])
-    target_img = tf.reverse(target_img, axis=[2])
+    """Perform random augmentations"""
+    # Only horizontal flip
+    if tf.random.uniform([]) < 0.5:
+        input_img = tf.reverse(input_img, axis=[1])
+        target_img = tf.reverse(target_img, axis=[1])
 
   # Contrast
-  random_seed = np.random.randint(1, 100)
-  input_img = random_contrast_augmentation(input_img, 0.9, 1.1,random_seed)
-  target_img = random_contrast_augmentation(target_img, 0.9, 1.1, random_seed)
+    random_seed = np.random.randint(1, 100)
+    input_img = random_contrast_augmentation(input_img, 0.9, 1.1,random_seed)
+    target_img = random_contrast_augmentation(target_img, 0.9, 1.1, random_seed)
 
-  # Random crop and resize
-  if tf.random.uniform([]) > 0.2:
-    input_img,target_img = random_crop_images(input_img,target_img, 343, 225)
-    input_img = tf.image.resize(input_img, size=[390, 256])
-    target_img = tf.image.resize(target_img, size=[390, 256])
+    # Random crop and resize
+    if tf.random.uniform([]) > 0.2:
+        input_img,target_img = random_crop_images(input_img,target_img, 343, 225)
+        input_img = tf.image.resize(input_img, size=[390, 256])
+        target_img = tf.image.resize(target_img, size=[390, 256])
 
-  return (input_img, target_img, time_stamp)
+    return (input_img, target_img, time_stamp)
 
 # Parse TFRecords with probability maps
 def parse_tfr_element_with_prob_simple(element):
