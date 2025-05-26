@@ -189,7 +189,7 @@ class CuboidPLModule(pl.LightningModule):
     def get_dataset_config():
         oc = OmegaConf.create()
         oc.dataset_name = "netcdf"
-        oc.train_path = "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_train_data/"
+        oc.train_path = "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_train_data/2021"
         oc.test_path = "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_test_data/"
         oc.img_height = 390
         oc.img_width = 256
@@ -467,7 +467,7 @@ class CuboidPLModule(pl.LightningModule):
 
     @staticmethod
     def get_datamodule(dataset_oc, micro_batch_size: int = 1, num_workers: int = 0):
-        train_path = os.path.expanduser(dataset_oc.get("train_path", "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_train_data/"))
+        train_path = os.path.expanduser(dataset_oc.get("train_path", "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_train_data/2021"))
         test_path = os.path.expanduser(dataset_oc.get("test_path", "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_test_data/"))
         return NetCDFLightningDataModule(train_path=train_path, test_path=test_path, batch_size=micro_batch_size, num_workers=num_workers)
 

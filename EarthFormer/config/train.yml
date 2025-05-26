@@ -1,6 +1,6 @@
 dataset:
   dataset_name: "netcdf"
-  train_path: "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_train_data/"
+  train_path: "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_train_data/2021"
   test_path: "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_test_data/"
   img_height: 390
   img_width: 256
@@ -74,7 +74,7 @@ model:
   norm_init_mode: "0"
 
 optim:
-  total_batch_size: 32
+  total_batch_size: 8
   micro_batch_size: 2
   seed: 0
   method: "adamw"
