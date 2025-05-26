@@ -51,5 +51,5 @@ if ckpt_manager.latest_checkpoint:
     ckpt.restore(ckpt_manager.latest_checkpoint)
     print('Latest checkpoint restored!!')
 
-gen_loss, disc_loss = my_model.fit(train_dataset_aug, val_data, steps=training_steps, callbacks=[train_writer, ckpt_manager, ckpt, prof_dir])
+gen_loss, disc_loss = my_model.fit(train_data, val_data, steps=training_steps, callbacks=[train_writer, ckpt_manager, ckpt, prof_dir])
 tf.keras.backend.clear_session()
