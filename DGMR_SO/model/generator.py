@@ -76,9 +76,7 @@ class ConditioningStack(snt.Module):
 
     def _mixing_layer(self, inputs, conv_block, is_training):
         # Convert from [batch_size, time, h, w, c] -> [batch_size, h, w, c * time] then perform convolution on the output while preserving number of c.
-        unstacked = tf.unstack(inputs, axis=1)
-        unstacked = [tf.cast(x, inputs.dtype) for x in unstacked]
-        stacked_inputs = tf.concat(unstacked, axis=-1)
+        stacked_inputs = tf.concat(tf.unstack(inputs, axis=1), axis=-1)
         return tf.nn.relu(conv_block(stacked_inputs, is_training=is_training))
 
 # sampler makes predictions of 16 future radiation images
@@ -156,13 +154,12 @@ class Sampler(snt.Module):
 
         # Output layer.
         hs = [tf.nn.relu(self._bn(h, is_training=is_training)) for h in hs]
-        hs = [tf.cast(h, tf.float16) for h in hs]  # Ensure FP16 before next op
         hs = [self._output_conv(h, is_training=is_training) for h in hs]
         hs = [tf.nn.depth_to_space(h, 2) for h in hs]
         # activation
         hs = [tf.nn.sigmoid(h) for h in hs]
 
-        return tf.cast(tf.stack(hs, axis=1), tf.float16)
+        return tf.stack(hs, axis=1)
 
 class GBlock(snt.Module):
     """Residual generator block without upsampling."""
@@ -193,7 +190,6 @@ class GBlock(snt.Module):
         h = self._conv2_3x3(h, is_training=is_training)
 
         # Residual connection.
-        sc = tf.cast(sc, h.dtype)
         return h + sc
 
 class UpsampleGBlock(snt.Module):
@@ -221,7 +217,6 @@ class UpsampleGBlock(snt.Module):
         h = self._conv2_3x3(h, is_training=is_training)
 
         # Residual connection.
-        sc = tf.cast(sc, h.dtype)
         return h + sc
 
 class ConvGRU(snt.Module):
@@ -256,9 +251,6 @@ class ConvGRU(snt.Module):
 
         # Gate the cell and state / outputs.
         c = tf.nn.relu(self._conv3(gated_input, is_training=is_training))
-
-        update_gate = tf.cast(update_gate, prev_state.dtype)
-        c = tf.cast(c, prev_state.dtype)
 
         out = update_gate * prev_state + (1. - update_gate) * c
         new_state = out

@@ -4,7 +4,6 @@ from model.discriminator import Discriminator
 import numpy as np
 import time
 import datetime
-from sonnet.src import mixed_precision as mp
 
 class DGMR(tf.keras.Model):
     def __init__(self, lead_time=240, time_delta=15) -> None:
@@ -12,9 +11,7 @@ class DGMR(tf.keras.Model):
         self.strategy = None
         self.global_step = 0
         self.generator_obj = Generator(lead_time=lead_time, time_delta=time_delta)
-        self.generator_obj.__call__ = mp.modes([tf.float32, tf.float16])(self.generator_obj.__call__)
         self.discriminator_obj = Discriminator()
-        self.discriminator_obj.__call__ = mp.modes([tf.float32, tf.float16])(self.discriminator_obj.__call__)
         self.crop_height = 256
         self.crop_width = 256
 
@@ -63,15 +60,6 @@ class DGMR(tf.keras.Model):
             batch_inputs3, batch_targets3 = self.random_crop_images(batch_inputs3, batch_targets3, self.crop_height, self.crop_width)
             batch_inputs4, batch_targets4 = self.random_crop_images(batch_inputs4, batch_targets4, self.crop_height, self.crop_width)
 
-            batch_inputs1 = tf.cast(batch_inputs1, tf.float16)
-            batch_targets1 = tf.cast(batch_targets1, tf.float16)
-            batch_inputs2 = tf.cast(batch_inputs2, tf.float16)
-            batch_targets2 = tf.cast(batch_targets2, tf.float16)
-            batch_inputs3 = tf.cast(batch_inputs3, tf.float16)
-            batch_targets3 = tf.cast(batch_targets3, tf.float16)
-            batch_inputs4 = tf.cast(batch_inputs4, tf.float16)
-            batch_targets4 = tf.cast(batch_targets4, tf.float16)
-
             temp_time = time.time()
 
             gen_loss, disc_loss = self.train_step(
@@ -89,11 +77,6 @@ class DGMR(tf.keras.Model):
 
                 val_input, val_target = self.random_crop_images(val_input1, val_target1, self.crop_height, self.crop_width)
                 input, target = self.random_crop_images(val_input2, val_target2, self.crop_height, self.crop_width)
-
-                val_input = tf.cast(val_input, tf.float16)
-                val_target = tf.cast(val_target, tf.float16)
-                input = tf.cast(input, tf.float16)
-                target = tf.cast(target, tf.float16)
 
                 val_gen_loss, val_disc_loss = self.val_step(val_input, val_target, label1, input, target, label2)
                 tf.print("val_gen_loss", val_gen_loss, "val_disc_loss", val_disc_loss)
@@ -129,9 +112,6 @@ class DGMR(tf.keras.Model):
                     val_input1, val_target1, label1 = next(dataset_val_eva)
                     val_target1 = val_target1[:, :, :, :, :]
                     val_input, val_target = self.random_crop_images(val_input1, val_target1, self.crop_height, self.crop_width)
-                    
-                    val_input = tf.cast(val_input, tf.float16)
-                    val_target = tf.cast(val_target, tf.float16)
 
                     targets_1,input1, target_8, input8, target_16, input16, obv_img, pred_img = self.data_process(val_input[:], val_target[:])
                     if len(target_8) == 0 or len(input8) == 0 or len(target_16) == 0 or len(input16) == 0 or len(input1) == 0 or len(targets_1) == 0:
@@ -319,11 +299,8 @@ class DGMR(tf.keras.Model):
             batch_inputs, is_training=is_training)
         '''batch_predictions = tf.where(
             tf.equal(targ_mask, True), batch_predictions, -1)'''
-        batch_predictions = tf.cast(batch_predictions, tf.float16)
-        gen_sequence = tf.concat([tf.cast(batch_inputs[..., :1], tf.float16), batch_predictions], axis=1)
-        real_sequence = tf.concat([tf.cast(batch_inputs[..., :1], tf.float16), batch_targets], axis=1)
-        # gen_sequence = tf.cast(gen_sequence, tf.double)
-        # real_sequence = tf.cast(real_sequence, tf.double)
+        gen_sequence = tf.concat([batch_inputs[..., :1], batch_predictions], axis=1)
+        real_sequence = tf.concat([batch_inputs[..., :1], batch_targets], axis=1)
         concat_inputs = tf.concat([real_sequence, gen_sequence], axis=0)
 
         concat_outputs = self.discriminator_obj(concat_inputs, is_training=is_training)
@@ -335,10 +312,6 @@ class DGMR(tf.keras.Model):
     def val_gen_step(self, batch_inputs, batch_targets, targ_mask, is_training=True):
         num_samples_per_input = 1  # FIXME it was 6.
         gen_samples = [self.generator_obj(batch_inputs, is_training=is_training) for _ in range(num_samples_per_input)]
-        gen_samples = [tf.cast(x, tf.float16) for x in gen_samples]
-
-        batch_inputs = tf.cast(batch_inputs, tf.float16)
-        batch_targets = tf.cast(batch_targets, tf.float16)
 
         grid_cell_reg = grid_cell_regularizer(tf.stack(gen_samples, axis=0), batch_targets)
 
@@ -379,11 +352,7 @@ class DGMR(tf.keras.Model):
     def disc_step(self, batch_inputs, batch_targets, targ_mask, is_training=True):
         #tf.print("Debugging: disc_step: ", "Disc step has started", str(datetime.datetime.now()))
         with tf.GradientTape() as disc_tape:
-            batch_inputs = tf.cast(batch_inputs, tf.float16)
-            batch_targets = tf.cast(batch_targets, tf.float16)
-
             batch_predictions = self.generator_obj(batch_inputs, is_training=is_training)
-            batch_predictions = tf.cast(batch_predictions, tf.float16)
 
             gen_sequence = tf.concat([batch_inputs[..., :1], batch_predictions], axis=1)
             real_sequence = tf.concat([batch_inputs[..., :1], batch_targets], axis=1)
@@ -400,9 +369,6 @@ class DGMR(tf.keras.Model):
 
     def gen_step(self, batch_inputs, batch_targets, targ_mask, is_training=True):
         with tf.GradientTape() as gen_tape:
-            batch_inputs = tf.cast(batch_inputs, tf.float16)
-            batch_targets = tf.cast(batch_targets, tf.float16)
-
             num_samples_per_input = 1  # FIXME it was 6.
             gen_samples = [self.generator_obj(batch_inputs, is_training=is_training)
                            for _ in range(num_samples_per_input)]

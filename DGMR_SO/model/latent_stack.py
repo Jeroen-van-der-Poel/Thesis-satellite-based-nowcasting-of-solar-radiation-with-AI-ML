@@ -80,7 +80,6 @@ class LBlock(snt.Module):
             sc = inputs
 
         # Residual connection.
-        sc = tf.cast(sc, h2.dtype)
         return h2 + sc
 
 def attention_einsum(q, k, v):
@@ -112,11 +111,8 @@ class Attention(snt.Module):
         self._conv4 = conv(output_channels=self._num_channels, kernel_size=1, padding='VALID', use_bias=False)
 
         # Learnable gain parameter
-        self._gamma = tf.Variable(
-            initial_value=tf.constant(0.0, shape=[1], dtype=tf.keras.mixed_precision.global_policy().compute_dtype),
-            trainable=True,
-            name='miniattn_gamma'
-        )
+        self._gamma = tf.get_variable('miniattn_gamma', shape=[1], trainable=True, dtype=tf.float32)
+
 
     def __call__(self, tensor):
         # Compute query, key and value using 1x1 convolutions.
@@ -126,8 +122,7 @@ class Attention(snt.Module):
 
         # Apply the attention operation.
         out = layers.ApplyAlongAxis2(functools.partial(attention_einsum, k=key, v=value), axis=0)(query)
-        out = self._gamma * tf.cast(self._conv4(out), self._gamma.dtype)
+        out = self._gamma * self._conv4(out)
 
-        tensor = tf.cast(tensor, out.dtype)
         # Residual connection.
         return out + tensor
