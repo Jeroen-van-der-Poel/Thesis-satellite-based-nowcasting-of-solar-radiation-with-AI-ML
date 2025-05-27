@@ -24,17 +24,17 @@ class H5LightningDataModule(pl.LightningDataModule):
     def setup(self, stage=None):
         if self.train_dataset is None:
             print(f"Loading training dataset from {self.train_path}...")
-            self.train_dataset = HDF5NowcastingDataset(root_dir=self.train_path)
+            self.train_dataset = HDF5NowcastingDataset(self.train_path)
             print(f"Loaded {len(self.train_dataset)} samples for training.")
 
         if self.val_dataset is None:
             print(f"Loading validation dataset from...")
-            self.val_dataset = HDF5NowcastingDataset(root_dir=self.val_path)
+            self.val_dataset = HDF5NowcastingDataset(self.val_path)
             print(f"Loaded {len(self._datavalset)} samples for validation.")
 
         if self.test_dataset is None:
             print(f"Loading testing dataset from {self.test_path}...")
-            self.test_dataset = HDF5NowcastingDataset(root_dir=self.test_path)
+            self.test_dataset = HDF5NowcastingDataset(self.test_path)
             print(f"Loaded {len(self.test_dataset)} samples for testing.")
 
     def train_dataloader(self):
