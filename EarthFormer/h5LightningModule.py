@@ -44,10 +44,10 @@ class H5LightningDataModule(pl.LightningDataModule):
             print(f"Loaded {len(self.test_dataset)} samples for testing.")
 
     def train_dataloader(self):
-        return DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=self.num_workers, persistent_workers=True, pin_memory=True, worker_init_fn=worker_init_fn )
+        return DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=0, persistent_workers=False, pin_memory=False)
 
     def val_dataloader(self):
-        return DataLoader(self.val_dataset, batch_size=self.batch_size, shuffle=False, num_workers=self.num_workers, persistent_workers=True, pin_memory=True, worker_init_fn=worker_init_fn )
+        return DataLoader(self.val_dataset, batch_size=self.batch_size, shuffle=False, num_workers=0, persistent_workers=False, pin_memory=False)
 
     def test_dataloader(self):
-        return DataLoader(self.test_dataset, batch_size=self.batch_size, shuffle=False, num_workers=self.num_workers, persistent_workers=True, pin_memory=True, worker_init_fn=worker_init_fn )
+        return DataLoader(self.test_dataset, batch_size=self.batch_size, shuffle=False, num_workers=0, persistent_workers=False, pin_memory=False)
