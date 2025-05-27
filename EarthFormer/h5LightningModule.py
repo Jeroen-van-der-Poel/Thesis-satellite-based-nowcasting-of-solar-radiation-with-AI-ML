@@ -8,6 +8,11 @@ import pytorch_lightning as pl
 from torch.utils.data import Subset, random_split
 from Data.hdf5Dataset import HDF5NowcastingDataset
 
+def worker_init_fn(worker_id):
+    worker_info = torch.utils.data.get_worker_info()
+    dataset = worker_info.dataset
+    dataset._vil = None  # force re-init in each worker
+
 class H5LightningDataModule(pl.LightningDataModule):
     def __init__(self, train_path, val_path, test_path, batch_size=8, num_workers=8):
         super().__init__()
@@ -39,10 +44,10 @@ class H5LightningDataModule(pl.LightningDataModule):
             print(f"Loaded {len(self.test_dataset)} samples for testing.")
 
     def train_dataloader(self):
-        return DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=self.num_workers, persistent_workers=False, pin_memory=True)
+        return DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=self.num_workers, persistent_workers=False, pin_memory=True, worker_init_fn=worker_init_fn )
 
     def val_dataloader(self):
-        return DataLoader(self.val_dataset, batch_size=self.batch_size, shuffle=False, num_workers=self.num_workers, persistent_workers=False, pin_memory=True)
+        return DataLoader(self.val_dataset, batch_size=self.batch_size, shuffle=False, num_workers=self.num_workers, persistent_workers=False, pin_memory=True, worker_init_fn=worker_init_fn )
 
     def test_dataloader(self):
-        return DataLoader(self.test_dataset, batch_size=self.batch_size, shuffle=False, num_workers=self.num_workers, persistent_workers=False, pin_memory=True)
+        return DataLoader(self.test_dataset, batch_size=self.batch_size, shuffle=False, num_workers=self.num_workers, persistent_workers=False, pin_memory=True, worker_init_fn=worker_init_fn )
