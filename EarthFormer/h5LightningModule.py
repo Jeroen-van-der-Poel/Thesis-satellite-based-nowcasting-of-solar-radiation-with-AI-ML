@@ -28,7 +28,7 @@ class H5LightningDataModule(pl.LightningDataModule):
             print(f"Loaded {len(self.train_dataset)} samples for training.")
 
         if self.val_dataset is None:
-            print(f"Loading validation dataset from...")
+            print(f"Loading validation dataset from {self.val_path}...")
             self.val_dataset = HDF5NowcastingDataset(self.val_path)
             print(f"Loaded {len(self.val_dataset)} samples for validation.")
 
