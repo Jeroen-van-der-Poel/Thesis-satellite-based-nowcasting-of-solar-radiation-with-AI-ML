@@ -4,41 +4,48 @@ sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 import os
 import h5py
+import numpy as np
 import torch
 from torch.utils.data import DataLoader, random_split
 from RawData.netCDFDataset import NetCDFNowcastingDataset
 from tqdm import tqdm
 
-def save_dataset_to_hdf5(dataset, hdf5_path, batch_size=16):
-    loader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=4)
+def save_dataset_to_hdf5(dataset, hdf5_path, compression="gzip", compression_level=4):
+    sample = dataset[0]
+    if isinstance(sample, dict):
+        sample = sample["vil"]
+    sample_shape = sample.shape  # (T, H, W, 1)
     total_samples = len(dataset)
-    sample_shape = dataset[0]["vil"].shape  # (T, H, W, 1)
+
+    # Chunk shape: use sample shape to enable faster reads per sample
+    chunk_shape = (1, *sample_shape)
 
     with h5py.File(hdf5_path, 'w') as hf:
         dset = hf.create_dataset(
             "vil",
             shape=(total_samples, *sample_shape),
+            maxshape=(total_samples, *sample_shape),  # optional for future appending
+            chunks=chunk_shape,  # enables gzip to compress per-sample
             dtype='float32',
-            compression="gzip"
+            compression=compression,
+            compression_opts=compression_level
         )
-        idx = 0
-        with torch.no_grad():
-            for batch in tqdm(loader, desc=f"Saving to {os.path.basename(hdf5_path)}"):
-                data = batch.numpy()
-                for i in range(data.shape[0]):
-                    dset[idx] = data[i]
-                    idx += 1
+        for idx in tqdm(range(total_samples), desc=f"Saving to {hdf5_path}"):
+            sample = dataset[idx]
+            if isinstance(sample, dict):
+                sample = sample["vil"]
+            dset[idx] = sample.numpy().astype(np.float32)
 
-    print(f"Saved {total_samples} samples to {hdf5_path}")
+    print(f"Saved {total_samples} samples to {hdf5_path} with gzip compression")
 
 
 if __name__ == "__main__":
     raw_train_path = "/home/jfavdp/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_train_data/"
     raw_test_path = "/home/jfavdp/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_test_data/"
 
-    output_train_h5 = "/home/jfavdp/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/EarthFormer/Data/train_data/train_data.h5"
-    output_val_h5 = "/home/jfavdp/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/EarthFormer/Data/val_data/val_data.h5"
-    output_test_h5 = "/home/jfavdp/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/EarthFormer/Data/test_data/test_data.h5"
+    output_train_h5 = "/home/jfavdp/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/EarthFormer/Data/train_data/train_data_2.h5"
+    output_val_h5 = "/home/jfavdp/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/EarthFormer/Data/val_data/val_data_2.h5"
+    output_test_h5 = "/home/jfavdp/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/EarthFormer/Data/test_data/test_data_2.h5"
 
     # Load full train dataset
     full_train_dataset = NetCDFNowcastingDataset(root_dir=raw_train_path)
