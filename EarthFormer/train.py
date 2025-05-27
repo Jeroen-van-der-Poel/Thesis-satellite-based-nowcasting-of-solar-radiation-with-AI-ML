@@ -291,7 +291,7 @@ class CuboidPLModule(pl.LightningModule):
         oc = OmegaConf.create()
         oc.seed = None
         oc.total_batch_size = 32
-        oc.micro_batch_size = 8
+        oc.micro_batch_size = 2
 
         oc.method = "adamw"
         oc.lr = 1E-3
@@ -468,7 +468,7 @@ class CuboidPLModule(pl.LightningModule):
         return int(epoch * num_samples / total_batch_size)
 
     @staticmethod
-    def get_datamodule(dataset_oc, micro_batch_size: int = 1, num_workers: int = 8):
+    def get_datamodule(dataset_oc, micro_batch_size: int = 1, num_workers: int = 4):
         train_path = os.path.expanduser(dataset_oc.get("train_path", "/data1/h5data/train_data/train_data.h5"))
         val_path = os.path.expanduser(dataset_oc.get("val_path", "/data1/h5data/val_data/val_data.h5"))
         test_path = os.path.expanduser(dataset_oc.get("test_path", "/data1/h5data/test_data/test_data.h5"))
@@ -673,7 +673,7 @@ def main():
     dm = CuboidPLModule.get_datamodule(
         dataset_oc=dataset_oc,
         micro_batch_size=micro_batch_size,
-        num_workers=8,)
+        num_workers=4,)
     #dm.prepare_data()
     dm.setup()
     #print(f"Train samples: {dm.num_train_samples}")

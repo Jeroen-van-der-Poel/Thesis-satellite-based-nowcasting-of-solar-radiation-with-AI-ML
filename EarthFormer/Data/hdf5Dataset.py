@@ -15,8 +15,9 @@ class HDF5NowcastingDataset(Dataset):
 
     def __len__(self):
         self._init_file()
+        print(f"Dataset length: {self.vil}")
         return self.vil.shape[0]
 
     def __getitem__(self, idx):
         self._init_file()
-        return torch.from_numpy(self.vil[idx])
+        return torch.from_numpy(self.vil[0][idx])
