@@ -4,6 +4,7 @@ from shutil import copyfile
 import os
 import argparse
 import inspect
+import time
 import pickle
 import numpy as np
 import torch
@@ -501,6 +502,8 @@ class CuboidPLModule(pl.LightningModule):
     
 
     def training_step(self, batch, batch_idx):
+        t0 = time.time()
+        print(f"[STEP START] idx={batch_idx}, batch shape={batch.shape}")
         data_seq = batch.contiguous()
         x = data_seq[self.in_slice]
         y = data_seq[self.out_slice]
@@ -515,6 +518,7 @@ class CuboidPLModule(pl.LightningModule):
             mode="train"
         )
         self.log('train_loss', loss, on_step=True, on_epoch=False)
+        print(f"[STEP END] idx={batch_idx}, duration={time.time() - t0:.2f}s")
         return loss
 
     def validation_step(self, batch, batch_idx):
