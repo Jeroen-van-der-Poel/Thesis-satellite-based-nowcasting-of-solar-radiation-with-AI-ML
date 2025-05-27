@@ -190,9 +190,9 @@ class CuboidPLModule(pl.LightningModule):
     def get_dataset_config():
         oc = OmegaConf.create()
         oc.dataset_name = "netcdf"
-        oc.train_path = "/data1/h5data/train_data/"
-        oc.val_path = "/data1/h5data/val_data/"
-        oc.test_path = "/data1/h5data/test_data/"
+        oc.train_path = "/data1/h5data/train_data/train_data.h5"
+        oc.val_path = "/data1/h5data/val_data/val_data.h5"
+        oc.test_path = "/data1/h5data/test_data/test_data.h5"
         oc.img_height = 390
         oc.img_width = 256
         oc.in_len = 4
@@ -469,9 +469,9 @@ class CuboidPLModule(pl.LightningModule):
 
     @staticmethod
     def get_datamodule(dataset_oc, micro_batch_size: int = 1, num_workers: int = 0):
-        train_path = os.path.expanduser(dataset_oc.get("train_path", "/data1/h5data/train_data/"))
-        val_path = os.path.expanduser(dataset_oc.get("train_path", "/data1/h5data/val_data/"))
-        test_path = os.path.expanduser(dataset_oc.get("test_path", "/data1/h5data/test_data/"))
+        train_path = os.path.expanduser(dataset_oc.get("train_path", "/data1/h5data/train_data/train_data.h5"))
+        val_path = os.path.expanduser(dataset_oc.get("train_path", "/data1/h5data/val_data/val_data.h5"))
+        test_path = os.path.expanduser(dataset_oc.get("test_path", "/data1/h5data/test_data/test_data.h5"))
         return H5LightningDataModule(train_path=train_path, val_path=val_path, test_path=test_path, batch_size=micro_batch_size, num_workers=num_workers)
 
     @property
