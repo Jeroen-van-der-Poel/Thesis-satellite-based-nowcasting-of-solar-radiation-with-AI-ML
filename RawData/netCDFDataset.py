@@ -5,17 +5,19 @@ import numpy as np
 import os
 import datetime
 import gc
+from multiprocessing import Manager
 
 class NetCDFNowcastingDataset(Dataset):
     def __init__(self, root_dir, window=20, x_frames=4, y_frames=16, height=390, width=256):
+        manager = Manager()
         self.root_dir = root_dir
         self.window = window
         self.x_frames = x_frames
         self.y_frames = y_frames
         self.height = height
         self.width = width
-        self.file_paths, self.timestamps = self._load_all_files_sorted()
-        self.valid_indices = self._filter_valid_indices()
+        self.file_paths, self.timestamps = manager.list(self._load_all_files_sorted())
+        self.valid_indices = manager.list(self._filter_valid_indices())
 
     def _load_all_files_sorted(self):
         paths, times = [], []
