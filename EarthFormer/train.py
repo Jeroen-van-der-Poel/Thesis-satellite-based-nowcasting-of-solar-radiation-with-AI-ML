@@ -468,7 +468,7 @@ class CuboidPLModule(pl.LightningModule):
         return int(epoch * num_samples / total_batch_size)
 
     @staticmethod
-    def get_datamodule(dataset_oc, micro_batch_size: int = 1, num_workers: int = 0):
+    def get_datamodule(dataset_oc, micro_batch_size: int = 1, num_workers: int = 8):
         train_path = os.path.expanduser(dataset_oc.get("train_path", "/data1/h5data/train_data/train_data.h5"))
         val_path = os.path.expanduser(dataset_oc.get("val_path", "/data1/h5data/val_data/val_data.h5"))
         test_path = os.path.expanduser(dataset_oc.get("test_path", "/data1/h5data/test_data/test_data.h5"))
