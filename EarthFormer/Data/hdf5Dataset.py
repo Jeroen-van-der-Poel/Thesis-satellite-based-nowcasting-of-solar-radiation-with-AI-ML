@@ -19,6 +19,4 @@ class HDF5NowcastingDataset(Dataset):
 
     def __getitem__(self, idx):
         self._init_file()
-        data = self.vil[idx]  # numpy array
-        print(f"[GETITEM] Index: {idx}, Shape: {data.shape}, Dtype: {data.dtype}, Min: {data.min()}, Max: {data.max()}")
-        return torch.from_numpy(data)
+        return torch.from_numpy(self.vil[idx])
