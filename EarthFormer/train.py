@@ -673,7 +673,7 @@ def main():
     dm = CuboidPLModule.get_datamodule(
         dataset_oc=dataset_oc,
         micro_batch_size=micro_batch_size,
-        num_workers=0,)
+        num_workers=8,)
     #dm.prepare_data()
     dm.setup()
     #print(f"Train samples: {dm.num_train_samples}")
