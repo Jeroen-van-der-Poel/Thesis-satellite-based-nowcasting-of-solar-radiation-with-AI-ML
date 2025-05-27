@@ -25,6 +25,7 @@ from utils.layout import layout_to_in_out_slice
 from visualization.sevir.sevir_vis_seq import save_example_vis_results
 from cuboid_transformer.cuboid_transformer import CuboidTransformerModel
 from netCDFLightningModule import NetCDFLightningDataModule
+from h5LightningModule import HDF5NowcastingDataset
 import psutil
 
 torch.set_float32_matmul_precision('medium')
@@ -189,8 +190,9 @@ class CuboidPLModule(pl.LightningModule):
     def get_dataset_config():
         oc = OmegaConf.create()
         oc.dataset_name = "netcdf"
-        oc.train_path = "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_train_data/2021"
-        oc.test_path = "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_test_data/"
+        oc.train_path = "/data1/h5data/train_data/"
+        oc.val_path = "/data1/h5data/val_data/"
+        oc.test_path = "/data1/h5data/test_data/"
         oc.img_height = 390
         oc.img_width = 256
         oc.in_len = 4
@@ -467,9 +469,10 @@ class CuboidPLModule(pl.LightningModule):
 
     @staticmethod
     def get_datamodule(dataset_oc, micro_batch_size: int = 1, num_workers: int = 0):
-        train_path = os.path.expanduser(dataset_oc.get("train_path", "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_train_data/2021"))
-        test_path = os.path.expanduser(dataset_oc.get("test_path", "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_test_data/"))
-        return NetCDFLightningDataModule(train_path=train_path, test_path=test_path, batch_size=micro_batch_size, num_workers=num_workers)
+        train_path = os.path.expanduser(dataset_oc.get("train_path", "/data1/h5data/train_data/"))
+        val_path = os.path.expanduser(dataset_oc.get("train_path", "/data1/h5data/val_data/"))
+        test_path = os.path.expanduser(dataset_oc.get("test_path", "/data1/h5data/test_data/"))
+        return HDF5NowcastingDataset(train_path=train_path, val_path=val_path, test_path=test_path, batch_size=micro_batch_size, num_workers=num_workers)
 
     @property
     def in_slice(self):
