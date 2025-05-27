@@ -40,12 +40,12 @@ def save_dataset_to_hdf5(dataset, hdf5_path, compression="gzip", compression_lev
 
 
 if __name__ == "__main__":
-    raw_train_path = "/home/jfavdp/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_train_data/"
-    raw_test_path = "/home/jfavdp/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_test_data/"
+    raw_train_path = "/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_train_data/"
+    raw_test_path = "/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_test_data/"
 
-    output_train_h5 = "/home/jfavdp/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/EarthFormer/Data/train_data/train_data_2.h5"
-    output_val_h5 = "/home/jfavdp/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/EarthFormer/Data/val_data/val_data_2.h5"
-    output_test_h5 = "/home/jfavdp/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/EarthFormer/Data/test_data/test_data_2.h5"
+    output_train_h5 = "/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/EarthFormer/Data/train_data/train_data_2.h5"
+    output_val_h5 = "/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/EarthFormer/Data/val_data/val_data_2.h5"
+    output_test_h5 = "/nobackup_1/users/meirink/Jeroen/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/EarthFormer/Data/test_data/test_data_2.h5"
 
     # Load full train dataset
     full_train_dataset = NetCDFNowcastingDataset(root_dir=raw_train_path)
