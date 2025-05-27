@@ -25,7 +25,7 @@ from utils.layout import layout_to_in_out_slice
 from visualization.sevir.sevir_vis_seq import save_example_vis_results
 from cuboid_transformer.cuboid_transformer import CuboidTransformerModel
 from netCDFLightningModule import NetCDFLightningDataModule
-from h5LightningModule import HDF5NowcastingDataset
+from h5LightningModule import H5LightningDataModule
 import psutil
 
 torch.set_float32_matmul_precision('medium')
@@ -472,7 +472,7 @@ class CuboidPLModule(pl.LightningModule):
         train_path = os.path.expanduser(dataset_oc.get("train_path", "/data1/h5data/train_data/"))
         val_path = os.path.expanduser(dataset_oc.get("train_path", "/data1/h5data/val_data/"))
         test_path = os.path.expanduser(dataset_oc.get("test_path", "/data1/h5data/test_data/"))
-        return HDF5NowcastingDataset(train_path=train_path, val_path=val_path, test_path=test_path, batch_size=micro_batch_size, num_workers=num_workers)
+        return H5LightningDataModule(train_path=train_path, val_path=val_path, test_path=test_path, batch_size=micro_batch_size, num_workers=num_workers)
 
     @property
     def in_slice(self):
