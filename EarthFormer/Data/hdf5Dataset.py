@@ -1,23 +1,24 @@
 import h5py
 import torch
 from torch.utils.data import Dataset
+import os
 
 class HDF5NowcastingDataset(Dataset):
     def __init__(self, h5_path):
         super().__init__()
         self.h5_path = h5_path
-        self.file = None  
+        self._vil = None 
 
-    def _init_file(self):
-        if self.file is None:
-            self.file = h5py.File(self.h5_path, 'r')
-            self.vil = self.file['vil']
+    def _ensure_init(self):
+        if self._vil is None:
+            print(f"[HDF5 INIT] Loading file on worker {os.getpid()}")
+            self._file = h5py.File(self.h5_path, 'r')
+            self._vil = self._file['vil']
 
     def __len__(self):
-        self._init_file()
-        print(f"Dataset length: {self.vil.shape[0]}")
-        return self.vil.shape[0]
+        self._ensure_init()
+        return self._vil.shape[0]
 
     def __getitem__(self, idx):
-        self._init_file()
-        return torch.from_numpy(self.vil[idx])
+        self._ensure_init()
+        return torch.from_numpy(self._vil[idx])

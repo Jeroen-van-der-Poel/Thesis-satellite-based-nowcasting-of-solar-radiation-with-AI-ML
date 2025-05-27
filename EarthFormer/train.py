@@ -501,7 +501,6 @@ class CuboidPLModule(pl.LightningModule):
     
 
     def training_step(self, batch, batch_idx):
-        print(f"[TRAIN STEP] Batch shape: {batch.shape}")
         data_seq = batch.contiguous()
         x = data_seq[self.in_slice]
         y = data_seq[self.out_slice]
