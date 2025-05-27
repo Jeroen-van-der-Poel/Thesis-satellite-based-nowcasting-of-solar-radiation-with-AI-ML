@@ -8,6 +8,7 @@ class HDF5NowcastingDataset(Dataset):
         super().__init__()
         self.h5_path = h5_path
         self._vil = None 
+        self._ensure_init()
 
     def _ensure_init(self):
         if self._vil is None:
@@ -16,9 +17,7 @@ class HDF5NowcastingDataset(Dataset):
             self._vil = self._file['vil']
 
     def __len__(self):
-        self._ensure_init()
         return self._vil.shape[0]
 
     def __getitem__(self, idx):
-        self._ensure_init()
         return torch.from_numpy(self._vil[idx])
