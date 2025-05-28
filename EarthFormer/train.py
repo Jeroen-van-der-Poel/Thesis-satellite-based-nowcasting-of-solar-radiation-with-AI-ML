@@ -504,7 +504,7 @@ class CuboidPLModule(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         # t0 = time.time()
         # print(f"[STEP START] idx={batch_idx}, batch shape={batch.shape}")
-        data_seq = batch['vil'].contiguous()
+        data_seq = batch.contiguous()
         x = data_seq[self.in_slice]
         y = data_seq[self.out_slice]
         y_hat, loss = self(x, y)
@@ -522,7 +522,7 @@ class CuboidPLModule(pl.LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        data_seq = batch['vil'].contiguous()
+        data_seq = batch.contiguous()
         x = data_seq[self.in_slice]
         y = data_seq[self.out_slice]
         micro_batch_size = x.shape[self.layout.find("N")]
@@ -560,7 +560,7 @@ class CuboidPLModule(pl.LightningModule):
         self.save_score_epoch_end(mse=valid_mse, mae=valid_mae, mode="val")
 
     def test_step(self, batch, batch_idx):
-        data_seq = batch['vil'].contiguous()
+        data_seq = batch.contiguous()
         x = data_seq[self.in_slice]
         y = data_seq[self.out_slice]
         micro_batch_size = x.shape[self.layout.find("N")]
