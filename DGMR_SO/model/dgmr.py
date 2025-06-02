@@ -14,6 +14,7 @@ class DGMR(tf.keras.Model):
         self.discriminator_obj = Discriminator()
         self.crop_height = 256
         self.crop_width = 256
+        self.lambda_reg = 0.5 # instead of 1
 
     @tf.function
     def __call__(self, tensor, is_training=False):
@@ -326,7 +327,7 @@ class DGMR(tf.keras.Model):
             score_real, score_generated = tf.split(concat_outputs, 2, axis=0)
             generated_scores.append(score_generated)
         gen_disc_loss = self.gen_loss(tf.concat(generated_scores, axis=0))
-        gen_loss = gen_disc_loss + 1 * grid_cell_reg
+        gen_loss = gen_disc_loss + self.lambda_reg * grid_cell_reg
         return gen_loss
 
     @tf.function
@@ -385,7 +386,7 @@ class DGMR(tf.keras.Model):
                 generated_scores.append(score_generated)
 
             gen_disc_loss = self.gen_loss(tf.concat(generated_scores, axis=0))
-            gen_loss = gen_disc_loss + 1 * grid_cell_reg
+            gen_loss = gen_disc_loss + self.lambda_reg * grid_cell_reg
 
         gen_grads = gen_tape.gradient(gen_loss, self.generator_obj.trainable_variables)
         self.gen_optimizer.apply_gradients(zip(gen_grads, self.generator_obj.trainable_variables))
