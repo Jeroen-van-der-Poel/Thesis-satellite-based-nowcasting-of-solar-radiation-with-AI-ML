@@ -1,3 +1,7 @@
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parents[1]))
+
 import numpy as np
 import torch
 from utils.metrics import compute_rmse, compute_rrmse, compute_mae, compute_ssim, compute_forecast_skill
