@@ -542,7 +542,7 @@ class CuboidPLModule(pl.LightningModule):
             y = y.contiguous()
             step_mse = self.valid_mse(y_hat, y)
             step_mae = self.valid_mae(y_hat, y)
-            self.log('val_loss', loss, prog_bar=True, on_step=True, on_epoch=False)  
+            self.log('val_loss', loss, prog_bar=True, on_step=False, on_epoch=True)  
             self.log('valid_frame_mse_step', step_mse, prog_bar=True, on_step=True, on_epoch=False)
             self.log('valid_frame_mae_step', step_mae, prog_bar=True, on_step=True, on_epoch=False)
         return None

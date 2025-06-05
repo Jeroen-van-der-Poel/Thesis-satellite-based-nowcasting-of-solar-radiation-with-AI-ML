@@ -89,14 +89,14 @@ def visualize_result(
     ax[1][0].set_ylabel('Target', fontsize=fs)
     for i in range(0, max_len, plot_stride):
         if i < out_len:
-            xt = target_seq[idx, :, :, i] * norm['scale'] + norm['shift']
+            xt = target_seq[idx, :, :, i]
             ax[1][i // plot_stride].imshow(xt, **cmap_dict_auto(xt))
             # ax[1][i // plot_stride].set_title(f'{5*(i+plot_stride)} Minutes')
         else:
             ax[1][i // plot_stride].axis('off')
 
-    target_seq = target_seq[idx:idx + 1] * norm['scale'] + norm['shift']
-    y_preds = [pred_seq[idx:idx + 1] * norm['scale'] + norm['shift']
+    target_seq = target_seq[idx:idx + 1] 
+    y_preds = [pred_seq[idx:idx + 1] 
                for pred_seq in pred_seq_list]
 
     # Plot model predictions
@@ -138,9 +138,13 @@ def visualize_result(
 
     # Legend of thresholds
     num_thresh_legend = len(VIL_LEVELS) - 1
-    legend_elements = [Patch(facecolor=VIL_COLORS[i],
-                             label=f'{int(VIL_LEVELS[i - 1])}-{int(VIL_LEVELS[i])}')
-                       for i in range(1, num_thresh_legend + 1)]
+    legend_elements = [
+        Patch(
+            facecolor=VIL_COLORS[i],
+            label=f'{VIL_LEVELS[i - 1]/255:.2f}–{VIL_LEVELS[i]/255:.2f}'
+        )
+        for i in range(1, num_thresh_legend + 1)
+    ]
     ax[0][0].legend(handles=legend_elements, loc='center left',
                     bbox_to_anchor=(-1.2, -0.),
                     borderaxespad=0, frameon=False, fontsize='10')
