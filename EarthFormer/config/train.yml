@@ -109,6 +109,6 @@ trainer:
 vis:
   train_example_data_idx_list: [0]
   val_example_data_idx_list: [80]
-  test_example_data_idx_list: [0, 500, 1000, 1500]
+  test_example_data_idx_list: [0, 500, 1000, 1500, 3000]
   eval_example_only: false
   plot_stride: 1

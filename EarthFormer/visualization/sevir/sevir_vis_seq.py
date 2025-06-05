@@ -43,11 +43,11 @@ def plot_hit_miss_fa_all_thresholds(ax, y_true, y_pred, **unused_kwargs):
 def cmap_dict_auto(data):
     vmin = np.min(data)
     vmax = np.max(data)
+    norm = Normalize(vmin=0.0, vmax=1.0)
     return {
         'cmap': cm.get_cmap('jet'), 
-        'norm': Normalize(vmin=vmin, vmax=vmax),
-        'vmin': vmin,
-        'vmax': vmax
+        'vmin': 0.0,
+        'vmax': 1.0,
     }
 
 def visualize_result(
