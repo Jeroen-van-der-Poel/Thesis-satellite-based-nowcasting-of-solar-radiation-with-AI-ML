@@ -1,6 +1,6 @@
 from EarthFormer.netCDFLightningModule import NetCDFLightningDataModule
 from omegaconf import OmegaConf
-from DGMR_SO.Data.data_pipeline import Dataset
+# from DGMR_SO.Data.data_pipeline import Dataset
 from pathlib import Path
 import os
 
