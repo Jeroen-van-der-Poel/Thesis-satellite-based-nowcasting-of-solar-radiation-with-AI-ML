@@ -99,8 +99,8 @@ def plot_metrics(metrics_dict, model_name="Model"):
 if __name__ == "__main__":
     #DGMR_CHECKPOINT = "/path/to/dgmr_checkpoint"
     #DGMR_TEST_PATH = "/path/to/dgmr/test_data"
-    EARTHFORMER_CFG = "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/EarthFormer/config/train.yml"
-    EARTHFORMER_CHECKPOINT = "/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/EarthFormer/experiments/ef_v10/model-epoch=189.ckpt"
+    EARTHFORMER_CFG = "../EarthFormer/config/train.yml"
+    EARTHFORMER_CHECKPOINT = "../EarthFormer/experiments/ef_v10/model-epoch=189.ckpt"
 
     print("Loading test data...")
     #dgmr_test_data = load_dgmr_test_data(DGMR_TEST_PATH)
