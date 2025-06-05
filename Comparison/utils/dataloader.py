@@ -4,9 +4,9 @@ from DGMR_SO.Data.data_pipeline import Dataset
 from pathlib import Path
 import os
 
-def load_dgmr_test_data(path=None, batch_size=16):
-    test_data, test_aug = Dataset(Path(path), batch_size=batch_size)
-    return test_data
+# def load_dgmr_test_data(path=None, batch_size=16):
+#     test_data, test_aug = Dataset(Path(path), batch_size=batch_size)
+#     return test_data
 
 def load_earthformer_test_data(cfg_path, batch_size=4):
     oc = OmegaConf.load(cfg_path)

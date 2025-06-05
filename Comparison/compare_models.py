@@ -53,35 +53,35 @@ def evaluate_earthformer(model, dataloader, visualize=False, visualization_indic
     averages = {k: np.mean(v) for k, v in metrics.items()}
     return metrics, averages
 
-def evaluate_dgmr(model, test_data, visualize=False, visualization_indices=None, save_dir="./dgmr_vis"):
-    os.makedirs(save_dir, exist_ok=True)
+# def evaluate_dgmr(model, test_data, visualize=False, visualization_indices=None, save_dir="./dgmr_vis"):
+#     os.makedirs(save_dir, exist_ok=True)
 
-    if visualization_indices is None:
-        visualization_indices = []
+#     if visualization_indices is None:
+#         visualization_indices = []
 
-    metrics = {"rmse": [], "rrmse": [], "mae": [], "ssim": []}
-    for idx, batch in enumerate(tqdm(test_data, desc="Evaluating DGMR-SO")):
-        x, y = batch
-        preds = model(x, training=False)
+#     metrics = {"rmse": [], "rrmse": [], "mae": [], "ssim": []}
+#     for idx, batch in enumerate(tqdm(test_data, desc="Evaluating DGMR-SO")):
+#         x, y = batch
+#         preds = model(x, training=False)
 
-        metrics["rmse"].append(compute_rmse(preds, y))
-        metrics["rrmse"].append(compute_rrmse(preds, y))
-        metrics["mae"].append(compute_mae(preds, y))
-        metrics["ssim"].append(compute_ssim(preds, y))
+#         metrics["rmse"].append(compute_rmse(preds, y))
+#         metrics["rrmse"].append(compute_rrmse(preds, y))
+#         metrics["mae"].append(compute_mae(preds, y))
+#         metrics["ssim"].append(compute_ssim(preds, y))
 
-        if visualize and idx in visualization_indices:
-            save_example_vis_results(
-                save_dir=save_dir,
-                save_prefix=f"dgmr_example_{idx}",
-                in_seq=x.detach().cpu().numpy(),
-                target_seq=y.detach().cpu().numpy(),
-                pred_seq=preds.detach().cpu().numpy(),
-                label="DGMR-SO",
-                layout="NTHWC",  
-            )
+#         if visualize and idx in visualization_indices:
+#             save_example_vis_results(
+#                 save_dir=save_dir,
+#                 save_prefix=f"dgmr_example_{idx}",
+#                 in_seq=x.detach().cpu().numpy(),
+#                 target_seq=y.detach().cpu().numpy(),
+#                 pred_seq=preds.detach().cpu().numpy(),
+#                 label="DGMR-SO",
+#                 layout="NTHWC",  
+#             )
 
-    averages = {k: np.mean(v) for k, v in metrics.items()}
-    return metrics, averages
+#     averages = {k: np.mean(v) for k, v in metrics.items()}
+#     return metrics, averages
 
 
 def plot_metrics(metrics_dict, model_name="Model"):
