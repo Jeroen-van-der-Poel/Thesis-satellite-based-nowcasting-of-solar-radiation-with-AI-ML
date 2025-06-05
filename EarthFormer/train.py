@@ -19,10 +19,10 @@ from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from omegaconf import OmegaConf
 from pytorch_lightning import Trainer, seed_everything
 from config import cfg
-from utils.optim import SequentialLR, warmup_lambda
-from utils.utils import get_parameter_names
-from utils.checkpoint import pl_ckpt_to_pytorch_state_dict, s3_download_pretrained_ckpt
-from utils.layout import layout_to_in_out_slice
+from EarthFormer.utils.optim import SequentialLR, warmup_lambda
+from EarthFormer.utils.utils import get_parameter_names
+from EarthFormer.utils.checkpoint import pl_ckpt_to_pytorch_state_dict, s3_download_pretrained_ckpt
+from EarthFormer.utils.layout import layout_to_in_out_slice
 from visualization.sevir.sevir_vis_seq import save_example_vis_results
 from cuboid_transformer.cuboid_transformer import CuboidTransformerModel
 from netCDFLightningModule import NetCDFLightningDataModule
