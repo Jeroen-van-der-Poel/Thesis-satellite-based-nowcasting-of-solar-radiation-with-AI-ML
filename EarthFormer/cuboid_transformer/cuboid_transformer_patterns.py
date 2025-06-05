@@ -1,7 +1,7 @@
 """Patterns for cuboid self-attention / cross attention"""
 
 import functools
-from utils.registry import Registry
+from EarthFormer.utils.registry import Registry
 
 CuboidSelfAttentionPatterns = Registry('CuboidSelfAttentionPattern')
 CuboidCrossAttentionPatterns = Registry('CuboidCrossAttentionPatterns')
