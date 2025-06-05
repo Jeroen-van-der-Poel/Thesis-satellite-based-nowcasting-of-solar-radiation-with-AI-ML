@@ -133,4 +133,4 @@ sudo -E /home/'user'/miniforge3/envs/ef_env/bin/python3 train.py
 
 ## Comparision
 
-``` pip install sklearn ```
+``` pip install scikit-learn ```
