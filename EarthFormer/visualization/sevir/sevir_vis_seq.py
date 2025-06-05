@@ -8,7 +8,7 @@ from utils.layout import change_layout_np
 from .sevir_cmap import get_cmap, VIL_COLORS, VIL_LEVELS
 from matplotlib import cm
 from matplotlib.colors import Normalize
-
+from matplotlib.colors import LinearSegmentedColormap
 
 HMF_COLORS = np.array([
     [82, 82, 82],
@@ -40,9 +40,15 @@ def plot_hit_miss_fa_all_thresholds(ax, y_true, y_pred, **unused_kwargs):
     cmap = ListedColormap(HMF_COLORS)
     ax.imshow(fig, cmap=cmap)
 
+def jet_with_gray():
+    base = cm.get_cmap('jet', 256)
+    base_colors = base(np.linspace(0, 1, 256))
+    base_colors[0] = [0.5, 0.5, 0.5, 1] 
+    return LinearSegmentedColormap.from_list('jet_gray', base_colors)
+
 def cmap_dict_auto(data):
     return {
-        'cmap': cm.get_cmap('jet'),
+        'cmap': jet_with_gray(),
         'norm': Normalize(vmin=0.0, vmax=1.0),
     }
 
