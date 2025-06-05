@@ -5,7 +5,7 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 import numpy as np
 import torch
 from utils.metrics import compute_rmse, compute_rrmse, compute_mae, compute_ssim, compute_forecast_skill
-from utils.dataloader import load_earthformer_test_data, # load_dgmr_test_data
+from utils.dataloader import load_earthformer_test_data # load_dgmr_test_data
 #from utils.modelloader import load_dgmr_model, load_earthformer_model
 from tqdm import tqdm
 import matplotlib.pyplot as plt
