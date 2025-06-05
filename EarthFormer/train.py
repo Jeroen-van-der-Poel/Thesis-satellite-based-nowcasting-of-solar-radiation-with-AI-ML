@@ -528,7 +528,7 @@ class CuboidPLModule(pl.LightningModule):
         micro_batch_size = x.shape[self.layout.find("N")]
         data_idx = int(batch_idx * micro_batch_size)
         if not self.eval_example_only or data_idx in self.val_example_data_idx_list:
-            y_hat, _ = self(x, y)
+            y_hat, loss = self(x, y)
             self.save_vis_step_end(
                 data_idx=data_idx,
                 in_seq=x,
@@ -542,10 +542,9 @@ class CuboidPLModule(pl.LightningModule):
             y = y.contiguous()
             step_mse = self.valid_mse(y_hat, y)
             step_mae = self.valid_mae(y_hat, y)
-            self.log('valid_frame_mse_step', step_mse,
-                     prog_bar=True, on_step=True, on_epoch=False)
-            self.log('valid_frame_mae_step', step_mae,
-                     prog_bar=True, on_step=True, on_epoch=False)
+            self.log('val_loss', loss, prog_bar=True, on_step=True, on_epoch=False)  
+            self.log('valid_frame_mse_step', step_mse, prog_bar=True, on_step=True, on_epoch=False)
+            self.log('valid_frame_mae_step', step_mae, prog_bar=True, on_step=True, on_epoch=False)
         return None
 
     def on_validation_epoch_end(self, outputs=None):

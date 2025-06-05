@@ -6,6 +6,8 @@ from matplotlib.colors import ListedColormap
 from matplotlib.patches import Patch
 from utils.layout import change_layout_np
 from .sevir_cmap import get_cmap, VIL_COLORS, VIL_LEVELS
+from matplotlib import cm
+from matplotlib.colors import Normalize
 
 
 HMF_COLORS = np.array([
@@ -38,6 +40,16 @@ def plot_hit_miss_fa_all_thresholds(ax, y_true, y_pred, **unused_kwargs):
     cmap = ListedColormap(HMF_COLORS)
     ax.imshow(fig, cmap=cmap)
 
+def cmap_dict_auto(data):
+    vmin = np.min(data)
+    vmax = np.max(data)
+    return {
+        'cmap': cm.get_cmap('jet'), 
+        'norm': Normalize(vmin=vmin, vmax=vmax),
+        'vmin': vmin,
+        'vmax': vmax
+    }
+
 def visualize_result(
         in_seq: np.array, target_seq: np.array,
         pred_seq_list: List[np.array], label_list: List[str],
@@ -57,10 +69,6 @@ def visualize_result(
     if norm is None:
         norm = {'scale': 255,
                 'shift': 0}
-    cmap_dict = lambda s: {'cmap': get_cmap(s, encoded=True)[0],
-                           'norm': get_cmap(s, encoded=True)[1],
-                           'vmin': get_cmap(s, encoded=True)[2],
-                           'vmax': get_cmap(s, encoded=True)[3]}
     in_len = in_seq.shape[-1]
     out_len = target_seq.shape[-1]
     max_len = max(in_len, out_len)
@@ -78,7 +86,7 @@ def visualize_result(
     for i in range(0, max_len, plot_stride):
         if i < in_len:
             xt = in_seq[idx, :, :, i] * norm['scale'] + norm['shift']
-            ax[0][i // plot_stride].imshow(xt, **cmap_dict('vil'))
+            ax[0][i // plot_stride].imshow(xt, **cmap_dict_auto(xt))
         else:
             ax[0][i // plot_stride].axis('off')
 
@@ -86,7 +94,7 @@ def visualize_result(
     for i in range(0, max_len, plot_stride):
         if i < out_len:
             xt = target_seq[idx, :, :, i] * norm['scale'] + norm['shift']
-            ax[1][i // plot_stride].imshow(xt, **cmap_dict('vil'))
+            ax[1][i // plot_stride].imshow(xt, **cmap_dict_auto(xt))
             # ax[1][i // plot_stride].set_title(f'{5*(i+plot_stride)} Minutes')
         else:
             ax[1][i // plot_stride].axis('off')
@@ -100,7 +108,7 @@ def visualize_result(
         for k in range(len(pred_seq_list)):
             for i in range(0, max_len, plot_stride):
                 if i < out_len:
-                    ax[2 + 3 * k][i // plot_stride].imshow(y_preds[k][0, :, :, i], **cmap_dict('vil'))
+                    ax[2 + 3 * k][i // plot_stride].imshow(y_preds[k][0, :, :, i], **cmap_dict_auto(y_preds[k][0, :, :, i],))
                     plot_hit_miss_fa(ax[2 + 1 + 3 * k][i // plot_stride], target_seq[0, :, :, i], y_preds[k][0, :, :, i],
                                      vis_thresh)
                     plot_hit_miss_fa_all_thresholds(ax[2 + 2 + 3 * k][i // plot_stride], target_seq[0, :, :, i],
@@ -117,7 +125,7 @@ def visualize_result(
         for k in range(len(pred_seq_list)):
             for i in range(0, max_len, plot_stride):
                 if i < out_len:
-                    ax[2 + k][i // plot_stride].imshow(y_preds[k][0, :, :, i], **cmap_dict('vil'))
+                    ax[2 + k][i // plot_stride].imshow(y_preds[k][0, :, :, i], **cmap_dict_auto(y_preds[k][0, :, :, i]))
                 else:
                     ax[2 + k][i // plot_stride].axis('off')
 
