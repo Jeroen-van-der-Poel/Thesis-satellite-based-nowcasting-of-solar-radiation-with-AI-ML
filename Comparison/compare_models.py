@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import numpy as np
@@ -9,7 +10,6 @@ from utils.dataloader import load_earthformer_test_data # load_dgmr_test_data
 #from utils.modelloader import load_dgmr_model, load_earthformer_model
 from tqdm import tqdm
 import matplotlib.pyplot as plt
-import os
 from EarthFormer.visualization.sevir.sevir_vis_seq import save_example_vis_results 
 from EarthFormer.train import CuboidPLModule
 
