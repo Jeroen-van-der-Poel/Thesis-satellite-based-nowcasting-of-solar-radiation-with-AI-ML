@@ -41,13 +41,9 @@ def plot_hit_miss_fa_all_thresholds(ax, y_true, y_pred, **unused_kwargs):
     ax.imshow(fig, cmap=cmap)
 
 def cmap_dict_auto(data):
-    vmin = np.min(data)
-    vmax = np.max(data)
-    norm = Normalize(vmin=0.0, vmax=1.0)
     return {
-        'cmap': cm.get_cmap('jet'), 
-        'vmin': 0.0,
-        'vmax': 1.0,
+        'cmap': cm.get_cmap('jet'),
+        'norm': Normalize(vmin=0.0, vmax=1.0),
     }
 
 def visualize_result(
@@ -85,7 +81,7 @@ def visualize_result(
     ax[0][0].set_ylabel('Inputs', fontsize=fs)
     for i in range(0, max_len, plot_stride):
         if i < in_len:
-            xt = in_seq[idx, :, :, i] * norm['scale'] + norm['shift']
+            xt = in_seq[idx, :, :, i]
             ax[0][i // plot_stride].imshow(xt, **cmap_dict_auto(xt))
         else:
             ax[0][i // plot_stride].axis('off')
