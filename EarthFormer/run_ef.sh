@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --account=cseduimc030
-#SBATCH --partition=csedu-prio,csedu
-#SBATCH --qos=csedu-large
+#SBATCH --account=das
+#SBATCH --partition=das
+#SBATCH --qos=das-large
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=80G
+#SBATCH --mem=110G
 #SBATCH --gres=gpu:1
 #SBATCH --time=48:00:00
 #SBATCH --output=myjob-%j.out
