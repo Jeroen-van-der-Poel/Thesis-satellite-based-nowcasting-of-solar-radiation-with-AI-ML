@@ -152,7 +152,7 @@ if __name__ == "__main__":
 
     ef_metrics, ef_results = evaluate_earthformer(
         ef_model,
-        ef_test_loader,
+        dm.test_dataloader(),
         visualize=True,
         visualization_indices=[0, 500, 1000, 1500],
         save_dir="./vis/earthformer"
