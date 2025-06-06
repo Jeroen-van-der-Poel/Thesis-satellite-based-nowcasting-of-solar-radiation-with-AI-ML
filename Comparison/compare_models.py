@@ -7,11 +7,12 @@ import numpy as np
 import torch
 from utils.metrics import compute_rmse, compute_rrmse, compute_mae, compute_ssim, compute_forecast_skill
 from utils.dataloader import load_earthformer_test_data # load_dgmr_test_data
-#from utils.modelloader import load_dgmr_model, load_earthformer_model
+#from utils.modelloader import load_earthformer_model
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 from EarthFormer.visualization.sevir.sevir_vis_seq import save_example_vis_results 
 from EarthFormer.train import CuboidPLModule
+from EarthFormer.netCDFLightningModule import NetCDFLightningDataModule
 
 
 def evaluate_earthformer(model, dataloader, visualize=False, visualization_indices=None, save_dir="./earthformer_vis"):
@@ -105,11 +106,39 @@ if __name__ == "__main__":
     print("Loading test data...")
     #dgmr_test_data = load_dgmr_test_data(DGMR_TEST_PATH)
     ef_test_loader = load_earthformer_test_data(EARTHFORMER_CFG)
+    test_dataset = ef_test_loader.dataset
+
+    print("Computing total_num_steps...")
+    cfg = OmegaConf.load(EARTHFORMER_CFG)
+    train_path = os.path.expanduser(cfg.dataset.train_path)
+    dm = NetCDFLightningDataModule(
+        train_path=train_path,
+        test_path=cfg.dataset.test_path,
+        batch_size=cfg.optim.micro_batch_size,
+        num_workers=4
+    )
+    dm.setup()
+    num_train_samples = dm.num_train_samples
+    total_batch_size = cfg.optim.total_batch_size
+    max_epochs = cfg.optim.max_epochs
+
+    total_num_steps = CuboidPLModule.get_total_num_steps(
+        num_samples=num_train_samples,
+        total_batch_size=total_batch_size,
+        epoch=max_epochs
+    )
 
     print("Loading models...")
     #dgmr_model = load_dgmr_model(DGMR_CHECKPOINT)
-    ef_module = CuboidPLModule.load_from_checkpoint(EARTHFORMER_CHECKPOINT)
+    ef_module = CuboidPLModule.load_from_checkpoint(
+        checkpoint_path=EARTHFORMER_CHECKPOINT,
+        total_num_steps=total_num_steps,
+        oc_file=EARTHFORMER_CFG,
+        save_dir="evaluation_run"
+    )
     ef_model = ef_module.torch_nn_module
+    ef_model.eval()
+    ef_model.to("cuda" if torch.cuda.is_available() else "cpu")
 
     print("Running evaluation...")
     # dgmr_metrics, dgmr_results = evaluate_dgmr(
