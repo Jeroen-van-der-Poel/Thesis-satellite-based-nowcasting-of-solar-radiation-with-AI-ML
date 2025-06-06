@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 from EarthFormer.visualization.sevir.sevir_vis_seq import save_example_vis_results 
 from EarthFormer.train import CuboidPLModule
 from EarthFormer.netCDFLightningModule import NetCDFLightningDataModule
+from omegaconf import OmegaConf
 
 
 def evaluate_earthformer(model, dataloader, visualize=False, visualization_indices=None, save_dir="./earthformer_vis"):
