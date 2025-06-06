@@ -24,7 +24,7 @@ def evaluate_earthformer(model, dataloader, visualize=False, visualization_indic
 
     metrics = {"rmse": [], "rrmse": [], "mae": [], "ssim": []}
     for idx, batch in enumerate(tqdm(dataloader, desc="Evaluating EarthFormer")):
-        batch = batch.permute(0, 1, 4, 2, 3)  # [B, T, H, W, C] → [B, T, C, H, W]
+        print("Batch shape before permute:", batch.shape)
         inputs = batch[:, :4]
         targets = batch[:, 4:]
 
