@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --account=cseduimc030
+#SBATCH --account=csedu
 #SBATCH --partition=csedu
 #SBATCH --qos=csedu-large
 #SBATCH --cpus-per-task=16
