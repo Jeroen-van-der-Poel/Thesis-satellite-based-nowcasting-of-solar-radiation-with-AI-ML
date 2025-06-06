@@ -34,8 +34,8 @@ def evaluate_earthformer(model, dataloader, visualize=False, visualization_indic
         with torch.no_grad():
             preds = model(inputs)
 
-        preds = preds.detach().cpu()
-        targets = targets.detach().cpu()
+        preds = preds.detach().cpu().numpy()
+        targets = targets.detach().cpu().numpy()
 
         metrics["rmse"].append(compute_rmse(preds, targets))
         metrics["rrmse"].append(compute_rrmse(preds, targets))
