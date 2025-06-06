@@ -1,4 +1,3 @@
-@@ -0,0 +1,20 @@
 #!/bin/bash
 #SBATCH --account=cseduimc030
 #SBATCH --partition=csedu
