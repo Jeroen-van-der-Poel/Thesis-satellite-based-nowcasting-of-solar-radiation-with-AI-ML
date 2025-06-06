@@ -28,6 +28,9 @@ def evaluate_earthformer(model, dataloader, visualize=False, visualization_indic
         inputs = batch[:, :4]
         targets = batch[:, 4:]
 
+        device = next(model.parameters()).device
+        inputs = inputs.to(device)
+        targets = targets.to(device)
         with torch.no_grad():
             preds = model(inputs)
 
