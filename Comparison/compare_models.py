@@ -113,7 +113,7 @@ if __name__ == "__main__":
     cfg = OmegaConf.load(EARTHFORMER_CFG)
     train_path = os.path.expanduser(cfg.dataset.train_path)
     dm = NetCDFLightningDataModule(
-        train_path=None,
+        train_path=train_path,
         test_path=cfg.dataset.test_path,
         batch_size=cfg.optim.micro_batch_size,
         num_workers=4
