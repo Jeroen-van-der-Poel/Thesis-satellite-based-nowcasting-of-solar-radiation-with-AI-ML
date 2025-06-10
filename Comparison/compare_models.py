@@ -62,6 +62,10 @@ def evaluate_earthformer(model, dataloader, visualize=False, visualization_indic
             )
 
     averages = {k: np.mean(v) for k, v in metrics.items()}
+
+    for i in averages:
+        print(f"Average - {i}: {averages[i]}")
+
     return metrics, averages
 
 # def evaluate_dgmr(model, test_data, visualize=False, visualization_indices=None, save_dir="./dgmr_vis"):
