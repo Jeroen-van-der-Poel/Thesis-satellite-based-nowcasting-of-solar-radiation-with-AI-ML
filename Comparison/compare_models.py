@@ -92,7 +92,7 @@ def evaluate_earthformer(model, dataloader, visualize=False, visualization_indic
 #     return metrics, averages
 
 
-def plot_metrics(metrics_dict, model_name="Model"):
+def plot_metrics(metrics_dict, model_name="Model", save_dir="./vis"):
     for metric, values in metrics_dict.items():
         plt.figure()
         plt.plot(values)
@@ -101,7 +101,9 @@ def plot_metrics(metrics_dict, model_name="Model"):
         plt.ylabel(metric.upper())
         plt.grid(True)
         plt.tight_layout()
+        plt.savefig(f'{save_dir}/{metric}.png', bbox_inches='tight')
         plt.show() 
+        plt.close()
 
 
 if __name__ == "__main__":
@@ -160,7 +162,7 @@ if __name__ == "__main__":
         ef_model,
         dm.test_dataloader(),
         visualize=True,
-        visualization_indices=[0, 500, 1000, 1500],
+        visualization_indices=[0, 500, 1000, 1500, 3000, 5000],
         save_dir="./vis/earthformer"
     )
-    plot_metrics(ef_metrics, model_name="EarthFormer")
+    plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./vis/earthformer")
