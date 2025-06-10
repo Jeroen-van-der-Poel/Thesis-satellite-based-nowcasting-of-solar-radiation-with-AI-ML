@@ -14,7 +14,7 @@ class DGMR(tf.keras.Model):
         self.discriminator_obj = Discriminator()
         self.crop_height = 256
         self.crop_width = 256
-        self.lambda_reg = 0.5 # instead of 1
+        self.lambda_reg = 0.3 # instead of 1
 
     @tf.function
     def __call__(self, tensor, is_training=False):
