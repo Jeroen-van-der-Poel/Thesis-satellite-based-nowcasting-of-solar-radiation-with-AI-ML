@@ -24,7 +24,7 @@ def evaluate_earthformer(model, dataloader, visualize=False, visualization_indic
 
     metrics = {"rmse": [], "rrmse": [], "mae": [], "ssim": []}
     for idx, batch in enumerate(tqdm(dataloader, desc="Evaluating EarthFormer")):
-        print("Batch shape before permute:", batch.shape)
+        #print("Batch shape before permute:", batch.shape)
         inputs = batch[:, :4]
         targets = batch[:, 4:]
 
@@ -44,9 +44,9 @@ def evaluate_earthformer(model, dataloader, visualize=False, visualization_indic
 
         if visualize and idx in visualization_indices:
             # Permute to NTHWC format expected by visualizer
-            x_vis = inputs.permute(0, 1, 3, 4, 2).detach().cpu().numpy()
-            y_vis = targets.permute(0, 1, 3, 4, 2).detach().cpu().numpy()
-            pred_vis = preds.permute(0, 1, 3, 4, 2).detach().cpu().numpy()
+            x_vis = inputs.detach().cpu().numpy()
+            y_vis = targets.detach().cpu().numpy()
+            pred_vis = preds.detach().cpu().numpy()
 
             save_example_vis_results(
                 save_dir=save_dir,
@@ -56,6 +56,9 @@ def evaluate_earthformer(model, dataloader, visualize=False, visualization_indic
                 pred_seq=pred_vis,
                 label="EarthFormer",
                 layout="NTHWC",
+                plot_stride=1,
+                vis_hits_misses_fas=False,
+                interval_real_time=15
             )
 
     averages = {k: np.mean(v) for k, v in metrics.items()}
