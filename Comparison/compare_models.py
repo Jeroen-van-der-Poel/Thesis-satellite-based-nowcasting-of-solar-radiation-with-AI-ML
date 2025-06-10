@@ -34,13 +34,13 @@ def evaluate_earthformer(model, dataloader, visualize=False, visualization_indic
         with torch.no_grad():
             preds = model(inputs)
 
-        preds = preds.detach().cpu().numpy()
-        targets = targets.detach().cpu().numpy()
+        preds_np = preds.detach().cpu().numpy()
+        targets_np = targets.detach().cpu().numpy()
 
-        metrics["rmse"].append(compute_rmse(preds, targets))
-        metrics["rrmse"].append(compute_rrmse(preds, targets))
-        metrics["mae"].append(compute_mae(preds, targets))
-        metrics["ssim"].append(compute_ssim(preds, targets))
+        metrics["rmse"].append(compute_rmse(preds_np, targets_np))
+        metrics["rrmse"].append(compute_rrmse(preds_np, targets_np))
+        metrics["mae"].append(compute_mae(preds_np, targets_np))
+        metrics["ssim"].append(compute_ssim(preds_np, targets_np))
 
         if visualize and idx in visualization_indices:
             # Permute to NTHWC format expected by visualizer
@@ -108,7 +108,7 @@ if __name__ == "__main__":
     #DGMR_CHECKPOINT = "/path/to/dgmr_checkpoint"
     #DGMR_TEST_PATH = "/path/to/dgmr/test_data"
     EARTHFORMER_CFG = "../EarthFormer/config/train.yml"
-    EARTHFORMER_CHECKPOINT = "../EarthFormer/experiments/ef_v10/checkpoints/model-epoch=189.ckpt"
+    EARTHFORMER_CHECKPOINT = "../EarthFormer/experiments/ef_v12/checkpoints/model-epoch=026.ckpt"
 
     print("Loading test data...")
     #dgmr_test_data = load_dgmr_test_data(DGMR_TEST_PATH)
