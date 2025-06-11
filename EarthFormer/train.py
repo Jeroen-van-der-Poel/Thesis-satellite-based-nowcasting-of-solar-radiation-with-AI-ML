@@ -193,10 +193,12 @@ class CuboidPLModule(pl.LightningModule):
     @staticmethod
     def get_dataset_config():
         oc = OmegaConf.create()
-        oc.dataset_name = "netcdf"
-        oc.train_path = "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_train_data/2021"
-        #oc.val_path = "/data1/h5data/val_data/val_data.h5"
-        oc.test_path = "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_test_data/"
+        oc.dataset_name = "h5" #netCDF
+        #oc.train_path = "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_train_data/2021"
+        oc.train_path = "/data1/h5data/train_data/train_data_2.h5"
+        oc.val_path = "/data1/h5data/val_data/val_data.h5"
+        oc.test_path = "/data1/h5data/test_data/test_data_2.h5"
+        #oc.test_path = "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_test_data/"
         oc.img_height = 390
         oc.img_width = 256
         oc.in_len = 4
@@ -472,11 +474,13 @@ class CuboidPLModule(pl.LightningModule):
         return int(epoch * num_samples / total_batch_size)
 
     @staticmethod
-    def get_datamodule(dataset_oc, micro_batch_size: int = 1, num_workers: int = 8):
-        train_path = os.path.expanduser(dataset_oc.get("train_path", "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_train_data/2021"))
-        #val_path = os.path.expanduser(dataset_oc.get("val_path", "/data1/h5data/val_data/val_data.h5"))
-        test_path = os.path.expanduser(dataset_oc.get("test_path", "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_test_data/"))
-        return NetCDFLightningDataModule(train_path=train_path, test_path=test_path, batch_size=micro_batch_size, num_workers=num_workers)
+    def get_datamodule(dataset_oc, micro_batch_size: int = 1, num_workers: int = 4):
+        #train_path = os.path.expanduser(dataset_oc.get("train_path", "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_train_data/2021"))
+        train_path = os.path.expanduser(dataset_oc.get("val_path", "/data1/h5data/train_data/train_data_2.h5"))
+        val_path = os.path.expanduser(dataset_oc.get("val_path", "/data1/h5data/val_data/val_data_2.h5"))
+        test_path = os.path.expanduser(dataset_oc.get("val_path", "/data1/h5data/test_data/test_data_2.h5"))
+        #test_path = os.path.expanduser(dataset_oc.get("test_path", "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_test_data/"))
+        return H5LightningDataModule(train_path=train_path, val_path=val_path, test_path=test_path, batch_size=micro_batch_size, num_workers=num_workers)
 
     @property
     def in_slice(self):
@@ -679,11 +683,8 @@ def main():
     dm = CuboidPLModule.get_datamodule(
         dataset_oc=dataset_oc,
         micro_batch_size=micro_batch_size,
-        num_workers=8)
-    #dm.prepare_data()
+        num_workers=4)
     dm.setup()
-    #print(f"Train samples: {dm.num_train_samples}")
-    #print(dm.train_dataloader().dataset.__len__())
     accumulate_grad_batches = total_batch_size // (micro_batch_size * args.gpus)
     total_num_steps = CuboidPLModule.get_total_num_steps(
         epoch=max_epochs,

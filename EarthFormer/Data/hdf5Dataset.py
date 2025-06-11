@@ -10,14 +10,19 @@ class HDF5NowcastingDataset(Dataset):
         self._vil = None
 
     def _lazy_init(self):
-        if self._vil is None:
+        if self._file is None:
             self._file = h5py.File(self.h5_path, 'r')
-            self._vil = self._file['vil']  # Access remains on disk
+            self._vil = self._file['vil']
 
     def __getitem__(self, idx):
         self._lazy_init()
-        return torch.from_numpy(self._vil[idx])  # Still lazy-loaded
+        data = torch.from_numpy(self._vil[idx]).float()
+        return data
 
     def __len__(self):
         self._lazy_init()
         return self._vil.shape[0]
+
+    def __del__(self):
+        if self._file is not None:
+            self._file.close()
