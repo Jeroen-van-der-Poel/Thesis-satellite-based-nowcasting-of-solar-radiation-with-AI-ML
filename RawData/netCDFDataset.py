@@ -16,8 +16,8 @@ class NetCDFNowcastingDataset(Dataset):
         self.y_frames = y_frames
         self.height = height
         self.width = width
-        self.file_paths, self.timestamps = manager.list(self._load_all_files_sorted())
-        self.valid_indices = manager.list(self._filter_valid_indices())
+        #self.file_paths, self.timestamps = manager.list(self._load_all_files_sorted())
+        #self.valid_indices = manager.list(self._filter_valid_indices())
 
     def _load_all_files_sorted(self):
         paths, times = [], []
