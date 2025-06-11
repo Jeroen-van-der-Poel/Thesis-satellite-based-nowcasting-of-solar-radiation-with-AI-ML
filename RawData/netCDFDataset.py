@@ -70,7 +70,7 @@ class NetCDFNowcastingDataset(Dataset):
         return np.array(valid, dtype=np.int32)
 
     def __len__(self):
-        return len(self.valid_indices)
+        return 5000
 
     def __getitem__(self, i):
         # idx = self.valid_indices[i]
