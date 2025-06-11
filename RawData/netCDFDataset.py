@@ -97,6 +97,6 @@ class NetCDFNowcastingDataset(Dataset):
 
         return torch.randn((20, self.height, self.width, 1), dtype=torch.float32)
 
-    def count_valid_samples(self):
-        print(f"Total valid samples: {len(self.valid_indices)}")
-        return len(self.valid_indices)
+    # def count_valid_samples(self):
+    #     print(f"Total valid samples: {len(self.valid_indices)}")
+    #     return len(self.valid_indices)
