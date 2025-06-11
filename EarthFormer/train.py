@@ -469,7 +469,7 @@ class CuboidPLModule(pl.LightningModule):
         """
         if epoch is None:
             epoch = cls.get_optim_config().max_epochs
-        return int(epoch * num_samples / total_batch_size)
+        return int(epoch * 5000 / total_batch_size)
 
     @staticmethod
     def get_datamodule(dataset_oc, micro_batch_size: int = 1, num_workers: int = 8):
