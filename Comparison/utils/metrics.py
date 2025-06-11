@@ -5,10 +5,17 @@ from skimage.metrics import structural_similarity as ssim
 def compute_rmse(pred, true):
     return np.sqrt(mean_squared_error(true.flatten(), pred.flatten()))
 
-def compute_rrmse(pred, true):
-    rmse = compute_rmse(pred, true)
-    mean_true = np.mean(true)
-    return rmse / mean_true if mean_true != 0 else np.nan
+# def compute_rrmse(pred, true):
+#     rmse = compute_rmse(pred, true)
+#     mean_true = np.mean(true)
+#     return rmse / mean_true if mean_true != 0 else np.nan
+
+def compute_rrmse(pred, target, eps=1e-5):
+    rmse = compute_rmse(pred, target)
+    denom = np.mean(target)
+    if abs(denom) < eps:
+        return 0 
+    return rmse / denom
 
 def compute_mae(pred, true):
     return mean_absolute_error(true.flatten(), pred.flatten())

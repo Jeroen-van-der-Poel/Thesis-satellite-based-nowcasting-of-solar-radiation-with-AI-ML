@@ -14,6 +14,7 @@ from EarthFormer.visualization.sevir.sevir_vis_seq import save_example_vis_resul
 from EarthFormer.train import CuboidPLModule
 from EarthFormer.h5LightningModule import H5LightningDataModule
 from omegaconf import OmegaConf
+from persistence import Persistence
 
 
 def evaluate_earthformer(model, dataloader, visualize=False, visualization_indices=None, save_dir="./earthformer_vis"):
@@ -89,6 +90,65 @@ def evaluate_earthformer(model, dataloader, visualize=False, visualization_indic
     for i in averages:
         print(f"Average - {i}: {averages[i]}")
 
+    return metrics, averages
+
+def evaluate_persistence(model, dataloader, visualize=False, visualization_indices=None, save_dir="./persistence_vis"):
+    import warnings
+    os.makedirs(save_dir, exist_ok=True)
+    if visualization_indices is None:
+        visualization_indices = []
+
+    metrics = {"rmse": [], "rrmse": [], "mae": [], "ssim": []}
+
+    for idx, batch in enumerate(tqdm(dataloader, desc="Evaluating Persistence")):
+        inputs = batch[:, :4]
+        targets = batch[:, 4:]
+
+        device = next(model.parameters()).device
+        inputs = inputs.to(device)
+        targets = targets.to(device)
+
+        with torch.no_grad():
+            preds, _ = model(inputs, targets)
+
+        preds_np = preds.detach().cpu().numpy()
+        targets_np = targets.detach().cpu().numpy()
+        T = preds_np.shape[1]
+
+        if idx == 0:
+            for k in metrics:
+                metrics[k] = [[] for _ in range(T)]
+
+        for t in range(T):
+            try:
+                metrics["rmse"][t].append(compute_rmse(preds_np[:, t], targets_np[:, t]))
+                metrics["rrmse"][t].append(compute_rrmse(preds_np[:, t], targets_np[:, t]))
+                metrics["mae"][t].append(compute_mae(preds_np[:, t], targets_np[:, t]))
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore", category=RuntimeWarning)
+                    metrics["ssim"][t].append(compute_ssim(preds_np[:, t], targets_np[:, t]))
+            except Exception as e:
+                print(f"Metric error at t={t}, batch={idx}: {e}")
+                for k in metrics:
+                    metrics[k][t].append(np.nan)
+
+        if visualize and idx in visualization_indices:
+            save_example_vis_results(
+                save_dir=save_dir,
+                save_prefix=f"persistence_example_{idx}",
+                in_seq=inputs.detach().cpu().numpy(),
+                target_seq=targets_np,
+                pred_seq=preds_np,
+                label="Persistence",
+                layout="NTHWC",
+                plot_stride=1,
+                vis_hits_misses_fas=False,
+                interval_real_time=15
+            )
+
+    averages = {k: np.nanmean([v for sub in metrics[k] for v in sub]) for k in metrics}
+    for i in averages:
+        print(f"Average - {i}: {averages[i]}")
     return metrics, averages
 
 
@@ -188,6 +248,10 @@ if __name__ == "__main__":
     ef_model.eval()
     ef_model.to("cuda" if torch.cuda.is_available() else "cpu")
 
+    persistence_model = Persistence(layout="NTHWC")
+    persistence_model.eval()
+    persistence_model.to("cuda" if torch.cuda.is_available() else "cpu")
+
     print("Running evaluation...")
     # dgmr_metrics, dgmr_results = evaluate_dgmr(
     #     dgmr_model,
@@ -206,3 +270,12 @@ if __name__ == "__main__":
         save_dir="./vis/earthformer"
     )
     plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./vis/earthformer")
+
+    p_metrics, p_results = evaluate_persistence(
+        persistence_model,
+        dm.test_dataloader(),
+        visualize=True,
+        visualization_indices=[0, 500, 1000, 1500, 3000, 5000],
+        save_dir="./vis/persistence"
+    )
+    plot_metrics(p_metrics, model_name="Persistence", save_dir="./vis/persistence")
