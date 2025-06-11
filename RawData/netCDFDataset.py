@@ -73,28 +73,29 @@ class NetCDFNowcastingDataset(Dataset):
         return len(self.valid_indices)
 
     def __getitem__(self, i):
-        idx = self.valid_indices[i]
-        x = np.zeros((self.x_frames, self.height, self.width), dtype=np.float32)
-        y = np.zeros((self.y_frames, self.height, self.width), dtype=np.float32)
-        for j in range(self.window):
-            with NetCDF(self.file_paths[idx + j]) as nc:
-                sds = nc.variables['sds'][0, :, :]
-                sds_cs = nc.variables['sds_cs'][0, :, :]
-                sds_cs[sds_cs < 0] = 0
-                # Transpose to match (height, width) convention
-                norm = np.clip(sds / sds_cs, 0, 1).T
-                if j < self.x_frames:
-                    x[j] = norm
-                else:
-                    y[j - self.x_frames] = norm
-        tensor = torch.cat([torch.from_numpy(x), torch.from_numpy(y)], dim=0).unsqueeze(-1)
+        # idx = self.valid_indices[i]
+        # x = torch.zeros((self.x_frames, self.height, self.width), dtype=torch.float32)
+        # y = torch.zeros((self.y_frames, self.height, self.width), dtype=torch.float32)
+        # for j in range(self.window):
+        #     with NetCDF(self.file_paths[idx + j]) as nc:
+        #         sds = nc.variables['sds'][0, :, :]
+        #         sds_cs = nc.variables['sds_cs'][0, :, :]
+        #         sds_cs[sds_cs < 0] = 0
+        #         # Transpose to match (height, width) convention
+        #         norm = np.clip(sds / sds_cs, 0, 1).T
+        #         norm_tensor = torch.from_numpy(norm).float()
+        #         if j < self.x_frames:
+        #             x[j] = norm_tensor
+        #         else:
+        #             y[j - self.x_frames] = norm_tensor
+        # tensor = torch.cat([x, y], dim=0).unsqueeze(-1)
 
-        # Help GC
-        del x, y, norm, sds, sds_cs  
-        gc.collect()  
-        torch.cuda.empty_cache()
+        # # Help GC
+        # del x, y, norm, sds, sds_cs  
+        # gc.collect()  
+        # torch.cuda.empty_cache()
 
-        return tensor
+        return torch.randn((20, self.height, self.width, 1), dtype=torch.float32)
 
     def count_valid_samples(self):
         print(f"Total valid samples: {len(self.valid_indices)}")
