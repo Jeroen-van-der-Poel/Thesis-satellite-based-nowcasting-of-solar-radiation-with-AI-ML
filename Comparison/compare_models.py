@@ -12,7 +12,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 from EarthFormer.visualization.sevir.sevir_vis_seq import save_example_vis_results 
 from EarthFormer.train import CuboidPLModule
-from EarthFormer.netCDFLightningModule import NetCDFLightningDataModule
+from EarthFormer.h5LightningModule import H5LightningDataModule
 from omegaconf import OmegaConf
 
 
@@ -24,7 +24,6 @@ def evaluate_earthformer(model, dataloader, visualize=False, visualization_indic
 
     metrics = {"rmse": [], "rrmse": [], "mae": [], "ssim": []}
     for idx, batch in enumerate(tqdm(dataloader, desc="Evaluating EarthFormer")):
-        #print("Batch shape before permute:", batch.shape)
         inputs = batch[:, :4]
         targets = batch[:, 4:]
 
@@ -37,10 +36,16 @@ def evaluate_earthformer(model, dataloader, visualize=False, visualization_indic
         preds_np = preds.detach().cpu().numpy()
         targets_np = targets.detach().cpu().numpy()
 
-        metrics["rmse"].append(compute_rmse(preds_np, targets_np))
-        metrics["rrmse"].append(compute_rrmse(preds_np, targets_np))
-        metrics["mae"].append(compute_mae(preds_np, targets_np))
-        metrics["ssim"].append(compute_ssim(preds_np, targets_np))
+        T = preds_np.shape[1]  # e.g., 16 timesteps
+        if idx == 0:
+            for k in metrics:
+                metrics[k] = [[] for _ in range(T)]  # list per timestep
+
+        for t in range(T):
+            metrics["rmse"][t].append(compute_rmse(preds_np[:, t], targets_np[:, t]))
+            metrics["rrmse"][t].append(compute_rrmse(preds_np[:, t], targets_np[:, t]))
+            metrics["mae"][t].append(compute_mae(preds_np[:, t], targets_np[:, t]))
+            metrics["ssim"][t].append(compute_ssim(preds_np[:, t], targets_np[:, t]))
 
         if visualize and idx in visualization_indices:
             # Permute to NTHWC format expected by visualizer
@@ -100,16 +105,20 @@ def evaluate_earthformer(model, dataloader, visualize=False, visualization_indic
 
 
 def plot_metrics(metrics_dict, model_name="Model", save_dir="./vis"):
+    os.makedirs(save_dir, exist_ok=True)
+    time_steps = np.arange(1, len(next(iter(metrics_dict.values()))) + 1) * 15  # in minutes
+
     for metric, values in metrics_dict.items():
+        avg_values = [np.mean(v) for v in values]
         plt.figure()
-        plt.plot(values)
-        plt.title(f"{model_name} - {metric.upper()} per Batch")
-        plt.xlabel("Batch")
+        plt.plot(time_steps, avg_values, marker='o')
+        plt.title(f"{model_name} - {metric.upper()} per 15-min Interval")
+        plt.xlabel("Time (minutes)")
         plt.ylabel(metric.upper())
         plt.grid(True)
         plt.tight_layout()
-        plt.savefig(f'{save_dir}/{metric}.png', bbox_inches='tight')
-        plt.show() 
+        plt.savefig(f'{save_dir}/{metric}_15min.png', bbox_inches='tight')
+        plt.show()
         plt.close()
 
 
@@ -125,12 +134,14 @@ if __name__ == "__main__":
     print("Computing total_num_steps...")
     cfg = OmegaConf.load(EARTHFORMER_CFG)
     train_path = os.path.expanduser(cfg.dataset.train_path)
+    val_path = os.path.expanduser(cfg.dataset.val_path)
     test_path = os.path.expanduser(cfg.dataset.test_path) 
-    dm = NetCDFLightningDataModule(
+    dm = H5LightningDataModule(
         train_path=train_path,
+        val_path=val_path,  
         test_path=test_path,
         batch_size=cfg.optim.micro_batch_size,
-        num_workers=4
+        num_workers=8
     )
     dm.setup()
     num_train_samples = dm.num_train_samples
