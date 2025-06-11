@@ -17,12 +17,13 @@ from omegaconf import OmegaConf
 
 
 def evaluate_earthformer(model, dataloader, visualize=False, visualization_indices=None, save_dir="./earthformer_vis"):
+    import warnings
     os.makedirs(save_dir, exist_ok=True)
-
     if visualization_indices is None:
         visualization_indices = []
 
     metrics = {"rmse": [], "rrmse": [], "mae": [], "ssim": []}
+
     for idx, batch in enumerate(tqdm(dataloader, desc="Evaluating EarthFormer")):
         inputs = batch[:, :4]
         targets = batch[:, 4:]
@@ -30,35 +31,52 @@ def evaluate_earthformer(model, dataloader, visualize=False, visualization_indic
         device = next(model.parameters()).device
         inputs = inputs.to(device)
         targets = targets.to(device)
+
         with torch.no_grad():
             preds = model(inputs)
 
         preds_np = preds.detach().cpu().numpy()
         targets_np = targets.detach().cpu().numpy()
+        T = preds_np.shape[1]
 
-        T = preds_np.shape[1]  # e.g., 16 timesteps
         if idx == 0:
             for k in metrics:
-                metrics[k] = [[] for _ in range(T)]  # list per timestep
+                metrics[k] = [[] for _ in range(T)]
 
         for t in range(T):
-            metrics["rmse"][t].append(compute_rmse(preds_np[:, t], targets_np[:, t]))
-            metrics["rrmse"][t].append(compute_rrmse(preds_np[:, t], targets_np[:, t]))
-            metrics["mae"][t].append(compute_mae(preds_np[:, t], targets_np[:, t]))
-            metrics["ssim"][t].append(compute_ssim(preds_np[:, t], targets_np[:, t]))
+            try:
+                metrics["rmse"][t].append(compute_rmse(preds_np[:, t], targets_np[:, t]))
+            except Exception as e:
+                print(f"RMSE error at t={t}, batch={idx}: {e}")
+                metrics["rmse"][t].append(np.nan)
+
+            try:
+                metrics["rrmse"][t].append(compute_rrmse(preds_np[:, t], targets_np[:, t]))
+            except Exception as e:
+                print(f"RRMSE error at t={t}, batch={idx}: {e}")
+                metrics["rrmse"][t].append(np.nan)
+
+            try:
+                metrics["mae"][t].append(compute_mae(preds_np[:, t], targets_np[:, t]))
+            except Exception as e:
+                print(f"MAE error at t={t}, batch={idx}: {e}")
+                metrics["mae"][t].append(np.nan)
+
+            try:
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore", category=RuntimeWarning)
+                    metrics["ssim"][t].append(compute_ssim(preds_np[:, t], targets_np[:, t]))
+            except Exception as e:
+                print(f"SSIM error at t={t}, batch={idx}: {e}")
+                metrics["ssim"][t].append(np.nan)
 
         if visualize and idx in visualization_indices:
-            # Permute to NTHWC format expected by visualizer
-            x_vis = inputs.detach().cpu().numpy()
-            y_vis = targets.detach().cpu().numpy()
-            pred_vis = preds.detach().cpu().numpy()
-
             save_example_vis_results(
                 save_dir=save_dir,
                 save_prefix=f"earthformer_example_{idx}",
-                in_seq=x_vis,
-                target_seq=y_vis,
-                pred_seq=pred_vis,
+                in_seq=inputs.detach().cpu().numpy(),
+                target_seq=targets_np,
+                pred_seq=preds_np,
                 label="EarthFormer",
                 layout="NTHWC",
                 plot_stride=1,
@@ -66,12 +84,13 @@ def evaluate_earthformer(model, dataloader, visualize=False, visualization_indic
                 interval_real_time=15
             )
 
-    averages = {k: np.mean(v) for k, v in metrics.items()}
+    averages = {k: np.nanmean([v for sub in metrics[k] for v in sub]) for k in metrics}
 
     for i in averages:
         print(f"Average - {i}: {averages[i]}")
 
     return metrics, averages
+
 
 # def evaluate_dgmr(model, test_data, visualize=False, visualization_indices=None, save_dir="./dgmr_vis"):
 #     os.makedirs(save_dir, exist_ok=True)
@@ -106,12 +125,14 @@ def evaluate_earthformer(model, dataloader, visualize=False, visualization_indic
 
 def plot_metrics(metrics_dict, model_name="Model", save_dir="./vis"):
     os.makedirs(save_dir, exist_ok=True)
-    time_steps = np.arange(1, len(next(iter(metrics_dict.values()))) + 1) * 15  # in minutes
+    time_steps = np.arange(1, len(next(iter(metrics_dict.values()))) + 1) * 15
 
     for metric, values in metrics_dict.items():
-        avg_values = [np.mean(v) for v in values]
+        print(f"{metric}: {len(values)} intervals")
+        avg_values = [np.nanmean(v) if len(v) > 0 else np.nan for v in values]
+
         plt.figure()
-        plt.plot(time_steps, avg_values, marker='o')
+        plt.plot(time_steps[:len(avg_values)], avg_values, marker='o')
         plt.title(f"{model_name} - {metric.upper()} per 15-min Interval")
         plt.xlabel("Time (minutes)")
         plt.ylabel(metric.upper())
@@ -120,6 +141,7 @@ def plot_metrics(metrics_dict, model_name="Model", save_dir="./vis"):
         plt.savefig(f'{save_dir}/{metric}_15min.png', bbox_inches='tight')
         plt.show()
         plt.close()
+
 
 
 if __name__ == "__main__":
