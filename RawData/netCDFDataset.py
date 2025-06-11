@@ -16,8 +16,8 @@ class NetCDFNowcastingDataset(Dataset):
         self.y_frames = y_frames
         self.height = height
         self.width = width
-        #self.file_paths, self.timestamps = manager.list(self._load_all_files_sorted())
-        #self.valid_indices = manager.list(self._filter_valid_indices())
+        self.file_paths, self.timestamps = manager.list(self._load_all_files_sorted())
+        self.valid_indices = manager.list(self._filter_valid_indices())
 
     def _load_all_files_sorted(self):
         paths, times = [], []
@@ -70,33 +70,33 @@ class NetCDFNowcastingDataset(Dataset):
         return np.array(valid, dtype=np.int32)
 
     def __len__(self):
-        return 5000
+        return len(self.valid_indices)
 
-    def __getitem__(self, i):
-        # idx = self.valid_indices[i]
-        # x = torch.zeros((self.x_frames, self.height, self.width), dtype=torch.float32)
-        # y = torch.zeros((self.y_frames, self.height, self.width), dtype=torch.float32)
-        # for j in range(self.window):
-        #     with NetCDF(self.file_paths[idx + j]) as nc:
-        #         sds = nc.variables['sds'][0, :, :]
-        #         sds_cs = nc.variables['sds_cs'][0, :, :]
-        #         sds_cs[sds_cs < 0] = 0
-        #         # Transpose to match (height, width) convention
-        #         norm = np.clip(sds / sds_cs, 0, 1).T
-        #         norm_tensor = torch.from_numpy(norm).float()
-        #         if j < self.x_frames:
-        #             x[j] = norm_tensor
-        #         else:
-        #             y[j - self.x_frames] = norm_tensor
-        # tensor = torch.cat([x, y], dim=0).unsqueeze(-1)
+    def __getitem__(self, i):   #xarray
+        idx = self.valid_indices[i]
+        x = torch.zeros((self.x_frames, self.height, self.width), dtype=torch.float32)
+        y = torch.zeros((self.y_frames, self.height, self.width), dtype=torch.float32)
+        for j in range(self.window):
+            with NetCDF(self.file_paths[idx + j]) as nc:
+                sds = nc.variables['sds'][0, :, :]
+                sds_cs = nc.variables['sds_cs'][0, :, :]
+                sds_cs[sds_cs < 0] = 0
+                # Transpose to match (height, width) convention
+                norm = np.clip(sds / sds_cs, 0, 1).T
+                norm_tensor = torch.from_numpy(norm).float()
+                if j < self.x_frames:
+                    x[j] = norm_tensor
+                else:
+                    y[j - self.x_frames] = norm_tensor
+        tensor = torch.cat([x, y], dim=0).unsqueeze(-1)
 
-        # # Help GC
-        # del x, y, norm, sds, sds_cs  
-        # gc.collect()  
-        # torch.cuda.empty_cache()
+        # Help GC
+        del x, y, norm, sds, sds_cs  
+        gc.collect()  
+        torch.cuda.empty_cache()
 
-        return torch.randn((20, self.height, self.width, 1), dtype=torch.float32)
+        return tensor #torch.randn((20, self.height, self.width, 1), dtype=torch.float32)
 
-    # def count_valid_samples(self):
-    #     print(f"Total valid samples: {len(self.valid_indices)}")
-    #     return len(self.valid_indices)
+    def count_valid_samples(self):
+        print(f"Total valid samples: {len(self.valid_indices)}")
+        return len(self.valid_indices)
