@@ -474,7 +474,7 @@ class CuboidPLModule(pl.LightningModule):
         return int(epoch * num_samples / total_batch_size)
 
     @staticmethod
-    def get_datamodule(dataset_oc, micro_batch_size: int = 1, num_workers: int = 8):
+    def get_datamodule(dataset_oc, micro_batch_size: int = 1, num_workers: int = 12):
         #train_path = os.path.expanduser(dataset_oc.get("train_path", "~/projects/Thesis-satellite-based-nowcasting-of-solar-radiation-with-AI-ML/RawData/raw_train_data/2021"))
         train_path = os.path.expanduser(dataset_oc.get("tain_path", "/data1/h5data/train_data/train_data_2.h5"))
         val_path = os.path.expanduser(dataset_oc.get("val_path", "/data1/h5data/val_data/val_data_2.h5"))
@@ -683,7 +683,7 @@ def main():
     dm = CuboidPLModule.get_datamodule(
         dataset_oc=dataset_oc,
         micro_batch_size=micro_batch_size,
-        num_workers=8)
+        num_workers=12)
     dm.setup()
     accumulate_grad_batches = total_batch_size // (micro_batch_size * args.gpus)
     total_num_steps = CuboidPLModule.get_total_num_steps(
