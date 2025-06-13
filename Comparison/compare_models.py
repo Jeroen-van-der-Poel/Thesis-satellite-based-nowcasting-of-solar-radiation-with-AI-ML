@@ -226,9 +226,9 @@ def plot_metrics(metrics_dict, model_name="Model", save_dir="./vis"):
 
 
 if __name__ == "__main__":
-    DGMR_CHECKPOINT = "../DGMR_SO/Checkpoints/0925_V03"
+    # DGMR_CHECKPOINT = "../DGMR_SO/Checkpoints/0925_V03"
     EARTHFORMER_CFG = "../EarthFormer/config/train.yml"
-    EARTHFORMER_CHECKPOINT = "../EarthFormer/experiments/ef_v12/checkpoints/model-epoch=026.ckpt"
+    EARTHFORMER_CHECKPOINT = "../EarthFormer/experiments/ef_v18/checkpoints/model-epoch=039.ckpt"
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
