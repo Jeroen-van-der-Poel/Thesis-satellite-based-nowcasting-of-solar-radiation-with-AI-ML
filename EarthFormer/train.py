@@ -698,7 +698,7 @@ def main():
     trainer_kwargs = pl_module.set_trainer_kwargs(
         devices=args.gpus,
         accumulate_grad_batches=accumulate_grad_batches,
-        precision="32",
+        precision="16-mixed",
     )
     trainer = Trainer(**trainer_kwargs)
     if args.pretrained:
