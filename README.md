@@ -120,17 +120,67 @@ For Virtual Machine on EUMETSAT, follow these steps: https://confluence.ecmwf.in
 
 After these steps you should be able the execute the next steps.
 
+### Data preperation
+
+##### data_preperation_to_h5.py
+Converts the subset .nc files into h5 format, using the NetCDFNowcastingDataset class.
+- Creates a 80/20 split for the train and validation dataset.  
+
+Usage:
+```
+python data_preperation_to_h5.py
+```
+Update the script with the correct input/output paths and match the height and width to your selected geographic region.
+
 ### Training
 Before training an instance of EarthFormer, make sure the train, validation and test sets are in designated folders in the /Data directory. Furthermore, make sure you are in the EarthFormer directory and have created an virtual environment desribed in the section above.    
 Afterwards typ the following command in the console: 
 ```
-python train.py
+python train.py --gpu 1 --cfg config/train.yml --ckpt_name last.ckpt --save "version name"
 ```
 Or on EUMETSAT: 
 ```
-sudo -E /home/'user'/miniforge3/envs/ef_env/bin/python3 train.py
+sudo -E /home/'user'/miniforge3/envs/ef_env/bin/python3 train.py --gpu 1 --cfg config/train.yml --ckpt_name last.ckpt --save "version name"
+```
+
+This command will execute the full training process on the dataset. We recommend the use of tensorboard to watch and evaluate the training process closely.  
+When working on a EUMETSAT Virtual Machine and you wat to run tensorboard locally, make sure you connect to the VM as follows:  
+```
+ssh -L 6006:localhost:6006 'user'@'IP_of_VM'
+```
+When connected succesfully run the following command to load and view tensorboard on ```localhost:6006```:
+```
+tensorboard --logdir='directory_to_train_logs' --port=6006 --host=localhost
 ```
 
 ## Comparision
+To comapre DGMR-SO, EarthFormer and Persistence, we created a evaluation script which evaluates all models on the metrics defined in the report. Furthermore, it generates the images produced and saves them as PNGs.
 
-``` pip install scikit-learn ```
+### Installation
+!IMPORTANT make sure conda, cuda and cuDNN are avaialble/downloaded!  
+For Virtual Machine on EUMETSAT, follow these steps: https://confluence.ecmwf.int/display/EWCLOUDKB/EUMETSAT+-+GPU+support
+
+1. Move into Comparison folder
+2. Create conda environment: ```conda create -n comp_env python=3.9 -y```
+3. Activate conda environment: ```conda activate comp_env```
+4. Install the required packages:
+     - ```pip install tensorflow[and-cuda]```
+     - ```pip install matplotlib```
+     - ```pip install dm-sonnet```
+     - ```pip install pyyaml```
+     - ```pip install tensorboard```
+     - ```pip install scikit-learn ```
+     - ```pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121```
+     - ```pip install pytorch_lightning==2.5.1```
+     - ```pip install torchmetrics==2.5.1```
+     - ```pip install xarray netcdf4 opencv-python earthnet==0.3.9```
+     - ```pip install -U -e . --no-build-isolation```
+ After these steps you should be able the execute the next steps.
+
+### Execution
+Make sure the path in the ```compare_models.py``` script are correclty defined. Afterwards run:  
+``` 
+python compare_models.py
+```  
+The images and metric scores will be saved in the /vis folder.
+
