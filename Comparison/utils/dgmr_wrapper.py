@@ -22,9 +22,7 @@ class DGMRWrapper:
                                    generator_optimizer=model.gen_optimizer,
                                    discriminator_optimizer=model.disc_optimizer)
         manager = tf.train.CheckpointManager(ckpt, checkpoint_path, max_to_keep=10)
-        if manager.latest_checkpoint:
-            ckpt.restore(manager.latest_checkpoint)
-            print("DGMR-SO checkpoint restored!")
+        ckpt.restore(manager.latest_checkpoint)
         return model
 
     def __call__(self, inputs, targets=None):
@@ -46,8 +44,6 @@ class DGMRWrapper:
 
         print("NaN in outputs:", np.isnan(outputs_tf.numpy()).any())
         print("NaN in targets:", np.isnan(targets_tf.numpy()).any())
-        print("Output min/max:", outputs_tf.numpy().min(), outputs_tf.numpy().max())
-        print("Target min/max:", targets_tf.numpy().min(), targets_tf.numpy().max())
 
         # Optional: scale predictions
         # outputs_np = outputs_np * 1000.0
