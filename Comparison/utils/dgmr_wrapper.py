@@ -4,9 +4,14 @@ from DGMR_SO.utils.losses import Loss_hing_disc, Loss_hing_gen
 import tensorflow as tf
 import torch
 import numpy as np
+import random
 
 class DGMRWrapper:
     def __init__(self, checkpoint_path):
+        tf.random.set_seed(42)
+        np.random.seed(42)
+        random.seed(42)
+        
         self.model = self._load_model(checkpoint_path)
         self.crop_height = 256
         self.crop_width = 256
