@@ -154,7 +154,7 @@ tensorboard --logdir='directory_to_train_logs' --port=6006 --host=localhost
 ```
 
 ## Comparision
-To comapre DGMR-SO, EarthFormer and Persistence, we created a evaluation script which evaluates all models on the metrics defined in the report. Furthermore, it generates the images produced and saves them as PNGs.
+To compare DGMR-SO, EarthFormer and Persistence, we created a evaluation script which evaluates all models on the metrics defined in the report. Furthermore, it generates the images produced and saves them as PNGs.
 
 ### Installation
 !IMPORTANT make sure conda, cuda and cuDNN are avaialble/downloaded!  
