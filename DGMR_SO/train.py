@@ -1,14 +1,13 @@
 import sys
-from pathlib import Path
-sys.path.append(str(Path(__file__).resolve().parents[1]))
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import tensorflow as tf
 from tensorflow.keras.optimizers import Adam
-from Data.data_pipeline import Dataset
-from model.dgmr import DGMR
-from utils.losses import Loss_hing_disc, Loss_hing_gen
-import os
-from utils.utils import *
+from DGMR_SO.Data.data_pipeline import Dataset
+from DGMR_SO.model.dgmr import DGMR
+from DGMR_SO.utils.losses import Loss_hing_disc, Loss_hing_gen
+from DGMR_SO.utils.utils import *
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 os.environ['TF_XLA_FLAGS'] = '--tf_xla_enable_xla_devices'
