@@ -254,7 +254,6 @@ if __name__ == "__main__":
     EARTHFORMER_CHECKPOINT = "../EarthFormer/experiments/ef_v18/checkpoints/model-epoch=039.ckpt"
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    print(tf.config.list_physical_devices('GPU'))
 
     cfg = OmegaConf.load(EARTHFORMER_CFG)
     train_path = os.path.expanduser(cfg.dataset.train_path)
@@ -264,7 +263,7 @@ if __name__ == "__main__":
         train_path=train_path,
         val_path=val_path,  
         test_path=test_path,
-        batch_size=cfg.optim.micro_batch_size,
+        batch_size=16,
         num_workers=2
     )
     dm.setup()
