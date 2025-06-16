@@ -4,14 +4,9 @@ from DGMR_SO.utils.losses import Loss_hing_disc, Loss_hing_gen
 import tensorflow as tf
 import torch
 import numpy as np
-import random
 
 class DGMRWrapper:
     def __init__(self, checkpoint_path):
-        tf.random.set_seed(42)
-        np.random.seed(42)
-        random.seed(42)
-        
         self.model = self._load_model(checkpoint_path)
         self.crop_height = 256
         self.crop_width = 256
@@ -27,7 +22,9 @@ class DGMRWrapper:
                                    generator_optimizer=model.gen_optimizer,
                                    discriminator_optimizer=model.disc_optimizer)
         manager = tf.train.CheckpointManager(ckpt, checkpoint_path, max_to_keep=10)
-        ckpt.restore(manager.latest_checkpoint).expect_partial()
+        status = ckpt.restore(manager.latest_checkpoint).expect_partial()
+        print("Unmatched objects:", status.unmatched_objects)
+        print("Uninitialized variables:", status.uninitialized_variables)
         return model
 
     def __call__(self, inputs, targets=None):
