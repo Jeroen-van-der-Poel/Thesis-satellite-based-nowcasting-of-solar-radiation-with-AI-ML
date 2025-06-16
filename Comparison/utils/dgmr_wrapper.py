@@ -3,6 +3,7 @@ from keras.optimizers import Adam
 from DGMR_SO.utils.losses import Loss_hing_disc, Loss_hing_gen
 import tensorflow as tf
 import torch
+import numpy as np
 
 class DGMRWrapper:
     def __init__(self, checkpoint_path):
@@ -43,6 +44,8 @@ class DGMRWrapper:
         outputs_tf = self.model.generator_obj(inputs_tf, is_training=False)
         outputs_np = outputs_tf.numpy()
 
+        print("NaN in outputs:", np.isnan(outputs_tf.numpy()).any())
+        print("NaN in targets:", np.isnan(targets_tf.numpy()).any())
         print("Output min/max:", outputs_tf.numpy().min(), outputs_tf.numpy().max())
         print("Target min/max:", targets_tf.numpy().min(), targets_tf.numpy().max())
 
