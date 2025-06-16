@@ -331,7 +331,7 @@ class CuboidPLModule(pl.LightningModule):
         oc = OmegaConf.create()
         oc.check_val_every_n_epoch = 1
         oc.log_step_ratio = 0.001  # Logging every 1% of the total training steps per epoch
-        oc.precision = "bf16-mixed"
+        oc.precision = "16-mixed" 
         return oc
 
     @classmethod
@@ -704,7 +704,7 @@ def main():
     trainer_kwargs = pl_module.set_trainer_kwargs(
         devices=args.gpus,
         accumulate_grad_batches=accumulate_grad_batches,
-        precision="bf16-mixed",
+        precision="16-mixed",
     )
     trainer = Trainer(**trainer_kwargs)
     if args.pretrained:
