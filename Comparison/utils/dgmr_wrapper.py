@@ -40,7 +40,7 @@ class DGMRWrapper:
         inputs_tf, targets_tf = self.model.random_crop_images(inputs_tf, targets_tf, self.crop_height, self.crop_width)
 
         # Run inference
-        outputs_tf = self.model.generator_obj(inputs_tf, training=False)
+        outputs_tf = self.model.generator_obj(inputs_tf, is_training=False)
         outputs_np = outputs_tf.numpy()
 
         # Optional: scale predictions
