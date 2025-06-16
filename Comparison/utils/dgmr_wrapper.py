@@ -22,9 +22,7 @@ class DGMRWrapper:
                                    generator_optimizer=model.gen_optimizer,
                                    discriminator_optimizer=model.disc_optimizer)
         manager = tf.train.CheckpointManager(ckpt, checkpoint_path, max_to_keep=10)
-        status = ckpt.restore(manager.latest_checkpoint).expect_partial()
-        print("Unmatched objects:", status.unmatched_objects)
-        print("Uninitialized variables:", status.uninitialized_variables)
+        ckpt.restore(manager.latest_checkpoint).expect_partial()
         return model
 
     def __call__(self, inputs, targets=None):
@@ -46,7 +44,7 @@ class DGMRWrapper:
         print("2. NaN in inputs after cropping:", np.isnan(inputs_tf).any())
 
         # Run inference
-        outputs_tf = self.model.generator_obj(inputs_tf, is_training=False)
+        outputs_tf = self.model.generator_obj(inputs_tf, is_training=True)
         outputs_np = outputs_tf.numpy()
 
         print("NaN in outputs:", np.isnan(outputs_tf.numpy()).any())
