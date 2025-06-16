@@ -14,7 +14,7 @@ def compute_rrmse(pred, target, eps=1e-5):
     rmse = compute_rmse(pred, target)
     denom = np.mean(target)
     if abs(denom) < eps:
-        return 0 
+        return np.nan 
     return rmse / denom
 
 def compute_mae(pred, true):
