@@ -14,6 +14,7 @@ from EarthFormer.h5LightningModule import H5LightningDataModule
 from omegaconf import OmegaConf
 from persistence import Persistence
 from utils.dgmr_wrapper import DGMRWrapper
+import tensorflow as tf
 
 def evaluate_earthformer(model, dataloader, visualize=False, visualization_indices=None, save_dir="./earthformer_vis"):
     os.makedirs(save_dir, exist_ok=True)
