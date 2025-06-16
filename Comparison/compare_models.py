@@ -1,3 +1,4 @@
+os.environ["TF_FORCE_GPU_ALLOW_GROWTH"] = "true"
 import sys
 from pathlib import Path
 import os
@@ -15,6 +16,10 @@ from omegaconf import OmegaConf
 from persistence import Persistence
 from utils.dgmr_wrapper import DGMRWrapper
 import tensorflow as tf
+
+gpus = tf.config.list_physical_devices('GPU')
+for gpu in gpus:
+    tf.config.experimental.set_memory_growth(gpu, True)
 
 def evaluate_earthformer(model, dataloader, visualize=False, visualization_indices=None, save_dir="./earthformer_vis"):
     os.makedirs(save_dir, exist_ok=True)
