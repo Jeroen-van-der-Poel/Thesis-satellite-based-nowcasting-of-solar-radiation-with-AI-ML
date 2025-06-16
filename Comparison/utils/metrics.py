@@ -21,16 +21,16 @@ def compute_mae(pred, true):
     return mean_absolute_error(true.flatten(), pred.flatten())
 
 def compute_ssim(pred, true):
-    pred = np.squeeze(pred)  # Remove singleton dimensions
+    pred = np.squeeze(pred)
     true = np.squeeze(true)
     ssim_scores = []
 
     for p, t in zip(pred, true):
-        # If input is 3D (H, W, C), convert to 2D
         if p.ndim == 3:
             p = p[..., 0]
             t = t[..., 0]
-        score = ssim(p, t, data_range=t.max() - t.min())
+        range_val = max(t.max() - t.min(), 1e-5)
+        score = ssim(p, t, data_range=range_val)
         ssim_scores.append(score)
 
     return np.mean(ssim_scores)

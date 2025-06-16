@@ -671,7 +671,7 @@ def main():
     parser = get_parser()
     args = parser.parse_args()
     if args.pretrained:
-        args.cfg = os.path.abspath(os.path.join(os.path.dirname(__file__), "earthformer_sevir_v1.yaml")) # TODO: update this to the correct path
+        args.cfg = os.path.abspath(os.path.join(os.path.dirname(__file__), "config/train.yml"))
     if args.cfg is not None:
         oc_from_file = OmegaConf.load(open(args.cfg, "r"))
         dataset_oc = OmegaConf.to_object(oc_from_file.dataset)
