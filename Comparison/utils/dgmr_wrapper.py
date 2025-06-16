@@ -37,7 +37,7 @@ class DGMRWrapper:
         # Convert to TF tensors
         inputs_tf = tf.convert_to_tensor(inputs_np, dtype=tf.float32)
         targets_tf = tf.convert_to_tensor(targets_np, dtype=tf.float32)
-        inputs_tf, targets_tf = DGMR.random_crop_images(inputs_tf, targets_tf, self.crop_height, self.crop_width)
+        inputs_tf, targets_tf = self.model.random_crop_images(inputs_tf, targets_tf, self.crop_height, self.crop_width)
 
         # Run inference
         outputs_tf = self.model.generator_obj(inputs_tf, training=False)
