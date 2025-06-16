@@ -1,9 +1,12 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import tensorflow as tf
-from model.generator import Generator
-from model.discriminator import Discriminator
+from DGMR_SO.model.generator import Generator
+from DGMR_SO.model.discriminator import Discriminator
 import numpy as np
 import time
-import datetime
 
 class DGMR(tf.keras.Model):
     def __init__(self, lead_time=240, time_delta=15) -> None:

@@ -1,4 +1,8 @@
-import model.layers as layers
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+import DGMR_SO.model.layers as layers
 import tensorflow._api.v2.compat.v1 as tf
 import sonnet as snt
 
