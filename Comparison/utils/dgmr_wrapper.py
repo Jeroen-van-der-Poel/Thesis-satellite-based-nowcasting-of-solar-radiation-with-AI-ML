@@ -33,22 +33,14 @@ class DGMRWrapper:
         else:
             targets_np = targets.detach().cpu().numpy()
 
-        print("1. NaN in inputs:", np.isnan(inputs_np).any())
-
         # Convert to TF tensors
         inputs_tf = tf.convert_to_tensor(inputs_np, dtype=tf.float32)
         targets_tf = tf.convert_to_tensor(targets_np, dtype=tf.float32)
         inputs_tf, targets_tf = self.model.random_crop_images(inputs_tf, targets_tf, self.crop_height, self.crop_width)
 
-
-        print("2. NaN in inputs after cropping:", np.isnan(inputs_tf).any())
-
         # Run inference
         outputs_tf = self.model.generator_obj(inputs_tf, is_training=True)
         outputs_np = outputs_tf.numpy()
-
-        print("NaN in outputs:", np.isnan(outputs_tf.numpy()).any())
-        print("NaN in targets:", np.isnan(targets_tf.numpy()).any())
 
         # Optional: scale predictions
         # outputs_np = outputs_np * 1000.0
