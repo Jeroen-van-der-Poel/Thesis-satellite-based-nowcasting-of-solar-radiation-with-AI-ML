@@ -43,6 +43,9 @@ class DGMRWrapper:
         outputs_tf = self.model.generator_obj(inputs_tf, is_training=False)
         outputs_np = outputs_tf.numpy()
 
+        print("Output min/max:", outputs_tf.numpy().min(), outputs_tf.numpy().max())
+        print("Target min/max:", targets_tf.numpy().min(), targets_tf.numpy().max())
+
         # Optional: scale predictions
         # outputs_np = outputs_np * 1000.0
 
