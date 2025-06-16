@@ -331,7 +331,7 @@ class CuboidPLModule(pl.LightningModule):
         oc = OmegaConf.create()
         oc.check_val_every_n_epoch = 1
         oc.log_step_ratio = 0.001  # Logging every 1% of the total training steps per epoch
-        oc.precision = 32
+        oc.precision = "bf16-mixed"
         return oc
 
     @classmethod
@@ -518,7 +518,7 @@ class CuboidPLModule(pl.LightningModule):
         micro_batch_size = x.shape[self.layout.find("N")]
         data_idx = int(batch_idx * micro_batch_size)
 
-        if str(self.trainer.precision) == "16":
+        if str(self.trainer.precision) != "32":
             y_hat = y_hat.float()
             y = y.float()
             loss = F.mse_loss(y_hat, y) 
@@ -549,7 +549,7 @@ class CuboidPLModule(pl.LightningModule):
                 pred_seq=y_hat,
                 mode="val"
             )
-            if str(self.trainer.precision) == "16":
+            if str(self.trainer.precision) != "32":
                 y_hat = y_hat.float()
             y_hat = y_hat.contiguous()
             y = y.contiguous()
@@ -586,7 +586,7 @@ class CuboidPLModule(pl.LightningModule):
                 pred_seq=y_hat,
                 mode="test"
             )
-            if str(self.trainer.precision) == "16":
+            if str(self.trainer.precision) != "32":
                 y_hat = y_hat.float()
             step_mse = self.test_mse(y_hat.contiguous(), y.contiguous())
             step_mae = self.test_mae(y_hat.contiguous(), y.contiguous())
@@ -704,7 +704,7 @@ def main():
     trainer_kwargs = pl_module.set_trainer_kwargs(
         devices=args.gpus,
         accumulate_grad_batches=accumulate_grad_batches,
-        precision="32",
+        precision="bf16-mixed",
     )
     trainer = Trainer(**trainer_kwargs)
     if args.pretrained:
