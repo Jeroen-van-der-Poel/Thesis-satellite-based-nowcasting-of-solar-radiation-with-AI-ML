@@ -1,7 +1,7 @@
-os.environ["TF_FORCE_GPU_ALLOW_GROWTH"] = "true"
 import sys
 from pathlib import Path
 import os
+os.environ["TF_FORCE_GPU_ALLOW_GROWTH"] = "true"
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import warnings
 import numpy as np
