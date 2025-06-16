@@ -225,7 +225,7 @@ if __name__ == "__main__":
 
     print("Plotting combined metrics...")
     plot_combined_metrics(
-        metrics_list=[ef_metrics, p_metrics, dgmr_metrics], 
-        model_names=["EarthFormer", "Persistence", "DGMR-SO"], 
+        metrics_list=[ef_metrics, dgmr_metrics, p_metrics], 
+        model_names=["EarthFormer", "DGMR-SO", "Persistence",], 
         save_dir="./vis/combined"
     )
