@@ -263,7 +263,7 @@ if __name__ == "__main__":
         train_path=train_path,
         val_path=val_path,  
         test_path=test_path,
-        batch_size=cfg.optim.batch_size,
+        batch_size=cfg.optim.micro_batch_size,
         num_workers=2
     )
     dm.setup()
