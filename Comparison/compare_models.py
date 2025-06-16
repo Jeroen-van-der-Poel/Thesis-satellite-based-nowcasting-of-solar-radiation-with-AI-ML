@@ -1,9 +1,7 @@
 import sys
-from pathlib import Path
 import os
 os.environ["TF_FORCE_GPU_ALLOW_GROWTH"] = "true"
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-import warnings
 import numpy as np
 import torch
 from utils.metrics import compute_rmse, compute_rrmse, compute_mae, compute_ssim, compute_forecast_skill
@@ -21,96 +19,27 @@ gpus = tf.config.list_physical_devices('GPU')
 for gpu in gpus:
     tf.config.experimental.set_memory_growth(gpu, True)
 
-def evaluate_earthformer(model, dataloader, visualize=False, visualization_indices=None, save_dir="./earthformer_vis"):
+def evaluate_model(
+    model_name,
+    model,
+    dataloader,
+    inference_fn,
+    visualize=False,
+    visualization_indices=None,
+    save_dir="./vis"
+):
     os.makedirs(save_dir, exist_ok=True)
     if visualization_indices is None:
         visualization_indices = []
 
-    metrics = {"rmse": [], "rrmse": [], "mae": [], "ssim": []}
+    metrics = {k: [] for k in ["rmse", "rrmse", "mae", "ssim"]}
 
-    for idx, batch in enumerate(tqdm(dataloader, desc="Evaluating EarthFormer")):
+    for idx, batch in enumerate(tqdm(dataloader, desc=f"Evaluating {model_name}")):
         inputs = batch[:, :4]
         targets = batch[:, 4:]
 
-        device = next(model.parameters()).device
-        inputs = inputs.to(device)
-        targets = targets.to(device)
-
         with torch.no_grad():
-            preds = model(inputs)
-
-        preds_np = preds.detach().cpu().numpy()
-        targets_np = targets.detach().cpu().numpy()
-        T = preds_np.shape[1]
-
-        if idx == 0:
-            for k in metrics:
-                metrics[k] = [[] for _ in range(T)]
-
-        for t in range(T):
-            try:
-                metrics["rmse"][t].append(compute_rmse(preds_np[:, t], targets_np[:, t]))
-            except Exception as e:
-                print(f"RMSE error at t={t}, batch={idx}: {e}")
-                metrics["rmse"][t].append(np.nan)
-
-            try:
-                metrics["rrmse"][t].append(compute_rrmse(preds_np[:, t], targets_np[:, t]))
-            except Exception as e:
-                print(f"RRMSE error at t={t}, batch={idx}: {e}")
-                metrics["rrmse"][t].append(np.nan)
-
-            try:
-                metrics["mae"][t].append(compute_mae(preds_np[:, t], targets_np[:, t]))
-            except Exception as e:
-                print(f"MAE error at t={t}, batch={idx}: {e}")
-                metrics["mae"][t].append(np.nan)
-
-            try:
-                with warnings.catch_warnings():
-                    warnings.simplefilter("ignore", category=RuntimeWarning)
-                    metrics["ssim"][t].append(compute_ssim(preds_np[:, t], targets_np[:, t]))
-            except Exception as e:
-                print(f"SSIM error at t={t}, batch={idx}: {e}")
-                metrics["ssim"][t].append(np.nan)
-
-        if visualize and idx in visualization_indices:
-            save_example_vis_results(
-                save_dir=save_dir,
-                save_prefix=f"earthformer_example_{idx}",
-                in_seq=inputs.detach().cpu().numpy(),
-                target_seq=targets_np,
-                pred_seq=preds_np,
-                label="EarthFormer",
-                layout="NTHWC",
-                plot_stride=1,
-                vis_hits_misses_fas=False,
-                interval_real_time=15
-            )
-
-    averages = {k: np.nanmean([v for sub in metrics[k] for v in sub]) for k in metrics}
-
-    for i in averages:
-        print(f"Average - {i}: {averages[i]}")
-
-    return metrics, averages
-
-def evaluate_persistence(model, dataloader, visualize=False, visualization_indices=None, save_dir="./persistence_vis"):
-    os.makedirs(save_dir, exist_ok=True)
-    if visualization_indices is None:
-        visualization_indices = []
-
-    metrics = {"rmse": [], "rrmse": [], "mae": [], "ssim": []}
-
-    for idx, batch in enumerate(tqdm(dataloader, desc="Evaluating Persistence")):
-        inputs = batch[:, :4]
-        targets = batch[:, 4:]
-
-        inputs = inputs.to(inputs.device)
-        targets = targets.to(inputs.device)
-
-        with torch.no_grad():
-            preds, _ = model(inputs, targets)
+            preds, targets = inference_fn(model, inputs, targets)
 
         preds_np = preds.detach().cpu().numpy()
         targets_np = targets.detach().cpu().numpy()
@@ -125,9 +54,7 @@ def evaluate_persistence(model, dataloader, visualize=False, visualization_indic
                 metrics["rmse"][t].append(compute_rmse(preds_np[:, t], targets_np[:, t]))
                 metrics["rrmse"][t].append(compute_rrmse(preds_np[:, t], targets_np[:, t]))
                 metrics["mae"][t].append(compute_mae(preds_np[:, t], targets_np[:, t]))
-                with warnings.catch_warnings():
-                    warnings.simplefilter("ignore", category=RuntimeWarning)
-                    metrics["ssim"][t].append(compute_ssim(preds_np[:, t], targets_np[:, t]))
+                metrics["ssim"][t].append(compute_ssim(preds_np[:, t], targets_np[:, t]))
             except Exception as e:
                 print(f"Metric error at t={t}, batch={idx}: {e}")
                 for k in metrics:
@@ -136,78 +63,39 @@ def evaluate_persistence(model, dataloader, visualize=False, visualization_indic
         if visualize and idx in visualization_indices:
             save_example_vis_results(
                 save_dir=save_dir,
-                save_prefix=f"persistence_example_{idx}",
+                save_prefix=f"{model_name.lower()}_example_{idx}",
                 in_seq=inputs.detach().cpu().numpy(),
                 target_seq=targets_np,
                 pred_seq=preds_np,
-                label="Persistence",
+                label=model_name,
                 layout="NTHWC",
                 plot_stride=1,
                 vis_hits_misses_fas=False,
                 interval_real_time=15
             )
 
-    averages = {k: np.nanmean([v for sub in metrics[k] for v in sub]) for k in metrics}
-    for i in averages:
-        print(f"Average - {i}: {averages[i]}")
-    return metrics, averages
-
-def evaluate_dgmr(model, dataloader, visualize=False, visualization_indices=None, save_dir="./dgmr_vis"):
-    os.makedirs(save_dir, exist_ok=True)
-    if visualization_indices is None:
-        visualization_indices = []
-
-    metrics = {"rmse": [], "rrmse": [], "mae": [], "ssim": []}
-
-    for idx, batch in enumerate(tqdm(dataloader, desc="Evaluating DGMR-SO")):
-        inputs = batch[:, :4]
-        targets = batch[:, 4:]
-
-        inputs = inputs.to("cpu")  # TF model needs CPU tensors
-        targets = targets.to("cpu")
-
-        with torch.no_grad():
-            preds, targets = model(inputs, targets)
-
-        preds_np = preds.detach().cpu().numpy()
-        targets_np = targets.detach().cpu().numpy()
-        T = preds_np.shape[1]
-
-        if idx == 0:
-            for k in metrics:
-                metrics[k] = [[] for _ in range(T)]
-
-        for t in range(T):
-            try:
-                metrics["rmse"][t].append(compute_rmse(preds_np[:, t], targets_np[:, t]))
-                metrics["rrmse"][t].append(compute_rrmse(preds_np[:, t], targets_np[:, t]))
-                metrics["mae"][t].append(compute_mae(preds_np[:, t], targets_np[:, t]))
-                with warnings.catch_warnings():
-                    warnings.simplefilter("ignore", category=RuntimeWarning)
-                    metrics["ssim"][t].append(compute_ssim(preds_np[:, t], targets_np[:, t]))
-            except Exception as e:
-                print(f"Metric error at t={t}, batch={idx}: {e}")
-                for k in metrics:
-                    metrics[k][t].append(np.nan)
-
-        if visualize and idx in visualization_indices:
-            save_example_vis_results(
-                save_dir=save_dir,
-                save_prefix=f"dgmr_example_{idx}",
-                in_seq=inputs.numpy(),
-                target_seq=targets_np,
-                pred_seq=preds_np,
-                label="DGMR-SO",
-                layout="NTHWC",
-                plot_stride=1,
-                vis_hits_misses_fas=False,
-                interval_real_time=15
-            )
-
-    averages = {k: np.nanmean([v for sub in metrics[k] for v in sub]) for k in metrics}
+    averages = {k: np.nanmean([v for v in ts] if ts else [np.nan]) for k, ts in metrics.items()}
     for k, v in averages.items():
-        print(f"Average - {k}: {v}")
+        print(f"{model_name} Average - {k}: {v}")
+
     return metrics, averages
+
+
+def infer_earthformer(model, inputs, targets):
+    device = next(model.parameters()).device
+    inputs, targets = inputs.to(device), targets.to(device)
+    preds = model(inputs)
+    return preds, targets
+
+def infer_persistence(model, inputs, targets):
+    inputs, targets = inputs.to(inputs.device), targets.to(inputs.device)
+    preds, _ = model(inputs, targets)
+    return preds, targets
+
+def infer_dgmr(model, inputs, targets):
+    inputs, targets = inputs.cpu(), targets.cpu()
+    preds, targets = model(inputs, targets)
+    return preds, targets
 
 
 def plot_metrics(metrics_dict, model_name="Model", save_dir="./vis"):
@@ -300,30 +188,36 @@ if __name__ == "__main__":
     dgmr_model = DGMRWrapper(DGMR_CHECKPOINT)
 
     print("Evaluating EarthFormer...")
-    ef_metrics, ef_results = evaluate_earthformer(
-        ef_model,
+    ef_metrics, ef_results = evaluate_model(
+        "EarthFormer", 
+        ef_model, 
         dm.test_dataloader(),
-        visualize=True,
+        inference_fn=infer_earthformer,
+        visualize=True, 
         visualization_indices=[0, 500, 1000, 1500, 3000, 5000],
         save_dir="./vis/earthformer"
     )
     plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./vis/earthformer")
 
     print("Evaluating Persistence...")
-    p_metrics, p_results = evaluate_persistence(
-        persistence_model,
+    p_metrics, p_results = evaluate_model(
+        "Persistence", 
+        persistence_model, 
         dm.test_dataloader(),
-        visualize=True,
+        inference_fn=infer_persistence,
+        visualize=True, 
         visualization_indices=[0, 500, 1000, 1500, 3000, 5000],
         save_dir="./vis/persistence"
     )
     plot_metrics(p_metrics, model_name="Persistence", save_dir="./vis/persistence")
 
     print("Evaluating DGMR-SO...")
-    dgmr_metrics, dgmr_results = evaluate_dgmr(
-        dgmr_model,
+    dgmr_metrics, dgmr_results = evaluate_model(
+        "DGMR-SO", 
+        dgmr_model, 
         dm.test_dataloader(),
-        visualize=True,
+        inference_fn=infer_dgmr,
+        visualize=True, 
         visualization_indices=[0, 500, 1000, 1500, 3000, 5000],
         save_dir="./vis/dgmr"
     )
