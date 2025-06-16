@@ -517,6 +517,12 @@ class CuboidPLModule(pl.LightningModule):
         y_hat, loss = self(x, y)
         micro_batch_size = x.shape[self.layout.find("N")]
         data_idx = int(batch_idx * micro_batch_size)
+
+        if str(self.trainer.precision) == "16":
+            y_hat = y_hat.float()
+            y = y.float()
+            loss = F.mse_loss(y_hat, y) 
+
         self.save_vis_step_end(
             data_idx=data_idx,
             in_seq=x,
@@ -698,7 +704,7 @@ def main():
     trainer_kwargs = pl_module.set_trainer_kwargs(
         devices=args.gpus,
         accumulate_grad_batches=accumulate_grad_batches,
-        precision="16-mixed",
+        precision="32",
     )
     trainer = Trainer(**trainer_kwargs)
     if args.pretrained:
