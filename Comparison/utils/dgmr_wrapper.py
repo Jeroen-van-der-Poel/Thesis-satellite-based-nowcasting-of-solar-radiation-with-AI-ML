@@ -45,6 +45,9 @@ class DGMRWrapper:
         targets_tf = tf.convert_to_tensor(targets_np, dtype=tf.float32)
         inputs_tf, targets_tf = self.model.random_crop_images(inputs_tf, targets_tf, self.crop_height, self.crop_width)
 
+
+        print("2. NaN in inputs after cropping:", np.isnan(inputs_tf).any())
+
         # Run inference
         outputs_tf = self.model.generator_obj(inputs_tf, is_training=False)
         outputs_np = outputs_tf.numpy()
