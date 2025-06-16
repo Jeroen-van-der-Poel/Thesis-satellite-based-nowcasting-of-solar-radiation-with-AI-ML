@@ -34,7 +34,7 @@ class Generator(snt.Module):
             [batch_size, num_lead_times, h, w, 1].
         """
         
-        tf.print("call generator")
+        # tf.print("call generator")
 
         _, _, height, width, _ = inputs.shape.as_list()
         initial_states = self._cond_stack(inputs, is_training=is_training)
