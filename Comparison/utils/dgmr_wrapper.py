@@ -22,7 +22,7 @@ class DGMRWrapper:
                                    generator_optimizer=model.gen_optimizer,
                                    discriminator_optimizer=model.disc_optimizer)
         manager = tf.train.CheckpointManager(ckpt, checkpoint_path, max_to_keep=10)
-        ckpt.restore(manager.latest_checkpoint)
+        ckpt.restore(manager.latest_checkpoint).expect_partial()
         return model
 
     def __call__(self, inputs, targets=None):
