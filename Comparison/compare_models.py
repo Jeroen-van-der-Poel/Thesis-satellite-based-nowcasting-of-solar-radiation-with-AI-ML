@@ -263,7 +263,7 @@ if __name__ == "__main__":
         train_path=train_path,
         val_path=val_path,  
         test_path=test_path,
-        batch_size=16,
+        batch_size=4,
         num_workers=2
     )
     dm.setup()
