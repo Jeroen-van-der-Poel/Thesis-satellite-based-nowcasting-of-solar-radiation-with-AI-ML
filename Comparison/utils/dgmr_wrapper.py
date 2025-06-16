@@ -33,6 +33,8 @@ class DGMRWrapper:
         else:
             targets_np = targets.detach().cpu().numpy()
 
+        print("1. NaN in inputs:", np.isnan(inputs_np).any())
+
         # Convert to TF tensors
         inputs_tf = tf.convert_to_tensor(inputs_np, dtype=tf.float32)
         targets_tf = tf.convert_to_tensor(targets_np, dtype=tf.float32)
