@@ -7,6 +7,9 @@ import torch
 class DGMRWrapper:
     def __init__(self, checkpoint_path):
         self.model = self._load_model(checkpoint_path)
+        self.crop_height = 256
+        self.crop_width = 256
+        self.lambda_reg = 1
 
     def _load_model(self, checkpoint_path):
         disc_optimizer = Adam(learning_rate=2E-4, beta_1=0.0, beta_2=0.999)
