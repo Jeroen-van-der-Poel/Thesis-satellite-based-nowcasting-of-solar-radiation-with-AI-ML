@@ -156,8 +156,8 @@ if __name__ == "__main__":
         train_path=train_path,
         val_path=val_path,  
         test_path=test_path,
-        batch_size=4, # cfg.optim.micro_batch_size
-        num_workers=8
+        batch_size=8, # cfg.optim.micro_batch_size
+        num_workers=2
     )
     dm.setup()
     num_train_samples = dm.num_train_samples
