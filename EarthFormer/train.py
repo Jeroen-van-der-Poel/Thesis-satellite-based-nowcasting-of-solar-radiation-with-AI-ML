@@ -331,7 +331,7 @@ class CuboidPLModule(pl.LightningModule):
         oc = OmegaConf.create()
         oc.check_val_every_n_epoch = 1
         oc.log_step_ratio = 0.001  # Logging every 1% of the total training steps per epoch
-        oc.precision = "16-mixed"
+        oc.precision = 32
         return oc
 
     @classmethod
@@ -512,6 +512,10 @@ class CuboidPLModule(pl.LightningModule):
         # t0 = time.time()
         # print(f"[STEP START] idx={batch_idx}, batch shape={batch.shape}")
         data_seq = batch.contiguous()
+
+        assert not torch.isnan(batch).any(), "NaNs in batch input!"
+        assert not torch.isinf(batch).any(), "Infs in batch input!"
+
         x = data_seq[self.in_slice]
         y = data_seq[self.out_slice]
         y_hat, loss = self(x, y)
@@ -536,6 +540,10 @@ class CuboidPLModule(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         data_seq = batch.contiguous()
+
+        assert not torch.isnan(batch).any(), "NaNs in batch input!"
+        assert not torch.isinf(batch).any(), "Infs in batch input!"
+
         x = data_seq[self.in_slice]
         y = data_seq[self.out_slice]
         micro_batch_size = x.shape[self.layout.find("N")]
@@ -704,7 +712,7 @@ def main():
     trainer_kwargs = pl_module.set_trainer_kwargs(
         devices=args.gpus,
         accumulate_grad_batches=accumulate_grad_batches,
-        precision= "16-mixed",
+        precision= 32,
     )
     trainer = Trainer(**trainer_kwargs)
     if args.pretrained:
