@@ -37,6 +37,7 @@ def evaluate_model(
     for idx, batch in enumerate(tqdm(dataloader, desc=f"Evaluating {model_name}")):
         inputs = batch[:, :4]
         targets = batch[:, 4:]
+        print(f"Batch {idx}: inputs shape {inputs.shape}, targets shape {targets.shape}")
 
         with torch.no_grad():
             preds, targets = inference_fn(model, inputs, targets)
