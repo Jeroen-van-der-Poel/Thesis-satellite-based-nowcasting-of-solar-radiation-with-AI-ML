@@ -142,7 +142,7 @@ def plot_combined_metrics(metrics_list, model_names, save_dir="./vis/combined"):
 
 
 if __name__ == "__main__":
-    DGMR_CHECKPOINT = "../DGMR_SO/experiments/"
+    DGMR_CHECKPOINT = "../DGMR_SO/experiments/solar_nowcasting_v7/"
     EARTHFORMER_CFG = "../EarthFormer/config/train.yml"
     EARTHFORMER_CHECKPOINT = "../EarthFormer/experiments/ef_v18/checkpoints/model-epoch=039.ckpt"
 
