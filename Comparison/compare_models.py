@@ -53,13 +53,15 @@ def evaluate_model(
             try:
                 pred = preds_np[:, t]
                 target = targets_np[:, t]
+                print(pred.shape, target.shape)
                 mask = (pred > 0) & (target > 0)
                 pred = pred[mask]
                 target = target[mask]
+                print(pred.shape, target.shape)
                 metrics["rmse"][t].append(compute_rmse(pred, target))
                 metrics["rrmse"][t].append(compute_rrmse(pred, target))
-                metrics["mae"][t].append(compute_mae(pred, target))
-                metrics["ssim"][t].append(compute_ssim(pred, target))
+                # metrics["mae"][t].append(compute_mae(pred, target))
+                # metrics["ssim"][t].append(compute_ssim(pred, target))
             except Exception as e:
                 print(f"Metric error at t={t}, batch={idx}: {e}")
                 for k in metrics:
