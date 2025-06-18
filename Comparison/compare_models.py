@@ -51,10 +51,15 @@ def evaluate_model(
 
         for t in range(T):
             try:
-                metrics["rmse"][t].append(compute_rmse(preds_np[:, t], targets_np[:, t]))
-                metrics["rrmse"][t].append(compute_rrmse(preds_np[:, t], targets_np[:, t]))
-                metrics["mae"][t].append(compute_mae(preds_np[:, t], targets_np[:, t]))
-                metrics["ssim"][t].append(compute_ssim(preds_np[:, t], targets_np[:, t]))
+                pred = preds_np[:, t]
+                target = targets_np[:, t]
+                mask = (pred > 0) & (target > 0)
+                pred = pred[mask]
+                target = target[mask]
+                metrics["rmse"][t].append(compute_rmse(pred, target))
+                metrics["rrmse"][t].append(compute_rrmse(pred, target))
+                metrics["mae"][t].append(compute_mae(pred, target))
+                metrics["ssim"][t].append(compute_ssim(pred, target))
             except Exception as e:
                 print(f"Metric error at t={t}, batch={idx}: {e}")
                 for k in metrics:
@@ -199,29 +204,29 @@ if __name__ == "__main__":
     # )
     # plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./vis/earthformer")
 
-    # print("Evaluating Persistence...")
-    # p_metrics, p_results = evaluate_model(
-    #     "Persistence", 
-    #     persistence_model, 
-    #     dm.test_dataloader(),
-    #     inference_fn=infer_persistence,
-    #     visualize=True, 
-    #     visualization_indices=[0, 500, 1000, 1500, 3000, 5000],
-    #     save_dir="./vis/persistence"
-    # )
-    # plot_metrics(p_metrics, model_name="Persistence", save_dir="./vis/persistence")
-
-    print("Evaluating DGMR-SO...")
-    dgmr_metrics, dgmr_results = evaluate_model(
-        "DGMR-SO", 
-        dgmr_model, 
+    print("Evaluating Persistence...")
+    p_metrics, p_results = evaluate_model(
+        "Persistence", 
+        persistence_model, 
         dm.test_dataloader(),
-        inference_fn=infer_dgmr,
+        inference_fn=infer_persistence,
         visualize=True, 
         visualization_indices=[0, 500, 1000, 1500, 3000, 5000],
-        save_dir="./vis/dgmr"
+        save_dir="./vis/persistence"
     )
-    plot_metrics(dgmr_metrics, model_name="DGMR-SO", save_dir="./vis/dgmr")
+    plot_metrics(p_metrics, model_name="Persistence", save_dir="./vis/persistence")
+
+    # print("Evaluating DGMR-SO...")
+    # dgmr_metrics, dgmr_results = evaluate_model(
+    #     "DGMR-SO", 
+    #     dgmr_model, 
+    #     dm.test_dataloader(),
+    #     inference_fn=infer_dgmr,
+    #     visualize=True, 
+    #     visualization_indices=[0, 500, 1000, 1500, 3000, 5000],
+    #     save_dir="./vis/dgmr"
+    # )
+    # plot_metrics(dgmr_metrics, model_name="DGMR-SO", save_dir="./vis/dgmr")
 
     # print("Plotting combined metrics...")
     # plot_combined_metrics(
