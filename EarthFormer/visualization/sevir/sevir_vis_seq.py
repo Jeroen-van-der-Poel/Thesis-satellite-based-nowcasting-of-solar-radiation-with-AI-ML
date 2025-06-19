@@ -143,14 +143,14 @@ def visualize_result(
             ax[j][i].xaxis.set_ticks([])
             ax[j][i].yaxis.set_ticks([])
 
-    plt.subplots_adjust(hspace=0.05, wspace=0.05, bottom=0.12)
-    
+    plt.subplots_adjust(hspace=0.05, wspace=0.05, bottom=0.20)   
+
     # Add a gradient colorbar below the entire figure
     custom_cmap = jet_with_gray()
     norm = Normalize(vmin=0.0, vmax=1.0)  
 
     # Define colorbar axis position [left, bottom, width, height]
-    cbar_ax = fig.add_axes([0.15, 0.04, 0.7, 0.02])
+    cbar_ax = fig.add_axes([0.15, 0.10, 0.7, 0.02])
     cb = plt.colorbar(
         ScalarMappable(norm=norm, cmap=custom_cmap),
         cax=cbar_ax,

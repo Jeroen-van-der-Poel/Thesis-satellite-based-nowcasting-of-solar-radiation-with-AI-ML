@@ -26,13 +26,14 @@ def evaluate_model(
     inference_fn,
     visualize=False,
     visualization_indices=None,
-    save_dir="./vis"
+    save_dir="./vis",
+    baseline_preds_cache=None 
 ):
     os.makedirs(save_dir, exist_ok=True)
     if visualization_indices is None:
         visualization_indices = []
 
-    metrics = {k: [] for k in ["rmse", "rrmse", "mae", "ssim"]}
+    metrics = {k: [] for k in ["rmse", "rrmse", "mae", "ssim", "forecast_skill"]}
 
     for idx, batch in enumerate(tqdm(dataloader, desc=f"Evaluating {model_name}")):
         inputs = batch[:, :4]
@@ -44,6 +45,11 @@ def evaluate_model(
         preds_np = preds.detach().cpu().numpy()
         targets_np = targets.detach().cpu().numpy()
         T = preds_np.shape[1]
+
+        if baseline_preds_cache is not None:
+            baseline_batch = baseline_preds_cache[idx]
+        else:
+            baseline_batch = None
 
         if idx == 0:
             for k in metrics:
@@ -60,6 +66,11 @@ def evaluate_model(
                 metrics["rrmse"][t].append(compute_rrmse(pred_masked, target_masked))
                 metrics["mae"][t].append(compute_mae(pred_masked, target_masked))
                 metrics["ssim"][t].append(compute_ssim(preds_np[:, t], targets_np[:, t]))
+                if baseline_batch is not None and t < baseline_batch.shape[1]:
+                    baseline = baseline_batch[:, t]
+                    baseline_masked = baseline[mask]
+                    forecast_skill = compute_forecast_skill(pred_masked, target_masked, baseline_masked)
+                    metrics["forecast_skill"][t].append(forecast_skill)
             except Exception as e:
                 # print(f"Metric error at t={t}, batch={idx}: {e}")
                 for k in metrics:
@@ -192,18 +203,7 @@ if __name__ == "__main__":
 
     dgmr_model = DGMRWrapper(DGMR_CHECKPOINT)
 
-    # print("Evaluating EarthFormer...")
-    # ef_metrics, ef_results = evaluate_model(
-    #     "EarthFormer", 
-    #     ef_model, 
-    #     dm.test_dataloader(),
-    #     inference_fn=infer_earthformer,
-    #     visualize=True, 
-    #     visualization_indices=[0, 500, 1000, 1500],
-    #     save_dir="./vis/earthformer"
-    # )
-    # plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./vis/earthformer")
-
+    persistence_baseline = []
     print("Evaluating Persistence...")
     p_metrics, p_results = evaluate_model(
         "Persistence", 
@@ -212,9 +212,23 @@ if __name__ == "__main__":
         inference_fn=infer_persistence,
         visualize=True, 
         visualization_indices=[0, 500, 1000, 1500],
-        save_dir="./vis/persistence"
+        save_dir="./vis/persistence",
+        baseline_preds_cache=persistence_baseline
     )
     plot_metrics(p_metrics, model_name="Persistence", save_dir="./vis/persistence")
+
+    print("Evaluating EarthFormer...")
+    ef_metrics, ef_results = evaluate_model(
+        "EarthFormer", 
+        ef_model, 
+        dm.test_dataloader(),
+        inference_fn=infer_earthformer,
+        visualize=True, 
+        visualization_indices=[0, 500, 1000, 1500],
+        save_dir="./vis/earthformer",
+        baseline_preds_cache=persistence_baseline  
+    )
+    plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./vis/earthformer")
 
     # print("Evaluating DGMR-SO...")
     # dgmr_metrics, dgmr_results = evaluate_model(
@@ -224,7 +238,8 @@ if __name__ == "__main__":
     #     inference_fn=infer_dgmr,
     #     visualize=True, 
     #     visualization_indices=[0, 500, 1000, 1500],
-    #     save_dir="./vis/dgmr"
+    #     save_dir="./vis/dgmr",
+    #     baseline_preds_cache=persistence_baseline
     # )
     # plot_metrics(dgmr_metrics, model_name="DGMR-SO", save_dir="./vis/dgmr")
 
