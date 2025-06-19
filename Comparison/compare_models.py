@@ -46,8 +46,16 @@ def evaluate_model(
         targets_np = targets.detach().cpu().numpy()
         T = preds_np.shape[1]
 
-        if baseline_preds_cache is not None:
-            baseline_batch = baseline_preds_cache[idx]
+        # Store predictions if we're evaluating the baseline model
+        if baseline_preds_cache is not None and model_name.lower() == "persistence":
+            baseline_preds_cache.append(preds_np.copy())
+            baseline_batch = None  # Not used now
+        # Use predictions if this is a target model being evaluated
+        elif baseline_preds_cache is not None:
+            try:
+                baseline_batch = baseline_preds_cache[idx]
+            except IndexError:
+                baseline_batch = None
         else:
             baseline_batch = None
 
