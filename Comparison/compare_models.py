@@ -27,7 +27,6 @@ def evaluate_model(
     visualize=False,
     visualization_indices=None,
     save_dir="./vis",
-    baseline_preds_cache=None 
 ):
     os.makedirs(save_dir, exist_ok=True)
     if visualization_indices is None:
@@ -44,20 +43,8 @@ def evaluate_model(
 
         preds_np = preds.detach().cpu().numpy()
         targets_np = targets.detach().cpu().numpy()
+        inputs_np = inputs.detach().cpu().numpy()
         T = preds_np.shape[1]
-
-        # Store predictions if we're evaluating the baseline model
-        if baseline_preds_cache is not None and model_name.lower() == "persistence":
-            baseline_preds_cache.append(preds_np.copy())
-            baseline_batch = None  # Not used now
-        # Use predictions if this is a target model being evaluated
-        elif baseline_preds_cache is not None:
-            try:
-                baseline_batch = baseline_preds_cache[idx]
-            except IndexError:
-                baseline_batch = None
-        else:
-            baseline_batch = None
 
         if idx == 0:
             for k in metrics:
@@ -65,20 +52,19 @@ def evaluate_model(
 
         for t in range(T):
             try:
+                baseline = inputs_np[:, -1]
                 pred = preds_np[:, t]
                 target = targets_np[:, t]
-                mask = (pred > 0) & (target > 0)
+                mask = (pred > 0) & (target > 0) & (baseline > 0)
                 pred_masked = pred[mask]
                 target_masked = target[mask]
+                baseline_masked = baseline[mask]
+
                 metrics["rmse"][t].append(compute_rmse(pred_masked, target_masked))
                 metrics["rrmse"][t].append(compute_rrmse(pred_masked, target_masked))
                 metrics["mae"][t].append(compute_mae(pred_masked, target_masked))
                 metrics["ssim"][t].append(compute_ssim(preds_np[:, t], targets_np[:, t]))
-                if baseline_batch is not None and t < baseline_batch.shape[1]:
-                    baseline = baseline_batch[:, t]
-                    baseline_masked = baseline[mask]
-                    forecast_skill = compute_forecast_skill(pred_masked, target_masked, baseline_masked)
-                    metrics["forecast_skill"][t].append(forecast_skill)
+                metrics["forecast_skill"][t].append(compute_forecast_skill(pred_masked, target_masked, baseline_masked))
             except Exception as e:
                 # print(f"Metric error at t={t}, batch={idx}: {e}")
                 for k in metrics:
@@ -98,10 +84,7 @@ def evaluate_model(
                 interval_real_time=15
             )
 
-    averages = {
-        k: np.nanmean([np.nanmean(v) if isinstance(v, (list, np.ndarray)) else v for v in ts] if ts else [np.nan])
-        for k, ts in metrics.items()
-    }
+    averages = {k: np.nanmean([v for v in ts] if ts else [np.nan]) for k, ts in metrics.items()}
     for k, v in averages.items():
         print(f"{model_name} Average - {k}: {v}")
 
@@ -214,7 +197,6 @@ if __name__ == "__main__":
 
     dgmr_model = DGMRWrapper(DGMR_CHECKPOINT)
 
-    persistence_baseline = []
     print("Evaluating Persistence...")
     p_metrics, p_results = evaluate_model(
         "Persistence", 
@@ -223,8 +205,7 @@ if __name__ == "__main__":
         inference_fn=infer_persistence,
         visualize=True, 
         visualization_indices=[0, 500, 1000, 1500],
-        save_dir="./vis/persistence",
-        baseline_preds_cache=persistence_baseline
+        save_dir="./vis/persistence"
     )
     plot_metrics(p_metrics, model_name="Persistence", save_dir="./vis/persistence")
 
@@ -236,8 +217,7 @@ if __name__ == "__main__":
         inference_fn=infer_earthformer,
         visualize=True, 
         visualization_indices=[0, 500, 1000, 1500],
-        save_dir="./vis/earthformer",
-        baseline_preds_cache=persistence_baseline  
+        save_dir="./vis/earthformer" 
     )
     plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./vis/earthformer")
 
@@ -249,8 +229,7 @@ if __name__ == "__main__":
         inference_fn=infer_dgmr,
         visualize=True, 
         visualization_indices=[0, 500, 1000, 1500],
-        save_dir="./vis/dgmr",
-        baseline_preds_cache=persistence_baseline
+        save_dir="./vis/dgmr"
     )
     plot_metrics(dgmr_metrics, model_name="DGMR-SO", save_dir="./vis/dgmr")
 
