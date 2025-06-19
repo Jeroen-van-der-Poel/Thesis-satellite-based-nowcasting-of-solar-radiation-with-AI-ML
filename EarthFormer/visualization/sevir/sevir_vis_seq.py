@@ -143,6 +143,8 @@ def visualize_result(
             ax[j][i].xaxis.set_ticks([])
             ax[j][i].yaxis.set_ticks([])
 
+    plt.subplots_adjust(hspace=0.05, wspace=0.05, bottom=0.12)
+    
     # Add a gradient colorbar below the entire figure
     custom_cmap = jet_with_gray()
     norm = Normalize(vmin=0.0, vmax=1.0)  

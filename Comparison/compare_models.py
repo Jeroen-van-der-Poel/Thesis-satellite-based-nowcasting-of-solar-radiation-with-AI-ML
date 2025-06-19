@@ -61,7 +61,7 @@ def evaluate_model(
                 metrics["mae"][t].append(compute_mae(pred_masked, target_masked))
                 metrics["ssim"][t].append(compute_ssim(preds_np[:, t], targets_np[:, t]))
             except Exception as e:
-                print(f"Metric error at t={t}, batch={idx}: {e}")
+                # print(f"Metric error at t={t}, batch={idx}: {e}")
                 for k in metrics:
                     metrics[k][t].append(np.nan)
 
@@ -199,7 +199,7 @@ if __name__ == "__main__":
     #     dm.test_dataloader(),
     #     inference_fn=infer_earthformer,
     #     visualize=True, 
-    #     visualization_indices=[0, 500, 1000, 1500, 2000, 2500],
+    #     visualization_indices=[0, 500, 1000, 1500],
     #     save_dir="./vis/earthformer"
     # )
     # plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./vis/earthformer")
@@ -211,7 +211,7 @@ if __name__ == "__main__":
         dm.test_dataloader(),
         inference_fn=infer_persistence,
         visualize=True, 
-        visualization_indices=[0, 500, 1000, 1500, 2000, 2500],
+        visualization_indices=[0, 500, 1000, 1500],
         save_dir="./vis/persistence"
     )
     plot_metrics(p_metrics, model_name="Persistence", save_dir="./vis/persistence")
@@ -223,7 +223,7 @@ if __name__ == "__main__":
     #     dm.test_dataloader(),
     #     inference_fn=infer_dgmr,
     #     visualize=True, 
-    #     visualization_indices=[0, 500, 1000, 1500, 2000, 2500],
+    #     visualization_indices=[0, 500, 1000, 1500],
     #     save_dir="./vis/dgmr"
     # )
     # plot_metrics(dgmr_metrics, model_name="DGMR-SO", save_dir="./vis/dgmr")
