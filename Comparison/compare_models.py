@@ -98,7 +98,10 @@ def evaluate_model(
                 interval_real_time=15
             )
 
-    averages = {k: np.nanmean([v for v in ts] if ts else [np.nan]) for k, ts in metrics.items()}
+    averages = {
+        k: np.nanmean([np.nanmean(v) if isinstance(v, (list, np.ndarray)) else v for v in ts] if ts else [np.nan])
+        for k, ts in metrics.items()
+    }
     for k, v in averages.items():
         print(f"{model_name} Average - {k}: {v}")
 
