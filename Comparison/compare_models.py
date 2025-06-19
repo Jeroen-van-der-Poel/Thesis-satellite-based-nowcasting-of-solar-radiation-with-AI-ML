@@ -241,22 +241,22 @@ if __name__ == "__main__":
     )
     plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./vis/earthformer")
 
-    # print("Evaluating DGMR-SO...")
-    # dgmr_metrics, dgmr_results = evaluate_model(
-    #     "DGMR-SO", 
-    #     dgmr_model, 
-    #     dm.test_dataloader(),
-    #     inference_fn=infer_dgmr,
-    #     visualize=True, 
-    #     visualization_indices=[0, 500, 1000, 1500],
-    #     save_dir="./vis/dgmr",
-    #     baseline_preds_cache=persistence_baseline
-    # )
-    # plot_metrics(dgmr_metrics, model_name="DGMR-SO", save_dir="./vis/dgmr")
+    print("Evaluating DGMR-SO...")
+    dgmr_metrics, dgmr_results = evaluate_model(
+        "DGMR-SO", 
+        dgmr_model, 
+        dm.test_dataloader(),
+        inference_fn=infer_dgmr,
+        visualize=True, 
+        visualization_indices=[0, 500, 1000, 1500],
+        save_dir="./vis/dgmr",
+        baseline_preds_cache=persistence_baseline
+    )
+    plot_metrics(dgmr_metrics, model_name="DGMR-SO", save_dir="./vis/dgmr")
 
-    # print("Plotting combined metrics...")
-    # plot_combined_metrics(
-    #     metrics_list=[ef_metrics, dgmr_metrics, p_metrics], 
-    #     model_names=["EarthFormer", "DGMR-SO", "Persistence",], 
-    #     save_dir="./vis/combined"
-    # )
+    print("Plotting combined metrics...")
+    plot_combined_metrics(
+        metrics_list=[ef_metrics, dgmr_metrics, p_metrics], 
+        model_names=["EarthFormer", "DGMR-SO", "Persistence",], 
+        save_dir="./vis/combined"
+    )
