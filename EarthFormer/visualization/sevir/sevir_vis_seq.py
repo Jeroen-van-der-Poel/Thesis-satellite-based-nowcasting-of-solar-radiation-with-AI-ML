@@ -9,6 +9,7 @@ from .sevir_cmap import get_cmap, VIL_COLORS, VIL_LEVELS
 from matplotlib import cm
 from matplotlib.colors import Normalize
 from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.cm import ScalarMappable
 
 HMF_COLORS = np.array([
     [82, 82, 82],
@@ -142,18 +143,20 @@ def visualize_result(
             ax[j][i].xaxis.set_ticks([])
             ax[j][i].yaxis.set_ticks([])
 
-    # Legend of thresholds
-    num_thresh_legend = len(VIL_LEVELS) - 1
-    legend_elements = [
-        Patch(
-            facecolor=VIL_COLORS[i],
-            label=f'{VIL_LEVELS[i - 1]/255:.2f}–{VIL_LEVELS[i]/255:.2f}'
-        )
-        for i in range(1, num_thresh_legend + 1)
-    ]
-    ax[0][0].legend(handles=legend_elements, loc='center left',
-                    bbox_to_anchor=(-1.2, -0.),
-                    borderaxespad=0, frameon=False, fontsize='10')
+    # Add a gradient colorbar below the entire figure
+    custom_cmap = jet_with_gray()
+    norm = Normalize(vmin=0.0, vmax=1.0)  
+
+    # Define colorbar axis position [left, bottom, width, height]
+    cbar_ax = fig.add_axes([0.15, 0.04, 0.7, 0.02])
+    cb = plt.colorbar(
+        ScalarMappable(norm=norm, cmap=custom_cmap),
+        cax=cbar_ax,
+        orientation='horizontal'
+    )
+    cb.set_label('Normalized SSI Intensity (0–1)', fontsize=12)
+    cb.ax.tick_params(labelsize=10)
+    
     if vis_hits_misses_fas:
         # Legend of Hit, Miss and False Alarm
         legend_elements = [Patch(facecolor=HMF_COLORS[3], edgecolor='k', label='Hit'),
