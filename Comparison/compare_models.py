@@ -58,7 +58,7 @@ def evaluate_model(
                 baseline = inputs_np[:, -1]
                 pred = preds_np[:, t]
                 target = targets_np[:, t]
-                mask = (pred > 0) & (target > 0) & (baseline > 0)
+                mask = (pred > 0.01) & (target > 0.01) & (baseline > 0.01)
                 pred_masked = pred[mask]
                 target_masked = target[mask]
                 baseline_masked = baseline[mask]

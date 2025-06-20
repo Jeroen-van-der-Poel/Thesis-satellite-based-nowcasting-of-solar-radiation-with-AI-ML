@@ -29,11 +29,27 @@ def compute_ssim(pred, true):
         if p.ndim == 3:
             p = p[..., 0]
             t = t[..., 0]
-        range_val = max(t.max() - t.min(), 1e-5)
-        score = ssim(p, t, data_range=range_val)
-        ssim_scores.append(score)
 
-    return np.mean(ssim_scores)
+        # Check for valid content
+        if np.isnan(p).any() or np.isnan(t).any():
+            ssim_scores.append(np.nan)
+            continue
+
+        range_val = np.max(t) - np.min(t)
+        if range_val < 1e-3:
+            # Avoid computing SSIM on near-constant images
+            ssim_scores.append(np.nan)
+            continue
+
+        try:
+            score = ssim(p, t, data_range=range_val)
+            ssim_scores.append(score)
+        except Exception as e:
+            print(f"SSIM computation failed: {e}")
+            ssim_scores.append(np.nan)
+
+    return np.nanmean(ssim_scores) if ssim_scores else np.nan
+
 
 def compute_forecast_skill(pred, true, baseline):
     rmse_pred = compute_rmse(pred, true)
