@@ -108,6 +108,12 @@ def infer_persistence(model, inputs, targets):
 def infer_dgmr(model, inputs, targets):
     inputs, targets = inputs.cpu(), targets.cpu()
     preds, targets = model(inputs, targets)
+
+    if preds.shape[-1] == 1:
+        preds = preds.squeeze(-1)
+    if targets.shape[-1] == 1:
+        targets = targets.squeeze(-1)
+        
     return preds, targets
 
 
