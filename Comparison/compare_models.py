@@ -40,6 +40,7 @@ def evaluate_model(
 
         with torch.no_grad():
             preds, targets = inference_fn(model, inputs, targets)
+            print(f"[DGMR-SO] preds shape: {preds.shape}, targets shape: {targets.shape}")
 
         preds_np = preds.detach().cpu().numpy()
         targets_np = targets.detach().cpu().numpy()
