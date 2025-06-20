@@ -46,8 +46,8 @@ def evaluate_model(
         inputs_np = inputs.detach().cpu().numpy()
         T = preds_np.shape[1]
 
-        print(f"[DGMR-SO] batch {idx} pred stats: min={preds_np.min()}, max={preds_np.max()}, mean={preds_np.mean()}, std={preds_np.std()}")
-        print(f"[DGMR-SO] targets stats: min={targets_np.min()}, max={targets_np.max()}")
+        # print(f"[DGMR-SO] batch {idx} pred stats: min={preds_np.min()}, max={preds_np.max()}, mean={preds_np.mean()}, std={preds_np.std()}")
+        # print(f"[DGMR-SO] targets stats: min={targets_np.min()}, max={targets_np.max()}")
 
         if idx == 0:
             for k in metrics:
