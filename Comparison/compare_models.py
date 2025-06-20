@@ -74,6 +74,13 @@ def evaluate_model(
                     metrics[k][t].append(np.nan)
 
         if visualize and idx in visualization_indices:
+            if preds_np.ndim == 4:
+                preds_np = preds_np[..., np.newaxis]
+            if targets_np.ndim == 4:
+                targets_np = targets_np[..., np.newaxis]
+            if inputs_np.ndim == 4:
+                inputs_np = inputs_np[..., np.newaxis]
+                
             save_example_vis_results(
                 save_dir=save_dir,
                 save_prefix=f"{model_name.lower()}_example_{idx}",
@@ -113,7 +120,7 @@ def infer_dgmr(model, inputs, targets):
         preds = preds.squeeze(-1)
     if targets.shape[-1] == 1:
         targets = targets.squeeze(-1)
-        
+
     return preds, targets
 
 
