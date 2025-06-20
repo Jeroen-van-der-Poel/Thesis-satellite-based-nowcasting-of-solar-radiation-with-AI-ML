@@ -55,10 +55,12 @@ def evaluate_model(
 
         for t in range(T):
             try:
+                metrics["ssim"][t].append(compute_ssim(preds_np[:, t], targets_np[:, t]))
+
                 baseline = inputs_np[:, -1]
                 pred = preds_np[:, t]
                 target = targets_np[:, t]
-                mask = (pred > 0.01) & (target > 0.01) & (baseline > 0.01)
+                mask = (pred > 0) & (target > 0) & (baseline > 0)
                 pred_masked = pred[mask]
                 target_masked = target[mask]
                 baseline_masked = baseline[mask]
@@ -66,7 +68,6 @@ def evaluate_model(
                 metrics["rmse"][t].append(compute_rmse(pred_masked, target_masked))
                 metrics["rrmse"][t].append(compute_rrmse(pred_masked, target_masked))
                 metrics["mae"][t].append(compute_mae(pred_masked, target_masked))
-                metrics["ssim"][t].append(compute_ssim(preds_np[:, t], targets_np[:, t]))
                 metrics["forecast_skill"][t].append(compute_forecast_skill(pred_masked, target_masked, baseline_masked))
             except Exception as e:
                 # print(f"Metric error at t={t}, batch={idx}: {e}")
@@ -155,7 +156,7 @@ def plot_combined_metrics(metrics_list, model_names, save_dir="./vis/combined"):
 
 
 if __name__ == "__main__":
-    DGMR_CHECKPOINT_DIR = "../DGMR_SO/experiments/solar_nowcasting_v4/"
+    DGMR_CHECKPOINT_DIR = "../DGMR_SO/experiments/solar_nowcasting_v7/"
     EARTHFORMER_CFG = "../EarthFormer/config/train.yml"
     EARTHFORMER_CHECKPOINT = "../EarthFormer/experiments/ef_v18/checkpoints/model-epoch=039.ckpt"
 
