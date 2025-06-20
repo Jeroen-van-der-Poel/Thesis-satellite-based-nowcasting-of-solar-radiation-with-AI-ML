@@ -40,7 +40,6 @@ def evaluate_model(
 
         with torch.no_grad():
             preds, targets = inference_fn(model, inputs, targets)
-            print(f"[DGMR-SO] preds shape: {preds.shape}, targets shape: {targets.shape}")
 
         preds_np = preds.detach().cpu().numpy()
         targets_np = targets.detach().cpu().numpy()
@@ -61,8 +60,6 @@ def evaluate_model(
                 target_masked = target[mask]
                 baseline_masked = baseline[mask]
 
-                print(f"Batch {idx}, Time {t}: Pred shape: {pred_masked.shape}, Target shape: {target_masked.shape}, Baseline shape: {baseline_masked.shape}")
-
                 metrics["rmse"][t].append(compute_rmse(pred_masked, target_masked))
                 metrics["rrmse"][t].append(compute_rrmse(pred_masked, target_masked))
                 metrics["mae"][t].append(compute_mae(pred_masked, target_masked))
@@ -80,7 +77,7 @@ def evaluate_model(
                 targets_np = targets_np[..., np.newaxis]
             if inputs_np.ndim == 4:
                 inputs_np = inputs_np[..., np.newaxis]
-                
+
             save_example_vis_results(
                 save_dir=save_dir,
                 save_prefix=f"{model_name.lower()}_example_{idx}",
