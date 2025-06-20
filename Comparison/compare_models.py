@@ -60,6 +60,8 @@ def evaluate_model(
                 target_masked = target[mask]
                 baseline_masked = baseline[mask]
 
+                print(f"Batch {idx}, Time {t}: Pred shape: {pred_masked.shape}, Target shape: {target_masked.shape}, Baseline shape: {baseline_masked.shape}")
+
                 metrics["rmse"][t].append(compute_rmse(pred_masked, target_masked))
                 metrics["rrmse"][t].append(compute_rrmse(pred_masked, target_masked))
                 metrics["mae"][t].append(compute_mae(pred_masked, target_masked))
