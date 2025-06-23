@@ -53,9 +53,11 @@ class DGMRWrapper:
             full_output[i, :, y:y+self.crop_height, x:x+self.crop_width, :].assign(outputs_tf[i])
 
         outputs_np = full_output.numpy()
+        outputs_np_cropped = outputs_tf.numpy()
         targets_np = targets_tf.numpy()
+        target_np_cropped = targets_tf_crop.numpy()
 
-        return torch.tensor(outputs_np, dtype=torch.float32), torch.tensor(targets_np, dtype=torch.float32)
+        return torch.tensor(outputs_np, dtype=torch.float32), torch.tensor(targets_np, dtype=torch.float32), torch.tensor(outputs_np_cropped, dtype=torch.float32), torch.tensor(target_np_cropped, dtype=torch.float32)
     
     def _random_crop_with_coords(self, input_tensor, label_tensor, crop_height, crop_width):
         B = input_tensor.shape[0]

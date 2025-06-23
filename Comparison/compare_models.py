@@ -39,7 +39,10 @@ def evaluate_model(
         targets = batch[:, 4:]
 
         with torch.no_grad():
-            preds, targets = inference_fn(model, inputs, targets)
+            if model_name == "DGMR-SO":
+                preds, targets, preds_cropped, target_cropped = inference_fn(model, inputs, targets)
+            else:
+                preds, targets = inference_fn(model, inputs, targets)
 
         preds_np = preds.detach().cpu().numpy()
         targets_np = targets.detach().cpu().numpy()
@@ -55,19 +58,25 @@ def evaluate_model(
 
         for t in range(T):
             try:
-                metrics["ssim"][t].append(compute_ssim(preds_np[:, t], targets_np[:, t]))
+                if model_name == "DGMR-SO":
+                    pred = preds_cropped[:, t]
+                    target = target_cropped[:, t]
+                    metrics["ssim"][t].append(compute_ssim(pred, target))
+                else:
+                    pred = preds_np[:, t]
+                    target = targets_np[:, t]
+                    metrics["ssim"][t].append(compute_ssim(pred, target))
 
-                baseline = inputs_np[:, -1]
-                pred = preds_np[:, t]
-                target = targets_np[:, t]
-                mask = (pred > 0) & (target > 0) & (baseline > 0)
+                mask = (pred > 0) & (target > 0)
                 pred_masked = pred[mask]
                 target_masked = target[mask]
-                baseline_masked = baseline[mask]
-
                 metrics["rmse"][t].append(compute_rmse(pred_masked, target_masked))
                 metrics["rrmse"][t].append(compute_rrmse(pred_masked, target_masked))
                 metrics["mae"][t].append(compute_mae(pred_masked, target_masked))
+
+                baseline = inputs_np[:, -1]
+                baseline_maks= (baseline > 0)
+                baseline_masked = baseline[baseline_maks]
                 metrics["fs"][t].append(compute_forecast_skill(pred_masked, target_masked, baseline_masked))
             except Exception as e:
                 # print(f"Metric error at t={t}, batch={idx}: {e}")
@@ -88,7 +97,11 @@ def evaluate_model(
                 interval_real_time=15
             )
 
-    averages = {k: np.nanmean([v for v in ts] if ts else [np.nan]) for k, ts in metrics.items()}
+    averages = {
+        k: np.nanmean([float(v) for v in ts if np.isscalar(v) and not np.isnan(v)])
+        if any(np.isscalar(v) and not np.isnan(v) for v in ts) else np.nan
+        for k, ts in metrics.items()
+    }
     for k, v in averages.items():
         print(f"{model_name} Average - {k}: {v}")
 
@@ -108,8 +121,8 @@ def infer_persistence(model, inputs, targets):
 
 def infer_dgmr(model, inputs, targets):
     inputs, targets = inputs.cpu(), targets.cpu()
-    preds, targets = model(inputs, targets)
-    return preds, targets
+    preds, targets, targets_cropped = model(inputs, targets)
+    return preds, targets, targets_cropped
 
 
 def plot_metrics(metrics_dict, model_name="Model", save_dir="./vis"):
