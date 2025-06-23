@@ -124,8 +124,8 @@ def infer_persistence(model, inputs, targets):
 
 def infer_dgmr(model, inputs, targets):
     inputs, targets = inputs.cpu(), targets.cpu()
-    preds, targets, targets_cropped = model(inputs, targets)
-    return preds, targets, targets_cropped
+    preds, targets, preds_cropped, targets_cropped = model(inputs, targets)
+    return preds, targets, preds_cropped, targets_cropped
 
 
 def plot_metrics(metrics_dict, model_name="Model", save_dir="./vis"):
