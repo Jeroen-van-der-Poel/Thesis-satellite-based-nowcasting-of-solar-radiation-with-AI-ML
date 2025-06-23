@@ -40,7 +40,7 @@ def evaluate_model(
 
         with torch.no_grad():
             if model_name == "DGMR-SO":
-                preds, targets, preds_cropped, target_cropped = inference_fn(model, inputs, targets)
+                preds, targets, preds_cropped, target_cropped, y_coords = inference_fn(model, inputs, targets)
                 preds_cropped_np = preds_cropped.detach().cpu().numpy()
                 target_cropped_np = target_cropped.detach().cpu().numpy()
             else:
@@ -50,9 +50,6 @@ def evaluate_model(
         targets_np = targets.detach().cpu().numpy()
         inputs_np = inputs.detach().cpu().numpy()
         T = preds_np.shape[1]
-
-        # print(f"[DGMR-SO] batch {idx} pred stats: min={preds_np.min()}, max={preds_np.max()}, mean={preds_np.mean()}, std={preds_np.std()}")
-        # print(f"[DGMR-SO] targets stats: min={targets_np.min()}, max={targets_np.max()}")
 
         if idx == 0:
             for k in metrics:
@@ -78,9 +75,19 @@ def evaluate_model(
                 metrics["mae"][t].append(compute_mae(pred_masked, target_masked))
 
                 baseline = inputs_np[:, -1]
-                baseline_maks= (baseline > 0)
-                baseline_masked = baseline[baseline_maks]
-                metrics["fs"][t].append(compute_forecast_skill(pred_masked, target_masked, baseline_masked))
+                if model_name == "DGMR-SO":
+                    baseline_crop = np.array([
+                        baseline[b, y_coords[b]:y_coords[b] + preds_cropped_np.shape[2], :]
+                        for b in range(baseline.shape[0])
+                    ])
+                    baseline_mask = (baseline_crop > 0)
+                    baseline_masked = baseline_crop[baseline_mask]
+                    metrics["fs"][t].append(compute_forecast_skill(pred_masked, target_masked, baseline_masked))
+                else:
+                    baseline_mask= (baseline > 0)
+                    baseline_masked = baseline[baseline_mask]
+                    metrics["fs"][t].append(compute_forecast_skill(pred_masked, target_masked, baseline_masked))
+
             except Exception as e:
                 # print(f"Metric error at t={t}, batch={idx}: {e}")
                 for k in metrics:
@@ -101,8 +108,8 @@ def evaluate_model(
             )
 
     averages = {
-        k: np.nanmean([float(v) for v in ts if np.isscalar(v) and not np.isnan(v)])
-        if any(np.isscalar(v) and not np.isnan(v) for v in ts) else np.nan
+        k: np.nanmean([float(x) for v in ts for x in v if np.isscalar(x) and not np.isnan(x)])
+        if any(np.isscalar(x) and not np.isnan(x) for v in ts for x in v) else np.nan
         for k, ts in metrics.items()
     }
     for k, v in averages.items():
@@ -124,8 +131,8 @@ def infer_persistence(model, inputs, targets):
 
 def infer_dgmr(model, inputs, targets):
     inputs, targets = inputs.cpu(), targets.cpu()
-    preds, targets, preds_cropped, targets_cropped = model(inputs, targets)
-    return preds, targets, preds_cropped, targets_cropped
+    preds, targets, preds_cropped, targets_cropped, y_coords = model(inputs, targets)
+    return preds, targets, preds_cropped, targets_cropped, y_coords
 
 
 def plot_metrics(metrics_dict, model_name="Model", save_dir="./vis"):
@@ -172,7 +179,7 @@ def plot_combined_metrics(metrics_list, model_names, save_dir="./vis/combined"):
 
 
 if __name__ == "__main__":
-    DGMR_CHECKPOINT_DIR = "../DGMR_SO/experiments/solar_nowcasting_v7/"
+    DGMR_CHECKPOINT_DIR = "../DGMR_SO/experiments/solar_nowcasting_v4/"
     EARTHFORMER_CFG = "../EarthFormer/config/train.yml"
     EARTHFORMER_CHECKPOINT = "../EarthFormer/experiments/ef_v18/checkpoints/model-epoch=039.ckpt"
 
