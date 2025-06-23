@@ -41,6 +41,8 @@ def evaluate_model(
         with torch.no_grad():
             if model_name == "DGMR-SO":
                 preds, targets, preds_cropped, target_cropped = inference_fn(model, inputs, targets)
+                preds_cropped_np = preds_cropped.detach().cpu().numpy()
+                target_cropped_np = target_cropped.detach().cpu().numpy()
             else:
                 preds, targets = inference_fn(model, inputs, targets)
 
@@ -59,8 +61,8 @@ def evaluate_model(
         for t in range(T):
             try:
                 if model_name == "DGMR-SO":
-                    pred = preds_cropped[:, t]
-                    target = target_cropped[:, t]
+                    pred = preds_cropped_np[:, t]
+                    target = target_cropped_np[:, t]
                     metrics["ssim"][t].append(compute_ssim(pred, target))
                 else:
                     pred = preds_np[:, t]
