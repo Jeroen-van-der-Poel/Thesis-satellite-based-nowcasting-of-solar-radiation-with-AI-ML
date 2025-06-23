@@ -36,15 +36,51 @@ class DGMRWrapper:
         # Convert to TF tensors
         inputs_tf = tf.convert_to_tensor(inputs_np, dtype=tf.float32)
         targets_tf = tf.convert_to_tensor(targets_np, dtype=tf.float32)
-        inputs_tf, targets_tf = self.model.random_crop_images(inputs_tf, targets_tf, self.crop_height, self.crop_width)
+        inputs_tf, targets_tf, y_coords, x_coords = self._random_crop_with_coords(inputs_tf, targets_tf, self.crop_height, self.crop_width)
 
         # Run inference
         outputs_tf = self.model.generator_obj(inputs_tf, is_training=True)
-        outputs_np = outputs_tf.numpy()
 
-        # Optional: scale predictions
-        # outputs_np = outputs_np * 1000.0
+        # Reconstruct full-size output
+        B, T_out, _, _, C = outputs_tf.shape
+        H_orig = inputs.shape[2]
+        W_orig = inputs.shape[3]
+        full_output = tf.Variable(tf.zeros((B, T_out, H_orig, W_orig, C), dtype=outputs_tf.dtype))
 
-        # Return both prediction and cropped targets for evaluation
-        return torch.tensor(outputs_np, dtype=torch.float32), torch.tensor(targets_tf.numpy(), dtype=torch.float32)
+        for i in range(B):
+            y = int(y_coords[i])
+            x = int(x_coords[i])
+            full_output[i, :, y:y+self.crop_height, x:x+self.crop_width, :].assign(outputs_tf[i])
 
+        outputs_np = full_output.numpy()
+        targets_np = targets_tf.numpy()
+
+        return torch.tensor(outputs_np, dtype=torch.float32), torch.tensor(targets_np, dtype=torch.float32)
+    
+    def _random_crop_with_coords(self, input_tensor, label_tensor, crop_height, crop_width):
+        B = input_tensor.shape[0]
+        T = input_tensor.shape[1]
+        H = input_tensor.shape[2]
+        W = input_tensor.shape[3]
+        C = input_tensor.shape[4]
+
+        cropped_inputs = []
+        cropped_labels = []
+        y_coords = []
+        x_coords = []
+
+        for i in range(B):
+            y = np.random.randint(0, H - crop_height + 1)
+            x = np.random.randint(0, W - crop_width + 1)
+            y_coords.append(y)
+            x_coords.append(x)
+
+            cropped_input = input_tensor[i:i+1, :, y:y+crop_height, x:x+crop_width, :]
+            cropped_label = label_tensor[i:i+1, :, y:y+crop_height, x:x+crop_width, :]
+            cropped_inputs.append(cropped_input)
+            cropped_labels.append(cropped_label)
+
+        cropped_inputs = tf.concat(cropped_inputs, axis=0)
+        cropped_labels = tf.concat(cropped_labels, axis=0)
+
+        return cropped_inputs, cropped_labels, y_coords, x_coords

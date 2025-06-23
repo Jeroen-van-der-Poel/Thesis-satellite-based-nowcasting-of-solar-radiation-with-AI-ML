@@ -32,7 +32,7 @@ def evaluate_model(
     if visualization_indices is None:
         visualization_indices = []
 
-    metrics = {k: [] for k in ["rmse", "rrmse", "mae", "ssim", "forecast_skill"]}
+    metrics = {k: [] for k in ["rmse", "rrmse", "mae", "ssim", "fs"]}
 
     for idx, batch in enumerate(tqdm(dataloader, desc=f"Evaluating {model_name}")):
         inputs = batch[:, :4]
@@ -68,7 +68,7 @@ def evaluate_model(
                 metrics["rmse"][t].append(compute_rmse(pred_masked, target_masked))
                 metrics["rrmse"][t].append(compute_rrmse(pred_masked, target_masked))
                 metrics["mae"][t].append(compute_mae(pred_masked, target_masked))
-                metrics["forecast_skill"][t].append(compute_forecast_skill(pred_masked, target_masked, baseline_masked))
+                metrics["fs"][t].append(compute_forecast_skill(pred_masked, target_masked, baseline_masked))
             except Exception as e:
                 # print(f"Metric error at t={t}, batch={idx}: {e}")
                 for k in metrics:
