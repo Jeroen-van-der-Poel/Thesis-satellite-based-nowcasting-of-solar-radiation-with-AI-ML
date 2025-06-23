@@ -76,26 +76,37 @@ class NetCDFNowcastingDataset(Dataset):
         idx = self.valid_indices[i]
         x = torch.zeros((self.x_frames, self.height, self.width), dtype=torch.float32)
         y = torch.zeros((self.y_frames, self.height, self.width), dtype=torch.float32)
+        x_cs = torch.zeros((self.x_frames, self.height, self.width), dtype=torch.float32)
+        y_cs = torch.zeros((self.y_frames, self.height, self.width), dtype=torch.float32)
+
         for j in range(self.window):
             with NetCDF(self.file_paths[idx + j]) as nc:
                 sds = nc.variables['sds'][0, :, :]
                 sds_cs = nc.variables['sds_cs'][0, :, :]
+
                 sds_cs[sds_cs < 0] = 0
-                # Transpose to match (height, width) convention
                 norm = np.clip(sds / sds_cs, 0, 1).T
+                cs = sds_cs.T
+
                 norm_tensor = torch.from_numpy(norm).float()
+                cs_tensor = torch.from_numpy(cs).float()
+
                 if j < self.x_frames:
                     x[j] = norm_tensor
+                    x_cs[j] = cs_tensor
                 else:
                     y[j - self.x_frames] = norm_tensor
-        tensor = torch.cat([x, y], dim=0).unsqueeze(-1)
+                    y_cs[j - self.x_frames] = cs_tensor
+
+        norm_tensor  = torch.cat([x, y], dim=0).unsqueeze(-1)
+        cs_tensor = torch.cat([x_cs, y_cs], dim=0).unsqueeze(-1)
 
         # Help GC
-        del x, y, norm, sds, sds_cs  
+        del x, y, x_cs, y_cs, norm, sds, sds_cs, cs
         gc.collect()  
         torch.cuda.empty_cache()
 
-        return tensor #torch.randn((20, self.height, self.width, 1), dtype=torch.float32)
+        return norm_tensor, cs_tensor
 
     def count_valid_samples(self):
         print(f"Total valid samples: {len(self.valid_indices)}")
