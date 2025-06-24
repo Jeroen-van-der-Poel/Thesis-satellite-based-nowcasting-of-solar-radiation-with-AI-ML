@@ -65,6 +65,11 @@ def evaluate_model(
             sds_cs_targets = np.expand_dims(sds_cs_targets, axis=0)  # (1, 16, 390, 256, 1)
             sds_cs_targets = np.repeat(sds_cs_targets, preds_np.shape[0], axis=0)  # (8, 16, 390, 256, 1)
 
+            sds_cs_inputs = sds_cs[:4]
+            sds_cs_inputs = np.expand_dims(sds_cs_inputs, axis=0)  # (1, 4, H, W, 1)
+            sds_cs_inputs = np.repeat(sds_cs_inputs, inputs_np.shape[0], axis=0)  # (B, 4, H, W, 1)
+            inputs_np = inputs_np * sds_cs_inputs
+
             if preds_np.shape == targets_np.shape == sds_cs_targets.shape:
                 preds_np = preds_np * sds_cs_targets
                 targets_np = targets_np * sds_cs_targets
@@ -128,7 +133,7 @@ def evaluate_model(
             save_example_vis_results(
                 save_dir=save_dir,
                 save_prefix=f"{model_name.lower()}_example_{idx}",
-                in_seq=inputs.detach().cpu().numpy(),
+                in_seq=inputs_np,
                 target_seq=targets_np,
                 pred_seq=preds_np,
                 label=model_name,
@@ -277,7 +282,7 @@ if __name__ == "__main__":
         dm.test_dataloader(),
         inference_fn=infer_earthformer,
         visualize=True, 
-        visualization_indices=[0, 500, 1000, 1500],
+        visualization_indices=[0, 500, 1000, 1500, 1800, 1850],
         save_dir="./vis/earthformer",
         sds_cs_dataset=sds_cs_dataset,
         denormalize=True
