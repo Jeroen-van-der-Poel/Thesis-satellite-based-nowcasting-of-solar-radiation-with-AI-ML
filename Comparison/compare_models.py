@@ -132,8 +132,6 @@ def evaluate_model(
 
         if visualize and idx in visualization_indices:
             inputs_vis = np.clip(inputs_np, 0, 1000)
-            if inputs_vis.shape[-1] == 1:
-                inputs_vis = inputs_vis[..., 0]
             preds_vis = np.clip(preds_np, 0, 1000)
             targets_vis = np.clip(targets_np, 0, 1000)
 
