@@ -183,7 +183,7 @@ def plot_metrics(metrics_dict, model_name="Model", save_dir="./vis"):
         plt.plot(time_steps[:len(avg_values)], avg_values, marker='o')
         plt.title(f"{model_name} - {metric.upper()} per 15-min Interval")
         plt.xlabel("Time (minutes)")
-        plt.ylabel(f"{metric.upper()} W/m²")
+        plt.ylabel(f"{metric.upper()}  (W/m²)")
         plt.grid(True)
         plt.tight_layout()
         plt.savefig(f'{save_dir}/{metric}_15min.png', bbox_inches='tight')
