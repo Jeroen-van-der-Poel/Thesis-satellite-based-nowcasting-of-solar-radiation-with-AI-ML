@@ -62,11 +62,11 @@ def evaluate_model(
                 sds_cs = sds_cs.numpy()
 
             sds_cs_targets = sds_cs[4:]  
-            sds_cs_targets = np.expand_dims(sds_cs_targets, axis=0)  # (1, 16, 390, 256, 1)
-            sds_cs_targets = np.repeat(sds_cs_targets, preds_np.shape[0], axis=0)  # (8, 16, 390, 256, 1)
+            sds_cs_targets = np.expand_dims(sds_cs_targets, axis=0) 
+            sds_cs_targets = np.repeat(sds_cs_targets, preds_np.shape[0], axis=0)  
             sds_cs_inputs = sds_cs[:4]
-            sds_cs_inputs = np.expand_dims(sds_cs_inputs, axis=0)  # (1, 4, H, W, 1)
-            sds_cs_inputs = np.repeat(sds_cs_inputs, inputs_np.shape[0], axis=0)  # (B, 4, H, W, 1)
+            sds_cs_inputs = np.expand_dims(sds_cs_inputs, axis=0)  
+            sds_cs_inputs = np.repeat(sds_cs_inputs, inputs_np.shape[0], axis=0) 
 
             inputs_np = inputs_np * sds_cs_inputs
             if preds_np.shape == targets_np.shape == sds_cs_targets.shape:
@@ -108,8 +108,6 @@ def evaluate_model(
                 metrics["mae"][t].append(compute_mae(pred_masked, target_masked))
 
                 baseline = inputs_np[:, -1]
-                if denormalize and sds_cs_dataset is not None:
-                    baseline = baseline * sds_cs[-1]
                 if model_name == "DGMR-SO":
                     baseline_crop = np.array([
                         baseline[b, y_coords[b]:y_coords[b] + preds_cropped_np.shape[2], :]
