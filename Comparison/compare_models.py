@@ -68,8 +68,7 @@ def evaluate_model(
             sds_cs_inputs = sds_cs[:4]
             sds_cs_inputs = np.expand_dims(sds_cs_inputs, axis=0)  # (1, 4, H, W, 1)
             sds_cs_inputs = np.repeat(sds_cs_inputs, inputs_np.shape[0], axis=0)  # (B, 4, H, W, 1)
-            if model_name != "Persistence": 
-                inputs_np = inputs_np * sds_cs_inputs
+            inputs_np = inputs_np * sds_cs_inputs
 
             if preds_np.shape == targets_np.shape == sds_cs_targets.shape:
                 preds_np = preds_np * sds_cs_targets
@@ -90,7 +89,8 @@ def evaluate_model(
                 # print("Denormalized pred min/max:", np.min(preds_np), np.max(preds_np))
                 preds_np = np.clip(preds_np, 0, None)
                 targets_np = np.clip(targets_np, 0, None)
-
+                inputs_np = np.clip(inputs_np, 0, None)
+                
                 pred = preds_np[:, t]
                 target = targets_np[:, t]
 
@@ -131,16 +131,12 @@ def evaluate_model(
                     metrics[k][t].append(np.nan)
 
         if visualize and idx in visualization_indices:
-            inputs_vis = np.clip(inputs_np, 0, 1000)
-            preds_vis = np.clip(preds_np, 0, 1000)
-            targets_vis = np.clip(targets_np, 0, 1000)
-
             save_example_vis_results(
                 save_dir=save_dir,
                 save_prefix=f"{model_name.lower()}_example_{idx}",
-                in_seq=inputs_vis,
-                target_seq=targets_vis,
-                pred_seq=preds_vis,
+                in_seq=inputs_np,
+                target_seq=targets_np,
+                pred_seq=preds_np,
                 label=model_name,
                 layout="NTHWC",
                 plot_stride=1,
