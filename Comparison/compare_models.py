@@ -75,13 +75,13 @@ def evaluate_model(
                 raise ValueError(f"Shape mismatch between predictions and SDS clear sky targets at index {idx}")
 
         if idx == 0:
-            print("Denormalized target min/max:", np.min(targets_np), np.max(targets_np))
-            print("Denormalized pred min/max:", np.min(preds_np), np.max(preds_np))
             for k in metrics:
                 metrics[k] = [[] for _ in range(T)]
 
         for t in range(T):
             try:
+                print("Denormalized target min/max:", np.min(targets_np), np.max(targets_np))
+                print("Denormalized pred min/max:", np.min(preds_np), np.max(preds_np))
                 pred = preds_np[:, t]
                 target = targets_np[:, t]
 
