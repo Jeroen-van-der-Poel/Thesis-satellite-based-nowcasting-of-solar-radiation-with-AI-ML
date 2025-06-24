@@ -179,7 +179,7 @@ def plot_combined_metrics(metrics_list, model_names, save_dir="./vis/combined"):
 
 
 if __name__ == "__main__":
-    DGMR_CHECKPOINT_DIR = "../DGMR_SO/experiments/solar_nowcasting_v4/"
+    DGMR_CHECKPOINT_DIR = "../DGMR_SO/experiments/solar_nowcasting_v7/"
     EARTHFORMER_CFG = "../EarthFormer/config/train.yml"
     EARTHFORMER_CHECKPOINT = "../EarthFormer/experiments/ef_v18/checkpoints/model-epoch=039.ckpt"
 
@@ -207,8 +207,8 @@ if __name__ == "__main__":
         epoch=max_epochs
     )
 
-    # sds_cs_dataset = HDF5NowcastingDataset("/data1/h5data/test_data/test_data_cs_3.h5")
-    # print(f"Loaded {len(sds_cs_dataset)} sds_cs samples to calculate SDS.")
+    sds_cs_dataset = HDF5NowcastingDataset("/data1/h5data/test_data/test_data_cs_3.h5")
+    print(f"Loaded {len(sds_cs_dataset)} sds_cs samples to calculate SDS.")
 
     print("Loading models...")
     ef_module = CuboidPLModule.load_from_checkpoint(
@@ -227,29 +227,29 @@ if __name__ == "__main__":
 
     dgmr_model = DGMRWrapper(DGMR_CHECKPOINT_DIR)
 
-    print("Evaluating Persistence...")
-    p_metrics, p_results = evaluate_model(
-        "Persistence", 
-        persistence_model, 
-        dm.test_dataloader(),
-        inference_fn=infer_persistence,
-        visualize=True, 
-        visualization_indices=[0, 500, 1000, 1500],
-        save_dir="./vis/persistence"
-    )
-    plot_metrics(p_metrics, model_name="Persistence", save_dir="./vis/persistence")
-
-    # print("Evaluating EarthFormer...")
-    # ef_metrics, ef_results = evaluate_model(
-    #     "EarthFormer", 
-    #     ef_model, 
+    # print("Evaluating Persistence...")
+    # p_metrics, p_results = evaluate_model(
+    #     "Persistence", 
+    #     persistence_model, 
     #     dm.test_dataloader(),
-    #     inference_fn=infer_earthformer,
+    #     inference_fn=infer_persistence,
     #     visualize=True, 
     #     visualization_indices=[0, 500, 1000, 1500],
-    #     save_dir="./vis/earthformer" 
+    #     save_dir="./vis/persistence"
     # )
-    # plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./vis/earthformer")
+    # plot_metrics(p_metrics, model_name="Persistence", save_dir="./vis/persistence")
+
+    print("Evaluating EarthFormer...")
+    ef_metrics, ef_results = evaluate_model(
+        "EarthFormer", 
+        ef_model, 
+        dm.test_dataloader(),
+        inference_fn=infer_earthformer,
+        visualize=True, 
+        visualization_indices=[0, 500, 1000, 1500],
+        save_dir="./vis/earthformer" 
+    )
+    plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./vis/earthformer")
 
     # print("Evaluating DGMR-SO...")
     # dgmr_metrics, dgmr_results = evaluate_model(
