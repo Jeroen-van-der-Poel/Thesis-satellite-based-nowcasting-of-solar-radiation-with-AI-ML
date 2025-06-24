@@ -80,12 +80,17 @@ def evaluate_model(
 
         for t in range(T):
             try:
-                print("Denormalized target min/max:", np.min(targets_np), np.max(targets_np))
-                print("Denormalized pred min/max:", np.min(preds_np), np.max(preds_np))
+                # print("Denormalized target min/max:", np.min(targets_np), np.max(targets_np))
+                # print("Denormalized pred min/max:", np.min(preds_np), np.max(preds_np))
+                preds_np = np.clip(preds_np, 0, None)
+                targets_np = np.clip(targets_np, 0, None)
+
                 pred = preds_np[:, t]
                 target = targets_np[:, t]
 
                 if model_name == "DGMR-SO":
+                    preds_cropped_np = np.clip(preds_cropped_np, 0, None)
+                    target_cropped_np = np.clip(target_cropped_np, 0, None)
                     pred_crop = preds_cropped_np[:, t]
                     target_crop = target_cropped_np[:, t]
                     metrics["ssim"][t].append(compute_ssim(pred_crop, target_crop))
