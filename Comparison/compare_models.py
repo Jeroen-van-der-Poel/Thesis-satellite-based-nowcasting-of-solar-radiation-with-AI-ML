@@ -263,31 +263,31 @@ if __name__ == "__main__":
 
     dgmr_model = DGMRWrapper(DGMR_CHECKPOINT_DIR)
 
-    # print("Evaluating Persistence...")
-    # p_metrics, p_results = evaluate_model(
-    #     "Persistence", 
-    #     persistence_model, 
-    #     dm.test_dataloader(),
-    #     inference_fn=infer_persistence,
-    #     visualize=True, 
-    #     visualization_indices=[0, 500, 1000, 1500],
-    #     save_dir="./vis/persistence"
-    # )
-    # plot_metrics(p_metrics, model_name="Persistence", save_dir="./vis/persistence")
-
-    print("Evaluating EarthFormer...")
-    ef_metrics, ef_results = evaluate_model(
-        "EarthFormer", 
-        ef_model, 
+    print("Evaluating Persistence...")
+    p_metrics, p_results = evaluate_model(
+        "Persistence", 
+        persistence_model, 
         dm.test_dataloader(),
-        inference_fn=infer_earthformer,
+        inference_fn=infer_persistence,
         visualize=True, 
         visualization_indices=[0, 500, 1000, 1500, 1800, 1850],
-        save_dir="./vis/earthformer",
-        sds_cs_dataset=sds_cs_dataset,
-        denormalize=True
+        save_dir="./vis/persistence"
     )
-    plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./vis/earthformer")
+    plot_metrics(p_metrics, model_name="Persistence", save_dir="./vis/persistence")
+
+    # print("Evaluating EarthFormer...")
+    # ef_metrics, ef_results = evaluate_model(
+    #     "EarthFormer", 
+    #     ef_model, 
+    #     dm.test_dataloader(),
+    #     inference_fn=infer_earthformer,
+    #     visualize=True, 
+    #     visualization_indices=[0, 500, 1000, 1500, 1800, 1850],
+    #     save_dir="./vis/earthformer",
+    #     sds_cs_dataset=sds_cs_dataset,
+    #     denormalize=True
+    # )
+    # plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./vis/earthformer")
 
     # print("Evaluating DGMR-SO...")
     # dgmr_metrics, dgmr_results = evaluate_model(
@@ -296,7 +296,7 @@ if __name__ == "__main__":
     #     dm.test_dataloader(),
     #     inference_fn=infer_dgmr,
     #     visualize=True, 
-    #     visualization_indices=[0, 500, 1000, 1500],
+    #     visualization_indices=[0, 500, 1000, 1500, 1800, 1850],
     #     save_dir="./vis/dgmr"
     # )
     # plot_metrics(dgmr_metrics, model_name="DGMR-SO", save_dir="./vis/dgmr")
