@@ -68,7 +68,8 @@ def evaluate_model(
             sds_cs_inputs = sds_cs[:4]
             sds_cs_inputs = np.expand_dims(sds_cs_inputs, axis=0)  # (1, 4, H, W, 1)
             sds_cs_inputs = np.repeat(sds_cs_inputs, inputs_np.shape[0], axis=0)  # (B, 4, H, W, 1)
-            inputs_np = inputs_np * sds_cs_inputs
+            if model_name != "Persistence": 
+                inputs_np = inputs_np * sds_cs_inputs
 
             if preds_np.shape == targets_np.shape == sds_cs_targets.shape:
                 preds_np = preds_np * sds_cs_targets
