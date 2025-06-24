@@ -68,10 +68,6 @@ def evaluate_model(
             sds_cs_inputs = np.expand_dims(sds_cs_inputs, axis=0)  # (1, 4, H, W, 1)
             sds_cs_inputs = np.repeat(sds_cs_inputs, inputs_np.shape[0], axis=0)  # (B, 4, H, W, 1)
 
-            print("inputs_np shape:", inputs_np.shape)
-            print("sds_cs_inputs shape:", sds_cs_inputs.shape)
-            print("sds_cs_inputs stats:", np.min(sds_cs_inputs), np.max(sds_cs_inputs), np.mean(sds_cs_inputs))
-
             inputs_np = inputs_np * sds_cs_inputs
             if preds_np.shape == targets_np.shape == sds_cs_targets.shape:
                 preds_np = preds_np * sds_cs_targets
@@ -88,8 +84,6 @@ def evaluate_model(
 
         for t in range(T):
             try:
-                # print("Denormalized target min/max:", np.min(targets_np), np.max(targets_np))
-                # print("Denormalized pred min/max:", np.min(preds_np), np.max(preds_np))
                 preds_np = np.clip(preds_np, 0, None)
                 targets_np = np.clip(targets_np, 0, None)
                 inputs_np = np.clip(inputs_np, 0, None)
@@ -275,35 +269,39 @@ if __name__ == "__main__":
         inference_fn=infer_persistence,
         visualize=True, 
         visualization_indices=[0, 500, 1000, 1500, 1800, 1850],
-        save_dir="./vis/persistence"
+        save_dir="./vis/persistence",
+        sds_cs_dataset=sds_cs_dataset,
+        denormalize=True
     )
     plot_metrics(p_metrics, model_name="Persistence", save_dir="./vis/persistence")
 
-    # print("Evaluating EarthFormer...")
-    # ef_metrics, ef_results = evaluate_model(
-    #     "EarthFormer", 
-    #     ef_model, 
-    #     dm.test_dataloader(),
-    #     inference_fn=infer_earthformer,
-    #     visualize=True, 
-    #     visualization_indices=[0, 500, 1000, 1500, 1800, 1850],
-    #     save_dir="./vis/earthformer",
-    #     sds_cs_dataset=sds_cs_dataset,
-    #     denormalize=True
-    # )
-    # plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./vis/earthformer")
+    print("Evaluating EarthFormer...")
+    ef_metrics, ef_results = evaluate_model(
+        "EarthFormer", 
+        ef_model, 
+        dm.test_dataloader(),
+        inference_fn=infer_earthformer,
+        visualize=True, 
+        visualization_indices=[0, 500, 1000, 1500, 1800, 1850],
+        save_dir="./vis/earthformer",
+        sds_cs_dataset=sds_cs_dataset,
+        denormalize=True
+    )
+    plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./vis/earthformer")
 
-    # print("Evaluating DGMR-SO...")
-    # dgmr_metrics, dgmr_results = evaluate_model(
-    #     "DGMR-SO", 
-    #     dgmr_model, 
-    #     dm.test_dataloader(),
-    #     inference_fn=infer_dgmr,
-    #     visualize=True, 
-    #     visualization_indices=[0, 500, 1000, 1500, 1800, 1850],
-    #     save_dir="./vis/dgmr"
-    # )
-    # plot_metrics(dgmr_metrics, model_name="DGMR-SO", save_dir="./vis/dgmr")
+    print("Evaluating DGMR-SO...")
+    dgmr_metrics, dgmr_results = evaluate_model(
+        "DGMR-SO", 
+        dgmr_model, 
+        dm.test_dataloader(),
+        inference_fn=infer_dgmr,
+        visualize=True, 
+        visualization_indices=[0, 500, 1000, 1500, 1800, 1850],
+        save_dir="./vis/dgmr",
+        sds_cs_dataset=sds_cs_dataset,
+        denormalize=True
+    )
+    plot_metrics(dgmr_metrics, model_name="DGMR-SO", save_dir="./vis/dgmr")
 
     # print("Plotting combined metrics...")
     # plot_combined_metrics(
