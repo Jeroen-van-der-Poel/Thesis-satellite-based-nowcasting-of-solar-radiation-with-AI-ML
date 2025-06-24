@@ -28,6 +28,8 @@ def evaluate_model(
     visualize=False,
     visualization_indices=None,
     save_dir="./vis",
+    sds_cs_dataset=None,
+    denormalize=False
 ):
     os.makedirs(save_dir, exist_ok=True)
     if visualization_indices is None:
@@ -51,6 +53,26 @@ def evaluate_model(
         targets_np = targets.detach().cpu().numpy()
         inputs_np = inputs.detach().cpu().numpy()
         T = preds_np.shape[1]
+
+        # Apply denormalization using SDS clear sky dataset
+        if denormalize and sds_cs_dataset is not None:
+            sds_cs = sds_cs_dataset[idx]
+            if torch.is_tensor(sds_cs):
+                sds_cs = sds_cs.numpy()
+
+            sds_cs_inputs = sds_cs[:4] 
+            sds_cs_targets = sds_cs[4:]  
+
+            print(preds_np.shape, targets_np.shape, sds_cs_inputs.shape, sds_cs_targets.shape)
+            
+            if preds_np.shape == targets_np.shape == sds_cs_targets.shape:
+                preds_np = preds_np * sds_cs_targets
+                targets_np = targets_np * sds_cs_targets
+                if model_name == "DGMR-SO":
+                    preds_cropped_np = preds_cropped_np * sds_cs_targets[:, :preds_cropped_np.shape[1], :preds_cropped_np.shape[2]]
+                    target_cropped_np = target_cropped_np * sds_cs_targets[:, :target_cropped_np.shape[1], :target_cropped_np.shape[2]]
+            else:
+                raise ValueError(f"Shape mismatch between predictions and SDS clear sky targets at index {idx}")
 
         if idx == 0:
             for k in metrics:
@@ -208,7 +230,7 @@ if __name__ == "__main__":
     )
 
     sds_cs_dataset = HDF5NowcastingDataset("/data1/h5data/test_data/test_data_cs_3.h5")
-    print(f"Loaded {len(sds_cs_dataset)} sds_cs samples to calculate SDS.")
+    print(f"Loaded {len(sds_cs_dataset)} SDS_CS samples to calculate SDS.")
 
     print("Loading models...")
     ef_module = CuboidPLModule.load_from_checkpoint(
@@ -247,7 +269,9 @@ if __name__ == "__main__":
         inference_fn=infer_earthformer,
         visualize=True, 
         visualization_indices=[0, 500, 1000, 1500],
-        save_dir="./vis/earthformer" 
+        save_dir="./vis/earthformer",
+        sds_cs_dataset=sds_cs_dataset,
+        denormalize=True
     )
     plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./vis/earthformer")
 
