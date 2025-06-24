@@ -7,7 +7,8 @@ import torch
 from utils.metrics import compute_rmse, compute_rrmse, compute_mae, compute_ssim, compute_forecast_skill
 from tqdm import tqdm
 import matplotlib.pyplot as plt
-from EarthFormer.visualization.sevir.sevir_vis_seq import save_example_vis_results 
+# from EarthFormer.visualization.sevir.sevir_vis_seq import save_example_vis_results 
+from EarthFormer.visualization.sevir.sevir_vis_seq_denorm import save_example_vis_results
 from EarthFormer.train import CuboidPLModule
 from EarthFormer.h5LightningModule import H5LightningDataModule
 from EarthFormer.Data.hdf5Dataset import HDF5NowcastingDataset
@@ -74,6 +75,8 @@ def evaluate_model(
                 raise ValueError(f"Shape mismatch between predictions and SDS clear sky targets at index {idx}")
 
         if idx == 0:
+            print("Denormalized target min/max:", np.min(targets_np), np.max(targets_np))
+            print("Denormalized pred min/max:", np.min(preds_np), np.max(preds_np))
             for k in metrics:
                 metrics[k] = [[] for _ in range(T)]
 
@@ -170,7 +173,7 @@ def plot_metrics(metrics_dict, model_name="Model", save_dir="./vis"):
         plt.plot(time_steps[:len(avg_values)], avg_values, marker='o')
         plt.title(f"{model_name} - {metric.upper()} per 15-min Interval")
         plt.xlabel("Time (minutes)")
-        plt.ylabel(metric.upper())
+        plt.ylabel(f"{metric.upper()} W/m²")
         plt.grid(True)
         plt.tight_layout()
         plt.savefig(f'{save_dir}/{metric}_15min.png', bbox_inches='tight')
