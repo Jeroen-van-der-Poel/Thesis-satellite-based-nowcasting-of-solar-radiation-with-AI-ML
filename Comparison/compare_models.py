@@ -97,6 +97,8 @@ def evaluate_model(
                 metrics["mae"][t].append(compute_mae(pred_masked, target_masked))
 
                 baseline = inputs_np[:, -1]
+                if denormalize and sds_cs_dataset is not None:
+                    baseline = baseline * sds_cs[-1]
                 if model_name == "DGMR-SO":
                     baseline_crop = np.array([
                         baseline[b, y_coords[b]:y_coords[b] + preds_cropped_np.shape[2], :]
