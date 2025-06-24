@@ -164,7 +164,6 @@ def save_example_vis_results(save_dir, save_prefix, in_seq, target_seq, pred_seq
         idx=idx,
         plot_stride=plot_stride,
         fs=fs,
-        norm=norm,
         vis_hits_misses_fas=vis_hits_misses_fas
     )
     plt.savefig(fig_path)
