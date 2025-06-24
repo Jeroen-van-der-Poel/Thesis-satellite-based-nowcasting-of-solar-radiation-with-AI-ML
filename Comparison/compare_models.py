@@ -60,10 +60,13 @@ def evaluate_model(
             if torch.is_tensor(sds_cs):
                 sds_cs = sds_cs.numpy()
 
-            sds_cs_inputs = sds_cs[:4] 
             sds_cs_targets = sds_cs[4:]  
 
-            print(preds_np.shape, targets_np.shape, sds_cs_inputs.shape, sds_cs_targets.shape)
+            # Expand SDS-CS to match batch size
+            sds_cs_targets = np.expand_dims(sds_cs_targets, axis=0)  # (1, 16, 390, 256, 1)
+            sds_cs_targets = np.repeat(sds_cs_targets, preds_np.shape[0], axis=0)  # (8, 16, 390, 256, 1)
+
+            print(preds_np.shape, targets_np.shape, sds_cs_targets.shape)
             
             if preds_np.shape == targets_np.shape == sds_cs_targets.shape:
                 preds_np = preds_np * sds_cs_targets
