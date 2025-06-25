@@ -1,22 +1,18 @@
 import torch
 from torch import nn
-from torch.nn import functional as F
-
 
 class Persistence(nn.Module):
-
     def __init__(self, layout="NTHWC"):
         super(Persistence, self).__init__()
         self.layout = layout
         self.t_axis = self.layout.find("T")
-        self.in_seq_slice = [slice(None, None), ] * len(self.layout)
-        self.in_seq_slice[self.t_axis] = slice(-1, None)
 
     def forward(self, in_seq, out_seq):
+        # Get the last input frame along the time axis
+        last_frame = in_seq.select(self.t_axis, -1)  # shape: (B, H, W, C)
+
+        # Expand the last frame along time axis to match the target sequence length
         out_len = out_seq.shape[self.t_axis]
-        output = in_seq[self.in_seq_slice]
-        output = torch.repeat_interleave(output,
-                                         repeats=out_len,
-                                         dim=self.t_axis)
-        loss = F.mse_loss(output, out_seq)
-        return output, loss
+        repeated = last_frame.unsqueeze(self.t_axis).repeat_interleave(out_len, dim=self.t_axis)
+
+        return repeated, out_seq
