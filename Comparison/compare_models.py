@@ -127,6 +127,9 @@ def evaluate_model(
                     metrics[k][t].append(np.nan)
 
         if visualize and idx in visualization_indices:
+            if model_name == "DGMR-SO":
+                preds_np = preds_cropped_np
+                targets_np = target_cropped_np
             save_example_vis_results(
                 save_dir=save_dir,
                 save_prefix=f"{model_name.lower()}_example_{idx}",
@@ -260,33 +263,33 @@ if __name__ == "__main__":
 
     dgmr_model = DGMRWrapper(DGMR_CHECKPOINT_DIR)
 
-    print("Evaluating Persistence...")
-    p_metrics, p_results = evaluate_model(
-        "Persistence", 
-        persistence_model, 
-        dm.test_dataloader(),
-        inference_fn=infer_persistence,
-        visualize=True, 
-        visualization_indices=[0, 500, 1000, 1500, 1800, 1850],
-        save_dir="./vis/persistence",
-        sds_cs_dataset=sds_cs_dataset,
-        denormalize=True
-    )
-    plot_metrics(p_metrics, model_name="Persistence", save_dir="./vis/persistence")
-
-    # print("Evaluating EarthFormer...")
-    # ef_metrics, ef_results = evaluate_model(
-    #     "EarthFormer", 
-    #     ef_model, 
+    # print("Evaluating Persistence...")
+    # p_metrics, p_results = evaluate_model(
+    #     "Persistence", 
+    #     persistence_model, 
     #     dm.test_dataloader(),
-    #     inference_fn=infer_earthformer,
+    #     inference_fn=infer_persistence,
     #     visualize=True, 
     #     visualization_indices=[0, 500, 1000, 1500, 1800, 1850],
-    #     save_dir="./vis/earthformer",
+    #     save_dir="./vis/persistence",
     #     sds_cs_dataset=sds_cs_dataset,
     #     denormalize=True
     # )
-    # plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./vis/earthformer")
+    # plot_metrics(p_metrics, model_name="Persistence", save_dir="./vis/persistence")
+
+    print("Evaluating EarthFormer...")
+    ef_metrics, ef_results = evaluate_model(
+        "EarthFormer", 
+        ef_model, 
+        dm.test_dataloader(),
+        inference_fn=infer_earthformer,
+        visualize=True, 
+        visualization_indices=[0, 500, 1000, 1500, 1800, 1850],
+        save_dir="./vis/earthformer",
+        sds_cs_dataset=sds_cs_dataset,
+        denormalize=True
+    )
+    plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./vis/earthformer")
 
     print("Evaluating DGMR-SO...")
     dgmr_metrics, dgmr_results = evaluate_model(
