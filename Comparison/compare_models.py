@@ -44,25 +44,18 @@ def evaluate_model(
         inputs_np = inputs.detach().cpu().numpy()
         targets_np = targets.detach().cpu().numpy()
 
-        # Step 2: Apply denormalization BEFORE inference
-        if denormalize and sds_cs_dataset is not None:
+        if model_name == "Persistence" and denormalize and sds_cs_dataset is not None:
             sds_cs = sds_cs_dataset[idx]
             if torch.is_tensor(sds_cs):
                 sds_cs = sds_cs.numpy()
-
-            sds_cs_targets = sds_cs[4:]  # shape: (16, H, W, C)
-            sds_cs_inputs = sds_cs[:4]   # shape: (4, H, W, C)
-
+            sds_cs_targets = sds_cs[4:]
+            sds_cs_inputs = sds_cs[:4]
             sds_cs_targets = np.expand_dims(sds_cs_targets, axis=0)
             sds_cs_inputs = np.expand_dims(sds_cs_inputs, axis=0)
-
             sds_cs_targets = np.repeat(sds_cs_targets, inputs_np.shape[0], axis=0)
             sds_cs_inputs = np.repeat(sds_cs_inputs, inputs_np.shape[0], axis=0)
-
             inputs_np = inputs_np * sds_cs_inputs
             targets_np = targets_np * sds_cs_targets
-
-            # Convert denormalized data back to tensors for inference
             inputs = torch.tensor(inputs_np).to(inputs.device)
             targets = torch.tensor(targets_np).to(inputs.device)
 
@@ -75,8 +68,25 @@ def evaluate_model(
                 preds, targets = inference_fn(model, inputs, targets)
 
         preds_np = preds.detach().cpu().numpy()
-        targets_np = targets.detach().cpu().numpy()
-        inputs_np = inputs.detach().cpu().numpy()
+        if model_name != "Persistence" and denormalize and sds_cs_dataset is not None:
+            sds_cs = sds_cs_dataset[idx]
+            if torch.is_tensor(sds_cs):
+                sds_cs = sds_cs.numpy()
+            sds_cs_targets = sds_cs[4:]
+            sds_cs_inputs = sds_cs[:4]
+            sds_cs_targets = np.expand_dims(sds_cs_targets, axis=0)
+            sds_cs_inputs = np.expand_dims(sds_cs_inputs, axis=0)
+            sds_cs_targets = np.repeat(sds_cs_targets, inputs_np.shape[0], axis=0)
+            sds_cs_inputs = np.repeat(sds_cs_inputs, inputs_np.shape[0], axis=0)
+
+            inputs_np = inputs_np * sds_cs_inputs
+            targets_np = targets_np * sds_cs_targets
+            preds_np = preds_np * sds_cs_targets
+
+            if model_name == "DGMR-SO":
+                preds_cropped_np = preds_cropped_np * sds_cs_targets[:, :, y_coords[0]:y_coords[0]+preds_cropped_np.shape[2], :]
+                target_cropped_np = target_cropped_np * sds_cs_targets[:, :, y_coords[0]:y_coords[0]+preds_cropped_np.shape[2], :]
+
         T = preds_np.shape[1]
 
         if idx == 0:
@@ -263,19 +273,19 @@ if __name__ == "__main__":
 
     dgmr_model = DGMRWrapper(DGMR_CHECKPOINT_DIR)
 
-    # print("Evaluating Persistence...")
-    # p_metrics, p_results = evaluate_model(
-    #     "Persistence", 
-    #     persistence_model, 
-    #     dm.test_dataloader(),
-    #     inference_fn=infer_persistence,
-    #     visualize=True, 
-    #     visualization_indices=[0, 500, 1000, 1500, 1800, 1850],
-    #     save_dir="./vis/persistence",
-    #     sds_cs_dataset=sds_cs_dataset,
-    #     denormalize=True
-    # )
-    # plot_metrics(p_metrics, model_name="Persistence", save_dir="./vis/persistence")
+    print("Evaluating Persistence...")
+    p_metrics, p_results = evaluate_model(
+        "Persistence", 
+        persistence_model, 
+        dm.test_dataloader(),
+        inference_fn=infer_persistence,
+        visualize=True, 
+        visualization_indices=[0, 500, 1000, 1500, 1800, 1850],
+        save_dir="./vis/persistence",
+        sds_cs_dataset=sds_cs_dataset,
+        denormalize=True
+    )
+    plot_metrics(p_metrics, model_name="Persistence", save_dir="./vis/persistence")
 
     print("Evaluating EarthFormer...")
     ef_metrics, ef_results = evaluate_model(
@@ -305,9 +315,9 @@ if __name__ == "__main__":
     )
     plot_metrics(dgmr_metrics, model_name="DGMR-SO", save_dir="./vis/dgmr")
 
-    # print("Plotting combined metrics...")
-    # plot_combined_metrics(
-    #     metrics_list=[ef_metrics, dgmr_metrics, p_metrics], 
-    #     model_names=["EarthFormer", "DGMR-SO", "Persistence",], 
-    #     save_dir="./vis/combined"
-    # )
+    print("Plotting combined metrics...")
+    plot_combined_metrics(
+        metrics_list=[ef_metrics, dgmr_metrics, p_metrics], 
+        model_names=["EarthFormer", "DGMR-SO", "Persistence",], 
+        save_dir="./vis/combined"
+    )
