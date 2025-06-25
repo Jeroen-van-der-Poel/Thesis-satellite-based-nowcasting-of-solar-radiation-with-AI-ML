@@ -41,6 +41,30 @@ def evaluate_model(
     for idx, batch in enumerate(tqdm(dataloader, desc=f"Evaluating {model_name}")):
         inputs = batch[:, :4]
         targets = batch[:, 4:]
+        inputs_np = inputs.detach().cpu().numpy()
+        targets_np = targets.detach().cpu().numpy()
+
+        # Step 2: Apply denormalization BEFORE inference
+        if denormalize and sds_cs_dataset is not None:
+            sds_cs = sds_cs_dataset[idx]
+            if torch.is_tensor(sds_cs):
+                sds_cs = sds_cs.numpy()
+
+            sds_cs_targets = sds_cs[4:]  # shape: (16, H, W, C)
+            sds_cs_inputs = sds_cs[:4]   # shape: (4, H, W, C)
+
+            sds_cs_targets = np.expand_dims(sds_cs_targets, axis=0)
+            sds_cs_inputs = np.expand_dims(sds_cs_inputs, axis=0)
+
+            sds_cs_targets = np.repeat(sds_cs_targets, inputs_np.shape[0], axis=0)
+            sds_cs_inputs = np.repeat(sds_cs_inputs, inputs_np.shape[0], axis=0)
+
+            inputs_np = inputs_np * sds_cs_inputs
+            targets_np = targets_np * sds_cs_targets
+
+            # Convert denormalized data back to tensors for inference
+            inputs = torch.tensor(inputs_np).to(inputs.device)
+            targets = torch.tensor(targets_np).to(inputs.device)
 
         with torch.no_grad():
             if model_name == "DGMR-SO":
@@ -54,29 +78,6 @@ def evaluate_model(
         targets_np = targets.detach().cpu().numpy()
         inputs_np = inputs.detach().cpu().numpy()
         T = preds_np.shape[1]
-
-        # Apply denormalization using SDS clear sky dataset
-        if denormalize and sds_cs_dataset is not None:
-            sds_cs = sds_cs_dataset[idx]
-            if torch.is_tensor(sds_cs):
-                sds_cs = sds_cs.numpy()
-
-            sds_cs_targets = sds_cs[4:]  
-            sds_cs_targets = np.expand_dims(sds_cs_targets, axis=0) 
-            sds_cs_targets = np.repeat(sds_cs_targets, preds_np.shape[0], axis=0)  
-            sds_cs_inputs = sds_cs[:4]
-            sds_cs_inputs = np.expand_dims(sds_cs_inputs, axis=0)  
-            sds_cs_inputs = np.repeat(sds_cs_inputs, inputs_np.shape[0], axis=0) 
-
-            inputs_np = inputs_np * sds_cs_inputs
-            if preds_np.shape == targets_np.shape == sds_cs_targets.shape:
-                preds_np = preds_np * sds_cs_targets
-                targets_np = targets_np * sds_cs_targets
-                if model_name == "DGMR-SO":
-                    preds_cropped_np = preds_cropped_np * sds_cs_targets[:, :preds_cropped_np.shape[1], :preds_cropped_np.shape[2]]
-                    target_cropped_np = target_cropped_np * sds_cs_targets[:, :target_cropped_np.shape[1], :target_cropped_np.shape[2]]
-            else:
-                raise ValueError(f"Shape mismatch between predictions and SDS clear sky targets at index {idx}")
 
         if idx == 0:
             for k in metrics:
@@ -107,7 +108,6 @@ def evaluate_model(
                 metrics["rrmse"][t].append(compute_rrmse(pred_masked, target_masked))
                 metrics["mae"][t].append(compute_mae(pred_masked, target_masked))
 
-                baseline = inputs_np[:, -1]
                 if model_name == "DGMR-SO":
                     baseline_crop = np.array([
                         baseline[b, y_coords[b]:y_coords[b] + preds_cropped_np.shape[2], :]
@@ -211,7 +211,7 @@ def plot_combined_metrics(metrics_list, model_names, save_dir="./vis/combined"):
 
 
 if __name__ == "__main__":
-    DGMR_CHECKPOINT_DIR = "../DGMR_SO/experiments/solar_nowcasting_v7/"
+    DGMR_CHECKPOINT_DIR = "../DGMR_SO/experiments/solar_nowcasting_v4/"
     EARTHFORMER_CFG = "../EarthFormer/config/train.yml"
     EARTHFORMER_CHECKPOINT = "../EarthFormer/experiments/ef_v18/checkpoints/model-epoch=039.ckpt"
 
