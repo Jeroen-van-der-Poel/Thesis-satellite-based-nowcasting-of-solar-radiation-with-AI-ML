@@ -108,6 +108,7 @@ def evaluate_model(
                 metrics["rrmse"][t].append(compute_rrmse(pred_masked, target_masked))
                 metrics["mae"][t].append(compute_mae(pred_masked, target_masked))
 
+                baseline = inputs_np[:, -1]
                 if model_name == "DGMR-SO":
                     baseline_crop = np.array([
                         baseline[b, y_coords[b]:y_coords[b] + preds_cropped_np.shape[2], :]
@@ -287,19 +288,19 @@ if __name__ == "__main__":
     # )
     # plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./vis/earthformer")
 
-    # print("Evaluating DGMR-SO...")
-    # dgmr_metrics, dgmr_results = evaluate_model(
-    #     "DGMR-SO", 
-    #     dgmr_model, 
-    #     dm.test_dataloader(),
-    #     inference_fn=infer_dgmr,
-    #     visualize=True, 
-    #     visualization_indices=[0, 500, 1000, 1500, 1800, 1850],
-    #     save_dir="./vis/dgmr",
-    #     sds_cs_dataset=sds_cs_dataset,
-    #     denormalize=True
-    # )
-    # plot_metrics(dgmr_metrics, model_name="DGMR-SO", save_dir="./vis/dgmr")
+    print("Evaluating DGMR-SO...")
+    dgmr_metrics, dgmr_results = evaluate_model(
+        "DGMR-SO", 
+        dgmr_model, 
+        dm.test_dataloader(),
+        inference_fn=infer_dgmr,
+        visualize=True, 
+        visualization_indices=[0, 500, 1000, 1500, 1800, 1850],
+        save_dir="./vis/dgmr",
+        sds_cs_dataset=sds_cs_dataset,
+        denormalize=True
+    )
+    plot_metrics(dgmr_metrics, model_name="DGMR-SO", save_dir="./vis/dgmr")
 
     # print("Plotting combined metrics...")
     # plot_combined_metrics(
