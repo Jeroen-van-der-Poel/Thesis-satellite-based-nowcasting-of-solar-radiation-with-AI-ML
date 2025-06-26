@@ -151,11 +151,10 @@ def evaluate_model(
         if visualize and idx in visualization_indices:
             if model_name == "DGMR-SO":
                 full_height = targets.shape[2]
-                full_width = targets.shape[3]
                 preds_np = pad_dgmr_prediction(
+                    preds_cropped_np,
                     y_coords,
-                    full_height,
-                    full_width
+                    full_height
                 )
             save_example_vis_results(
                 save_dir=save_dir,
