@@ -8,7 +8,7 @@ def compute_rmse(pred, true):
 def compute_rrmse(pred, target):
     rmse = compute_rmse(pred, target)
     denom = np.mean(target)
-    return rmse / denom
+    return 100 * rmse / denom
 
 def compute_mae(pred, true):
     return mean_absolute_error(true.flatten(), pred.flatten())

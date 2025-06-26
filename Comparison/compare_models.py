@@ -84,8 +84,12 @@ def evaluate_model(
             preds_np = preds_np * sds_cs_targets
 
             if model_name == "DGMR-SO":
-                preds_cropped_np = preds_cropped_np * sds_cs_targets[:, :, y_coords[0]:y_coords[0]+preds_cropped_np.shape[2], :]
-                target_cropped_np = target_cropped_np * sds_cs_targets[:, :, y_coords[0]:y_coords[0]+preds_cropped_np.shape[2], :]
+                for b in range(preds_cropped_np.shape[0]):
+                    y_start = y_coords[b]
+                    y_end = y_start + preds_cropped_np.shape[2]
+                    sds_cs_crop = sds_cs_targets[b, :, y_start:y_end, :]
+                    preds_cropped_np[b] *= sds_cs_crop
+                    target_cropped_np[b] *= sds_cs_crop
 
         T = preds_np.shape[1]
 
@@ -193,7 +197,12 @@ def plot_metrics(metrics_dict, model_name="Model", save_dir="./vis"):
         plt.plot(time_steps[:len(avg_values)], avg_values, marker='o')
         plt.title(f"{model_name} - {metric.upper()} per 15-min Interval")
         plt.xlabel("Time (minutes)")
-        plt.ylabel(f"{metric.upper()}  (W/m²)")
+        if metric == "mae" or metric == "rmse":
+            plt.ylabel(f"{metric.upper()}  (W/m²)")
+        elif metric == "rrmse":
+            plt.ylabel(f"{metric.upper()} (%)")
+        else:
+            plt.ylabel(f"{metric.upper()}")
         plt.grid(True)
         plt.tight_layout()
         plt.savefig(f'{save_dir}/{metric}_15min.png', bbox_inches='tight')
@@ -280,26 +289,26 @@ if __name__ == "__main__":
         dm.test_dataloader(),
         inference_fn=infer_persistence,
         visualize=True, 
-        visualization_indices=[0, 500, 1000, 1500, 1800, 1850],
+        visualization_indices=[0, 500, 1000, 1500],
         save_dir="./vis/persistence",
         sds_cs_dataset=sds_cs_dataset,
         denormalize=True
     )
     plot_metrics(p_metrics, model_name="Persistence", save_dir="./vis/persistence")
 
-    print("Evaluating EarthFormer...")
-    ef_metrics, ef_results = evaluate_model(
-        "EarthFormer", 
-        ef_model, 
-        dm.test_dataloader(),
-        inference_fn=infer_earthformer,
-        visualize=True, 
-        visualization_indices=[0, 500, 1000, 1500, 1800, 1850],
-        save_dir="./vis/earthformer",
-        sds_cs_dataset=sds_cs_dataset,
-        denormalize=True
-    )
-    plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./vis/earthformer")
+    # print("Evaluating EarthFormer...")
+    # ef_metrics, ef_results = evaluate_model(
+    #     "EarthFormer", 
+    #     ef_model, 
+    #     dm.test_dataloader(),
+    #     inference_fn=infer_earthformer,
+    #     visualize=True, 
+    #     visualization_indices=[0, 500, 1000, 1500],
+    #     save_dir="./vis/earthformer",
+    #     sds_cs_dataset=sds_cs_dataset,
+    #     denormalize=True
+    # )
+    # plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./vis/earthformer")
 
     print("Evaluating DGMR-SO...")
     dgmr_metrics, dgmr_results = evaluate_model(
@@ -308,7 +317,7 @@ if __name__ == "__main__":
         dm.test_dataloader(),
         inference_fn=infer_dgmr,
         visualize=True, 
-        visualization_indices=[0, 500, 1000, 1500, 1800, 1850],
+        visualization_indices=[0, 500, 1000, 1500],
         save_dir="./vis/dgmr",
         sds_cs_dataset=sds_cs_dataset,
         denormalize=True
