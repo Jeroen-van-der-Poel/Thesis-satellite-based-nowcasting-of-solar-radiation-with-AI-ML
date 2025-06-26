@@ -21,13 +21,13 @@ gpus = tf.config.list_physical_devices('GPU')
 for gpu in gpus:
     tf.config.experimental.set_memory_growth(gpu, True)
 
-def pad_dgmr_prediction(preds_crop, y_coords, full_height):
-    B, T, H_crop, W, C = preds_crop.shape
-    padded_preds = np.full((B, T, full_height, W, C), np.nan, dtype=preds_crop.dtype)
-    for b in range(B):
-        y = y_coords[b]
-        padded_preds[b, :, y:y+H_crop, :, :] = preds_crop[b]
-    return padded_preds
+# def pad_dgmr_prediction(preds_crop, y_coords, full_height):
+#     B, T, H_crop, W, C = preds_crop.shape
+#     padded_preds = np.full((B, T, full_height, W, C), np.nan, dtype=preds_crop.dtype)
+#     for b in range(B):
+#         y = y_coords[b]
+#         padded_preds[b, :, y:y+H_crop, :, :] = preds_crop[b]
+#     return padded_preds
 
 def evaluate_model(
     model_name,
@@ -80,27 +80,26 @@ def evaluate_model(
             sds_cs = sds_cs_dataset[idx]
             if torch.is_tensor(sds_cs):
                 sds_cs = sds_cs.numpy()
-            sds_cs_targets = sds_cs[4:]
+
+            sds_cs_targets = sds_cs[4:]  
+            sds_cs_targets = np.expand_dims(sds_cs_targets, axis=0) 
+            sds_cs_targets = np.repeat(sds_cs_targets, preds_np.shape[0], axis=0)  
             sds_cs_inputs = sds_cs[:4]
-            sds_cs_targets = np.expand_dims(sds_cs_targets, axis=0)
-            sds_cs_inputs = np.expand_dims(sds_cs_inputs, axis=0)
-            sds_cs_targets = np.repeat(sds_cs_targets, inputs_np.shape[0], axis=0)
-            sds_cs_inputs = np.repeat(sds_cs_inputs, inputs_np.shape[0], axis=0)
+            sds_cs_inputs = np.expand_dims(sds_cs_inputs, axis=0)  
+            sds_cs_inputs = np.repeat(sds_cs_inputs, inputs_np.shape[0], axis=0) 
 
             inputs_np = inputs_np * sds_cs_inputs
-            targets_np = targets_np * sds_cs_targets
-            preds_np = preds_np * sds_cs_targets
-
-            if model_name == "DGMR-SO":
-                for b in range(preds_cropped_np.shape[0]):
-                    y_start = y_coords[b]
-                    y_end = y_start + preds_cropped_np.shape[2]
-                    sds_cs_crop = sds_cs_targets[b, :, y_start:y_end, :]
-                    preds_cropped_np[b] *= sds_cs_crop
-                    target_cropped_np[b] *= sds_cs_crop
+            if preds_np.shape == targets_np.shape == sds_cs_targets.shape:
+                preds_np = preds_np * sds_cs_targets
+                targets_np = targets_np * sds_cs_targets
+                if model_name == "DGMR-SO":
+                    preds_cropped_np = preds_cropped_np * sds_cs_targets[:, :preds_cropped_np.shape[1], :preds_cropped_np.shape[2]]
+                    target_cropped_np = target_cropped_np * sds_cs_targets[:, :target_cropped_np.shape[1], :target_cropped_np.shape[2]]
+            else:
+                raise ValueError(f"Shape mismatch between predictions and SDS clear sky targets at index {idx}")
 
         T = preds_np.shape[1]
-
+            
         if idx == 0:
             for k in metrics:
                 metrics[k] = [[] for _ in range(T)]
@@ -150,12 +149,8 @@ def evaluate_model(
 
         if visualize and idx in visualization_indices:
             if model_name == "DGMR-SO":
-                full_height = targets.shape[2]
-                preds_np = pad_dgmr_prediction(
-                    preds_cropped_np,
-                    y_coords,
-                    full_height
-                )
+                preds_np = preds_cropped_np
+                targets_np = target_cropped_np
             save_example_vis_results(
                 save_dir=save_dir,
                 save_prefix=f"{model_name.lower()}_example_{idx}",
@@ -246,7 +241,7 @@ def plot_combined_metrics(metrics_list, model_names, save_dir="./vis/combined"):
 
 
 if __name__ == "__main__":
-    DGMR_CHECKPOINT_DIR = "../DGMR_SO/experiments/solar_nowcasting_v7/"
+    DGMR_CHECKPOINT_DIR = "../DGMR_SO/experiments/solar_nowcasting_v9/"
     EARTHFORMER_CFG = "../EarthFormer/config/train.yml"
     EARTHFORMER_CHECKPOINT = "../EarthFormer/experiments/ef_v18/checkpoints/model-epoch=039.ckpt"
 
