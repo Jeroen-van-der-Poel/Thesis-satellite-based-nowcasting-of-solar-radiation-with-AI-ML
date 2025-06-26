@@ -21,6 +21,15 @@ gpus = tf.config.list_physical_devices('GPU')
 for gpu in gpus:
     tf.config.experimental.set_memory_growth(gpu, True)
 
+def pad_dgmr_prediction(preds_crop, y_coords, x_coords, full_height, full_width):
+    B, T, H_crop, W_crop, C = preds_crop.shape
+    padded_preds = np.full((B, T, full_height, full_width, C), np.nan, dtype=preds_crop.dtype)
+    for b in range(B):
+        y = y_coords[b]
+        x = x_coords[b]
+        padded_preds[b, :, y:y+H_crop, x:x+W_crop, :] = preds_crop[b]
+    return padded_preds
+
 def evaluate_model(
     model_name,
     model,
@@ -142,8 +151,15 @@ def evaluate_model(
 
         if visualize and idx in visualization_indices:
             if model_name == "DGMR-SO":
-                preds_np = preds_cropped_np
-                targets_np = target_cropped_np
+                full_height = targets.shape[2]
+                full_width = targets.shape[3]
+                preds_np = pad_dgmr_prediction(
+                    preds_cropped_np.detach().cpu().numpy(),
+                    y_coords,
+                    x_coords,
+                    full_height,
+                    full_width
+                )
             save_example_vis_results(
                 save_dir=save_dir,
                 save_prefix=f"{model_name.lower()}_example_{idx}",
@@ -190,7 +206,7 @@ def plot_metrics(metrics_dict, model_name="Model", save_dir="./vis"):
     time_steps = np.arange(1, len(next(iter(metrics_dict.values()))) + 1) * 15
 
     for metric, values in metrics_dict.items():
-        print(f"{metric}: {len(values)} intervals")
+        # print(f"{metric}: {len(values)} intervals")
         avg_values = [np.nanmean(v) if len(v) > 0 else np.nan for v in values]
 
         plt.figure()
@@ -234,7 +250,7 @@ def plot_combined_metrics(metrics_list, model_names, save_dir="./vis/combined"):
 
 
 if __name__ == "__main__":
-    DGMR_CHECKPOINT_DIR = "../DGMR_SO/experiments/solar_nowcasting_v4/"
+    DGMR_CHECKPOINT_DIR = "../DGMR_SO/experiments/solar_nowcasting_v7/"
     EARTHFORMER_CFG = "../EarthFormer/config/train.yml"
     EARTHFORMER_CHECKPOINT = "../EarthFormer/experiments/ef_v18/checkpoints/model-epoch=039.ckpt"
 
@@ -282,19 +298,19 @@ if __name__ == "__main__":
 
     dgmr_model = DGMRWrapper(DGMR_CHECKPOINT_DIR)
 
-    print("Evaluating Persistence...")
-    p_metrics, p_results = evaluate_model(
-        "Persistence", 
-        persistence_model, 
-        dm.test_dataloader(),
-        inference_fn=infer_persistence,
-        visualize=True, 
-        visualization_indices=[0, 500, 1000, 1500],
-        save_dir="./vis/persistence",
-        sds_cs_dataset=sds_cs_dataset,
-        denormalize=True
-    )
-    plot_metrics(p_metrics, model_name="Persistence", save_dir="./vis/persistence")
+    # print("Evaluating Persistence...")
+    # p_metrics, p_results = evaluate_model(
+    #     "Persistence", 
+    #     persistence_model, 
+    #     dm.test_dataloader(),
+    #     inference_fn=infer_persistence,
+    #     visualize=True, 
+    #     visualization_indices=[0, 500, 1000, 1500],
+    #     save_dir="./vis/persistence",
+    #     sds_cs_dataset=sds_cs_dataset,
+    #     denormalize=True
+    # )
+    # plot_metrics(p_metrics, model_name="Persistence", save_dir="./vis/persistence")
 
     # print("Evaluating EarthFormer...")
     # ef_metrics, ef_results = evaluate_model(
@@ -324,9 +340,9 @@ if __name__ == "__main__":
     )
     plot_metrics(dgmr_metrics, model_name="DGMR-SO", save_dir="./vis/dgmr")
 
-    print("Plotting combined metrics...")
-    plot_combined_metrics(
-        metrics_list=[ef_metrics, dgmr_metrics, p_metrics], 
-        model_names=["EarthFormer", "DGMR-SO", "Persistence",], 
-        save_dir="./vis/combined"
-    )
+    # print("Plotting combined metrics...")
+    # plot_combined_metrics(
+    #     metrics_list=[ef_metrics, dgmr_metrics, p_metrics], 
+    #     model_names=["EarthFormer", "DGMR-SO", "Persistence",], 
+    #     save_dir="./vis/combined"
+    # )
