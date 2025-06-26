@@ -76,6 +76,8 @@ def evaluate_model(
                 preds, targets = inference_fn(model, inputs, targets)
 
         preds_np = preds.detach().cpu().numpy()
+        T = preds_np.shape[1]
+        
         if model_name != "Persistence" and denormalize and sds_cs_dataset is not None:
             sds_cs = sds_cs_dataset[idx]
             if torch.is_tensor(sds_cs):
@@ -97,8 +99,6 @@ def evaluate_model(
                     target_cropped_np = target_cropped_np * sds_cs_targets[:, :target_cropped_np.shape[1], :target_cropped_np.shape[2]]
             else:
                 raise ValueError(f"Shape mismatch between predictions and SDS clear sky targets at index {idx}")
-
-        T = preds_np.shape[1]
             
         if idx == 0:
             for k in metrics:
@@ -123,8 +123,13 @@ def evaluate_model(
                     metrics["ssim"][t].append(compute_ssim(pred, target))
 
                 mask = (pred > 0) & (target > 0)
-                pred_masked = pred[mask]
-                target_masked = target[mask]
+                if model_name == "DGMR-SO":
+                    pred_masked = pred_crop[mask]
+                    target_masked = target_crop[mask]
+                else:
+                    pred_masked = pred[mask]
+                    target_masked = target[mask]
+
                 metrics["rmse"][t].append(compute_rmse(pred_masked, target_masked))
                 metrics["rrmse"][t].append(compute_rrmse(pred_masked, target_masked))
                 metrics["mae"][t].append(compute_mae(pred_masked, target_masked))
@@ -148,9 +153,6 @@ def evaluate_model(
                     metrics[k][t].append(np.nan)
 
         if visualize and idx in visualization_indices:
-            if model_name == "DGMR-SO":
-                preds_np = preds_cropped_np
-                targets_np = target_cropped_np
             save_example_vis_results(
                 save_dir=save_dir,
                 save_prefix=f"{model_name.lower()}_example_{idx}",
