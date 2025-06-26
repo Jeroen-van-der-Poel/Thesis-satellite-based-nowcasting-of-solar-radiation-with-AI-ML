@@ -21,13 +21,12 @@ gpus = tf.config.list_physical_devices('GPU')
 for gpu in gpus:
     tf.config.experimental.set_memory_growth(gpu, True)
 
-def pad_dgmr_prediction(preds_crop, y_coords, x_coords, full_height, full_width):
-    B, T, H_crop, W_crop, C = preds_crop.shape
-    padded_preds = np.full((B, T, full_height, full_width, C), np.nan, dtype=preds_crop.dtype)
+def pad_dgmr_prediction(preds_crop, y_coords, full_height):
+    B, T, H_crop, W, C = preds_crop.shape
+    padded_preds = np.full((B, T, full_height, W, C), np.nan, dtype=preds_crop.dtype)
     for b in range(B):
         y = y_coords[b]
-        x = x_coords[b]
-        padded_preds[b, :, y:y+H_crop, x:x+W_crop, :] = preds_crop[b]
+        padded_preds[b, :, y:y+H_crop, :, :] = preds_crop[b]
     return padded_preds
 
 def evaluate_model(
@@ -154,9 +153,7 @@ def evaluate_model(
                 full_height = targets.shape[2]
                 full_width = targets.shape[3]
                 preds_np = pad_dgmr_prediction(
-                    preds_cropped_np.detach().cpu().numpy(),
                     y_coords,
-                    x_coords,
                     full_height,
                     full_width
                 )
