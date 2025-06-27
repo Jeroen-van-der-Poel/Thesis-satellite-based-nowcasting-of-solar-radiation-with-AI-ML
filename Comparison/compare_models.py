@@ -119,14 +119,13 @@ def evaluate_model(
                     pred_crop = preds_cropped_np[:, t]
                     target_crop = target_cropped_np[:, t]
                     metrics["ssim"][t].append(compute_ssim(pred_crop, target_crop))
-                else:
-                    metrics["ssim"][t].append(compute_ssim(pred, target))
 
-                mask = (pred > 0) & (target > 0)
-                if model_name == "DGMR-SO":
+                    mask = (pred_crop > 0) & (target_crop > 0)
                     pred_masked = pred_crop[mask]
                     target_masked = target_crop[mask]
                 else:
+                    metrics["ssim"][t].append(compute_ssim(pred, target))
+                    mask = (pred > 0) & (target > 0)
                     pred_masked = pred[mask]
                     target_masked = target[mask]
 
