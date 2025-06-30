@@ -69,7 +69,7 @@ def evaluate_model(
 
         with torch.no_grad():
             if model_name == "DGMR-SO":
-                preds, targets, preds_cropped, target_cropped, y_coords = inference_fn(model, inputs, targets)
+                preds, targets, preds_cropped, target_cropped, y_coords, x_coords = inference_fn(model, inputs, targets)
                 preds_cropped_np = preds_cropped.detach().cpu().numpy()
                 target_cropped_np = target_cropped.detach().cpu().numpy()
             else:
@@ -136,7 +136,9 @@ def evaluate_model(
                 baseline = inputs_np[:, -1]
                 if model_name == "DGMR-SO":
                     baseline_crop = np.array([
-                        baseline[b, y_coords[b]:y_coords[b] + preds_cropped_np.shape[2], :]
+                        baseline[b,
+                                y_coords[b]:y_coords[b] + preds_cropped_np.shape[2],
+                                x_coords[b]:x_coords[b] + preds_cropped_np.shape[3]]
                         for b in range(baseline.shape[0])
                     ])
                     baseline_mask = (baseline_crop > 0)
@@ -189,8 +191,8 @@ def infer_persistence(model, inputs, targets):
 
 def infer_dgmr(model, inputs, targets):
     inputs, targets = inputs.cpu(), targets.cpu()
-    preds, targets, preds_cropped, targets_cropped, y_coords = model(inputs, targets)
-    return preds, targets, preds_cropped, targets_cropped, y_coords
+    preds, targets, preds_cropped, targets_cropped, y_coords, x_coords = model(inputs, targets)
+    return preds, targets, preds_cropped, targets_cropped, y_coords, x_coords
 
 
 def plot_metrics(metrics_dict, model_name="Model", save_dir="./vis"):
@@ -242,7 +244,7 @@ def plot_combined_metrics(metrics_list, model_names, save_dir="./vis/combined"):
 
 
 if __name__ == "__main__":
-    DGMR_CHECKPOINT_DIR = "../DGMR_SO/experiments/solar_nowcasting_v12/"
+    DGMR_CHECKPOINT_DIR = "../DGMR_SO/experiments/solar_nowcasting_v4/"
     EARTHFORMER_CFG = "../EarthFormer/config/train.yml"
     EARTHFORMER_CHECKPOINT = "../EarthFormer/experiments/ef_v23/checkpoints/model-epoch=189.ckpt"
 
