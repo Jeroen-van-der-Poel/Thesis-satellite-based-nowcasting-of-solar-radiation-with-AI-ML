@@ -8,7 +8,7 @@ from utils.metrics import compute_rmse, compute_rrmse, compute_mae, compute_ssim
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 # from EarthFormer.visualization.sevir.sevir_vis_seq import save_example_vis_results 
-from EarthFormer.visualization.sevir.sevir_vis_seq_denorm import save_example_vis_results
+from EarthFormer.visualization.sevir.sevir_vis_seq_denorm import save_example_vis_results, save_comparison_vis_results
 from EarthFormer.train import CuboidPLModule
 from EarthFormer.h5LightningModule import H5LightningDataModule
 from EarthFormer.Data.hdf5Dataset import HDF5NowcastingDataset
@@ -45,6 +45,7 @@ def evaluate_model(
         visualization_indices = []
 
     metrics = {k: [] for k in ["rmse", "rrmse", "mae", "ssim", "fs"]}
+    cached_samples = {} 
 
     for idx, batch in enumerate(tqdm(dataloader, desc=f"Evaluating {model_name}")):
         inputs = batch[:, :4]
@@ -154,6 +155,11 @@ def evaluate_model(
                     metrics[k][t].append(np.nan)
 
         if visualize and idx in visualization_indices:
+            cached_samples[idx] = {
+                "inputs_np": inputs_np,
+                "targets_np": targets_np,
+                "preds_np": preds_np
+            }
             save_example_vis_results(
                 save_dir=save_dir,
                 save_prefix=f"{model_name.lower()}_example_{idx}",
@@ -175,7 +181,7 @@ def evaluate_model(
     for k, v in averages.items():
         print(f"{model_name} Average - {k}: {v}")
 
-    return metrics, averages
+    return metrics, averages, cached_samples
 
 
 def infer_earthformer(model, inputs, targets):
@@ -244,7 +250,7 @@ def plot_combined_metrics(metrics_list, model_names, save_dir="./vis/combined"):
 
 
 if __name__ == "__main__":
-    DGMR_CHECKPOINT_DIR = "../DGMR_SO/experiments/solar_nowcasting_v4/"
+    DGMR_CHECKPOINT_DIR = "../DGMR_SO/experiments/solar_nowcasting_v9/"
     EARTHFORMER_CFG = "../EarthFormer/config/train.yml"
     EARTHFORMER_CHECKPOINT = "../EarthFormer/experiments/ef_v23/checkpoints/model-epoch=189.ckpt"
 
@@ -292,36 +298,36 @@ if __name__ == "__main__":
 
     dgmr_model = DGMRWrapper(DGMR_CHECKPOINT_DIR)
 
-    # print("Evaluating Persistence...")
-    # p_metrics, p_results = evaluate_model(
-    #     "Persistence", 
-    #     persistence_model, 
-    #     dm.test_dataloader(),
-    #     inference_fn=infer_persistence,
-    #     visualize=True, 
-    #     visualization_indices=[0, 500, 1000, 1500],
-    #     save_dir="./vis/persistence",
-    #     sds_cs_dataset=sds_cs_dataset,
-    #     denormalize=True
-    # )
-    # plot_metrics(p_metrics, model_name="Persistence", save_dir="./vis/persistence")
+    print("Evaluating Persistence...")
+    p_metrics, p_results, p_cache = evaluate_model(
+        "Persistence", 
+        persistence_model, 
+        dm.test_dataloader(),
+        inference_fn=infer_persistence,
+        visualize=True, 
+        visualization_indices=[0, 500, 1000, 1500],
+        save_dir="./vis/persistence",
+        sds_cs_dataset=sds_cs_dataset,
+        denormalize=True
+    )
+    plot_metrics(p_metrics, model_name="Persistence", save_dir="./vis/persistence")
 
-    # print("Evaluating EarthFormer...")
-    # ef_metrics, ef_results = evaluate_model(
-    #     "EarthFormer", 
-    #     ef_model, 
-    #     dm.test_dataloader(),
-    #     inference_fn=infer_earthformer,
-    #     visualize=True, 
-    #     visualization_indices=[0, 500, 1000, 1500],
-    #     save_dir="./vis/earthformer",
-    #     sds_cs_dataset=sds_cs_dataset,
-    #     denormalize=True
-    # )
-    # plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./vis/earthformer")
+    print("Evaluating EarthFormer...")
+    ef_metrics, ef_results, ef_cache = evaluate_model(
+        "EarthFormer", 
+        ef_model, 
+        dm.test_dataloader(),
+        inference_fn=infer_earthformer,
+        visualize=True, 
+        visualization_indices=[0, 500, 1000, 1500],
+        save_dir="./vis/earthformer",
+        sds_cs_dataset=sds_cs_dataset,
+        denormalize=True
+    )
+    plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./vis/earthformer")
 
     print("Evaluating DGMR-SO...")
-    dgmr_metrics, dgmr_results = evaluate_model(
+    dgmr_metrics, dgmr_results, dgmr_cache = evaluate_model(
         "DGMR-SO", 
         dgmr_model, 
         dm.test_dataloader(),
@@ -334,9 +340,32 @@ if __name__ == "__main__":
     )
     plot_metrics(dgmr_metrics, model_name="DGMR-SO", save_dir="./vis/dgmr")
 
-    # print("Plotting combined metrics...")
-    # plot_combined_metrics(
-    #     metrics_list=[ef_metrics, dgmr_metrics, p_metrics], 
-    #     model_names=["EarthFormer", "DGMR-SO", "Persistence",], 
-    #     save_dir="./vis/combined"
-    # )
+    print("Plotting combined metrics...")
+    plot_combined_metrics(
+        metrics_list=[ef_metrics, dgmr_metrics, p_metrics], 
+        model_names=["EarthFormer", "DGMR-SO", "Persistence",], 
+        save_dir="./vis/combined"
+    )
+
+    print("Saving side-by-side comparison visualizations...")
+    comparison_indices = [0, 500, 1000, 1500]
+    for idx in comparison_indices:
+        inputs_np = ef_cache[idx]["inputs_np"] 
+        targets_np = ef_cache[idx]["targets_np"]
+
+        ef_preds_np = ef_cache[idx]["preds_np"]
+        dgmr_preds_np = dgmr_cache[idx]["preds_np"]
+        p_preds_np = p_cache[idx]["preds_np"]
+
+        save_comparison_vis_results(
+            save_dir="./vis/comparison",
+            save_prefix=f"comparison_example_{idx:04d}",
+            in_seq=inputs_np,
+            target_seq=targets_np,
+            pred_seq_list=[ef_preds_np, dgmr_preds_np, p_preds_np],
+            label_list=["EarthFormer", "DGMR-SO", "Persistence"],
+            layout="NTHWC",
+            interval_real_time=15,
+            plot_stride=1,
+            vis_hits_misses_fas=False
+        )
