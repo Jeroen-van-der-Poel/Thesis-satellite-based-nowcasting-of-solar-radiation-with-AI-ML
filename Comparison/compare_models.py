@@ -250,7 +250,7 @@ def plot_combined_metrics(metrics_list, model_names, save_dir="./vis/combined"):
 
 
 if __name__ == "__main__":
-    DGMR_CHECKPOINT_DIR = "../DGMR_SO/experiments/solar_nowcasting_v9/"
+    DGMR_CHECKPOINT_DIR = "../DGMR_SO/experiments/solar_nowcasting_v7/"
     EARTHFORMER_CFG = "../EarthFormer/config/train.yml"
     EARTHFORMER_CHECKPOINT = "../EarthFormer/experiments/ef_v23/checkpoints/model-epoch=189.ckpt"
 
@@ -358,7 +358,7 @@ if __name__ == "__main__":
         p_preds_np = p_cache[idx]["preds_np"]
 
         save_comparison_vis_results(
-            save_dir="./vis/comparison",
+            save_dir="./vis/combined",
             save_prefix=f"comparison_example_{idx:04d}",
             in_seq=inputs_np,
             target_seq=targets_np,
