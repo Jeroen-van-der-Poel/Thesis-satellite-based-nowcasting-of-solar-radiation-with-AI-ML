@@ -240,7 +240,12 @@ def plot_combined_metrics(metrics_list, model_names, save_dir="./vis/combined"):
 
         plt.title(f"{metric.upper()} per 15-min Interval")
         plt.xlabel("Time (minutes)")
-        plt.ylabel(metric.upper())
+        if metric == "mae" or metric == "rmse":
+            plt.ylabel(f"{metric.upper()}  (W/m²)")
+        elif metric == "rrmse":
+            plt.ylabel(f"{metric.upper()} (%)")
+        else:
+            plt.ylabel(f"{metric.upper()}")
         plt.grid(True)
         plt.legend()
         plt.tight_layout()

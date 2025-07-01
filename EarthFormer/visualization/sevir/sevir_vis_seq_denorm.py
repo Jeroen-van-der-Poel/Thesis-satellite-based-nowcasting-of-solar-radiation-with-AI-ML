@@ -248,7 +248,7 @@ def save_comparison_vis_results(
     norm = Normalize(vmin=0.0, vmax=1.0)
     cbar_ax = fig.add_axes([0.15, 0.10, 0.7, 0.02])
     cb = plt.colorbar(ScalarMappable(norm=norm, cmap=custom_cmap), cax=cbar_ax, orientation='horizontal')
-    cb.set_label('SSI Intensity', fontsize=12)
+    cb.set_label('SSI Intensity (W/m²)', fontsize=12)
     cb.ax.tick_params(labelsize=10)
 
     fig_path = os.path.join(save_dir, f'{save_prefix}.png')
