@@ -51,7 +51,7 @@ def evaluate_model(
         inputs = batch[:, :4]
         targets = batch[:, 4:]
         inputs_np = inputs.detach().cpu().numpy()
-        targets_np = targets.detach().cpu().numpy()
+        targets_np_1 = targets.detach().cpu().numpy()
 
         # if model_name == "Persistence" and denormalize and sds_cs_dataset is not None:
         #     sds_cs = sds_cs_dataset[idx]
@@ -94,7 +94,7 @@ def evaluate_model(
             inputs_np = inputs_np * sds_cs_inputs
             if preds_np.shape == targets_np.shape == sds_cs_targets.shape:
                 preds_np = preds_np * sds_cs_targets
-                targets_np = targets_np * sds_cs_targets
+                targets_np = targets_np_1 * sds_cs_targets
                 if model_name == "DGMR-SO":
                     preds_cropped_np = preds_cropped_np * sds_cs_targets[:, :preds_cropped_np.shape[1], :preds_cropped_np.shape[2]]
                     target_cropped_np = target_cropped_np * sds_cs_targets[:, :target_cropped_np.shape[1], :target_cropped_np.shape[2]]
@@ -164,7 +164,7 @@ def evaluate_model(
                 save_dir=save_dir,
                 save_prefix=f"{model_name.lower()}_example_{idx}",
                 in_seq=inputs_np,
-                target_seq=targets_np,
+                target_seq=targets_np_1,
                 pred_seq=sds_cs_targets,
                 label=model_name,
                 layout="NTHWC",
