@@ -53,21 +53,6 @@ def evaluate_model(
         inputs_np = inputs.detach().cpu().numpy()
         targets_np = targets.detach().cpu().numpy()
 
-        # if model_name == "Persistence" and denormalize and sds_cs_dataset is not None:
-        #     sds_cs = sds_cs_dataset[idx]
-        #     if torch.is_tensor(sds_cs):
-        #         sds_cs = sds_cs.numpy()
-        #     sds_cs_targets = sds_cs[4:]
-        #     sds_cs_inputs = sds_cs[:4]
-        #     sds_cs_targets = np.expand_dims(sds_cs_targets, axis=0)
-        #     sds_cs_inputs = np.expand_dims(sds_cs_inputs, axis=0)
-        #     sds_cs_targets = np.repeat(sds_cs_targets, inputs_np.shape[0], axis=0)
-        #     sds_cs_inputs = np.repeat(sds_cs_inputs, inputs_np.shape[0], axis=0)
-        #     inputs_np = inputs_np * sds_cs_inputs
-        #     targets_np = targets_np * sds_cs_targets
-        #     inputs = torch.tensor(inputs_np).to(inputs.device)
-        #     targets = torch.tensor(targets_np).to(inputs.device)
-
         with torch.no_grad():
             if model_name == "DGMR-SO":
                 preds, targets, preds_cropped, target_cropped, y_coords, x_coords = inference_fn(model, inputs, targets)
@@ -134,7 +119,10 @@ def evaluate_model(
                 metrics["rrmse"][t].append(compute_rrmse(pred_masked, target_masked))
                 metrics["mae"][t].append(compute_mae(pred_masked, target_masked))
 
-                baseline = inputs_np[:, -1] * sds_cs_targets[:, t] 
+                if model_name == "Persistence":
+                    baseline = preds_np[:, t]
+                else:
+                    baseline = inputs_np[:, -1] * sds_cs_targets[:, t]
                 if model_name == "DGMR-SO":
                     baseline_crop = np.array([
                         baseline[b,
@@ -310,7 +298,7 @@ if __name__ == "__main__":
         dm.test_dataloader(),
         inference_fn=infer_persistence,
         visualize=True, 
-        visualization_indices=[0, 800, 1250, 1800],
+        visualization_indices=[0, 800, 1250, 1500],
         save_dir="./vis/persistence",
         sds_cs_dataset=sds_cs_dataset,
         denormalize=True
@@ -324,7 +312,7 @@ if __name__ == "__main__":
     #     dm.test_dataloader(),
     #     inference_fn=infer_earthformer,
     #     visualize=True, 
-    #     visualization_indices=[0, 500, 1000, 1500],
+    #     visualization_indices=[0, 800, 1250, 1500],
     #     save_dir="./vis/earthformer",
     #     sds_cs_dataset=sds_cs_dataset,
     #     denormalize=True
@@ -338,7 +326,7 @@ if __name__ == "__main__":
     #     dm.test_dataloader(),
     #     inference_fn=infer_dgmr,
     #     visualize=True, 
-    #     visualization_indices=[0, 500, 1000, 1500],
+    #     visualization_indices=[0, 800, 1250, 1500],
     #     save_dir="./vis/dgmr",
     #     sds_cs_dataset=sds_cs_dataset,
     #     denormalize=True
