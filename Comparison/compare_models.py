@@ -165,7 +165,7 @@ def evaluate_model(
                 save_prefix=f"{model_name.lower()}_example_{idx}",
                 in_seq=inputs_np,
                 target_seq=targets_np,
-                pred_seq=preds_np,
+                pred_seq=sds_cs_targets,
                 label=model_name,
                 layout="NTHWC",
                 plot_stride=1,

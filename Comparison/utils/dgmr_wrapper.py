@@ -48,12 +48,10 @@ class DGMRWrapper:
         W_orig = inputs.shape[3]
         full_output = tf.Variable(tf.zeros((B, T_out, H_orig, W_orig, C), dtype=outputs_tf.dtype))
 
-        B, T_out, H_crop, W_crop, C = outputs_tf.shape
-        outputs_reshaped = tf.reshape(outputs_tf, [B * T_out, H_crop, W_crop, C])
-        resized_reshaped = tf.image.resize(outputs_reshaped, size=(H_orig, W_orig), method='bilinear')
-        # Reshape back to [B, T, H, W, C]
-        resized_outputs = tf.reshape(resized_reshaped, [B, T_out, H_orig, W_orig, C])
-        full_output = resized_outputs  
+        for i in range(B):
+            y = int(y_coords[i])
+            x = int(x_coords[i])
+            full_output[i, :, y:y+self.crop_height, x:x+self.crop_width, :].assign(outputs_tf[i])  
 
         outputs_np = full_output.numpy()
         outputs_np_cropped = outputs_tf.numpy()
