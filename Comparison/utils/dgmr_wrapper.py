@@ -6,11 +6,12 @@ import torch
 import numpy as np
 
 class DGMRWrapper:
-    def __init__(self, checkpoint_path):
+    def __init__(self, checkpoint_path, seed=42):
         self.model = self._load_model(checkpoint_path)
         self.crop_height = 256
         self.crop_width = 256
         self.lambda_reg = 1
+        self.seed = seed
 
     def _load_model(self, checkpoint_path):
         disc_optimizer = Adam(learning_rate=2E-4, beta_1=0.0, beta_2=0.999)
@@ -47,10 +48,8 @@ class DGMRWrapper:
         W_orig = inputs.shape[3]
         full_output = tf.Variable(tf.zeros((B, T_out, H_orig, W_orig, C), dtype=outputs_tf.dtype))
 
-        for i in range(B):
-            y = int(y_coords[i])
-            x = int(x_coords[i])
-            full_output[i, :, y:y+self.crop_height, x:x+self.crop_width, :].assign(outputs_tf[i])
+        resized_outputs = tf.image.resize(outputs_tf, size=(H_orig, W_orig), method='bilinear')
+        full_output = resized_outputs  
 
         outputs_np = full_output.numpy()
         outputs_np_cropped = outputs_tf.numpy()
@@ -78,9 +77,11 @@ class DGMRWrapper:
         y_coords = []
         x_coords = []
 
+        rng = np.random.default_rng(self.seed) 
+
         for i in range(B):
-            y = np.random.randint(0, H - crop_height + 1)
-            x = np.random.randint(0, W - crop_width + 1)
+            y = rng.integers(0, H - crop_height + 1)
+            x = rng.integers(0, W - crop_width + 1)
             y_coords.append(y)
             x_coords.append(x)
 
