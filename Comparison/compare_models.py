@@ -8,7 +8,8 @@ from utils.metrics import compute_rmse, compute_rrmse, compute_mae, compute_ssim
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 # from EarthFormer.visualization.sevir.sevir_vis_seq import save_example_vis_results 
-from EarthFormer.visualization.sevir.sevir_vis_seq_denorm import save_example_vis_results, save_comparison_vis_results
+# from EarthFormer.visualization.sevir.sevir_vis_seq_denorm import save_example_vis_results, save_comparison_vis_results
+from EarthFormer.visualization.sevir.sevir_vis_seq import save_example_vis_results
 from EarthFormer.train import CuboidPLModule
 from EarthFormer.h5LightningModule import H5LightningDataModule
 from EarthFormer.Data.hdf5Dataset import HDF5NowcastingDataset
@@ -92,7 +93,7 @@ def evaluate_model(
             sds_cs_inputs = np.repeat(sds_cs_inputs, inputs_np.shape[0], axis=0) 
 
             inputs_np = inputs_np * sds_cs_inputs
-            if preds_np.shape == targets_np.shape == sds_cs_targets.shape:
+            if preds_np.shape == targets_np_1.shape == sds_cs_targets.shape:
                 preds_np = preds_np * sds_cs_targets
                 targets_np = targets_np_1 * sds_cs_targets
                 if model_name == "DGMR-SO":
