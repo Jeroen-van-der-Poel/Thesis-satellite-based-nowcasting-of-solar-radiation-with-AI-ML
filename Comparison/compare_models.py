@@ -8,8 +8,7 @@ from utils.metrics import compute_rmse, compute_rrmse, compute_mae, compute_ssim
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 # from EarthFormer.visualization.sevir.sevir_vis_seq import save_example_vis_results 
-# from EarthFormer.visualization.sevir.sevir_vis_seq_denorm import save_example_vis_results, save_comparison_vis_results
-from EarthFormer.visualization.sevir.sevir_vis_seq import save_example_vis_results
+from EarthFormer.visualization.sevir.sevir_vis_seq_denorm import save_example_vis_results, save_comparison_vis_results
 from EarthFormer.train import CuboidPLModule
 from EarthFormer.h5LightningModule import H5LightningDataModule
 from EarthFormer.Data.hdf5Dataset import HDF5NowcastingDataset
@@ -52,7 +51,7 @@ def evaluate_model(
         inputs = batch[:, :4]
         targets = batch[:, 4:]
         inputs_np = inputs.detach().cpu().numpy()
-        targets_np_1 = targets.detach().cpu().numpy()
+        targets_np = targets.detach().cpu().numpy()
 
         # if model_name == "Persistence" and denormalize and sds_cs_dataset is not None:
         #     sds_cs = sds_cs_dataset[idx]
@@ -93,9 +92,9 @@ def evaluate_model(
             sds_cs_inputs = np.repeat(sds_cs_inputs, inputs_np.shape[0], axis=0) 
 
             inputs_np = inputs_np * sds_cs_inputs
-            if preds_np.shape == targets_np_1.shape == sds_cs_targets.shape:
+            if preds_np.shape == targets_np.shape == sds_cs_targets.shape:
                 preds_np = preds_np * sds_cs_targets
-                targets_np = targets_np_1 * sds_cs_targets
+                targets_np = targets_np * sds_cs_targets
                 if model_name == "DGMR-SO":
                     preds_cropped_np = preds_cropped_np * sds_cs_targets[:, :preds_cropped_np.shape[1], :preds_cropped_np.shape[2]]
                     target_cropped_np = target_cropped_np * sds_cs_targets[:, :target_cropped_np.shape[1], :target_cropped_np.shape[2]]
@@ -135,7 +134,7 @@ def evaluate_model(
                 metrics["rrmse"][t].append(compute_rrmse(pred_masked, target_masked))
                 metrics["mae"][t].append(compute_mae(pred_masked, target_masked))
 
-                baseline = inputs_np[:, -1]
+                baseline = inputs_np[:, -1] * sds_cs_targets[:, t] 
                 if model_name == "DGMR-SO":
                     baseline_crop = np.array([
                         baseline[b,
@@ -165,8 +164,8 @@ def evaluate_model(
                 save_dir=save_dir,
                 save_prefix=f"{model_name.lower()}_example_{idx}",
                 in_seq=inputs_np,
-                target_seq=targets_np_1,
-                pred_seq=sds_cs_targets,
+                target_seq=targets_np,
+                pred_seq=preds_np,
                 label=model_name,
                 layout="NTHWC",
                 plot_stride=1,
@@ -311,7 +310,7 @@ if __name__ == "__main__":
         dm.test_dataloader(),
         inference_fn=infer_persistence,
         visualize=True, 
-        visualization_indices=[0, 500, 1000, 1500],
+        visualization_indices=[0, 800, 1250, 1800],
         save_dir="./vis/persistence",
         sds_cs_dataset=sds_cs_dataset,
         denormalize=True
