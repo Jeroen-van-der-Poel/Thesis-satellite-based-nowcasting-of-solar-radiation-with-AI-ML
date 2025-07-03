@@ -53,20 +53,20 @@ def evaluate_model(
         inputs_np = inputs.detach().cpu().numpy()
         targets_np = targets.detach().cpu().numpy()
 
-        if model_name == "Persistence" and denormalize and sds_cs_dataset is not None:
-            sds_cs = sds_cs_dataset[idx]
-            if torch.is_tensor(sds_cs):
-                sds_cs = sds_cs.numpy()
-            sds_cs_targets = sds_cs[4:]
-            sds_cs_inputs = sds_cs[:4]
-            sds_cs_targets = np.expand_dims(sds_cs_targets, axis=0)
-            sds_cs_inputs = np.expand_dims(sds_cs_inputs, axis=0)
-            sds_cs_targets = np.repeat(sds_cs_targets, inputs_np.shape[0], axis=0)
-            sds_cs_inputs = np.repeat(sds_cs_inputs, inputs_np.shape[0], axis=0)
-            inputs_np = inputs_np * sds_cs_inputs
-            targets_np = targets_np * sds_cs_targets
-            inputs = torch.tensor(inputs_np).to(inputs.device)
-            targets = torch.tensor(targets_np).to(inputs.device)
+        # if model_name == "Persistence" and denormalize and sds_cs_dataset is not None:
+        #     sds_cs = sds_cs_dataset[idx]
+        #     if torch.is_tensor(sds_cs):
+        #         sds_cs = sds_cs.numpy()
+        #     sds_cs_targets = sds_cs[4:]
+        #     sds_cs_inputs = sds_cs[:4]
+        #     sds_cs_targets = np.expand_dims(sds_cs_targets, axis=0)
+        #     sds_cs_inputs = np.expand_dims(sds_cs_inputs, axis=0)
+        #     sds_cs_targets = np.repeat(sds_cs_targets, inputs_np.shape[0], axis=0)
+        #     sds_cs_inputs = np.repeat(sds_cs_inputs, inputs_np.shape[0], axis=0)
+        #     inputs_np = inputs_np * sds_cs_inputs
+        #     targets_np = targets_np * sds_cs_targets
+        #     inputs = torch.tensor(inputs_np).to(inputs.device)
+        #     targets = torch.tensor(targets_np).to(inputs.device)
 
         with torch.no_grad():
             if model_name == "DGMR-SO":
@@ -79,7 +79,7 @@ def evaluate_model(
         preds_np = preds.detach().cpu().numpy()
         T = preds_np.shape[1]
         
-        if model_name != "Persistence" and denormalize and sds_cs_dataset is not None:
+        if denormalize and sds_cs_dataset is not None:
             sds_cs = sds_cs_dataset[idx]
             if torch.is_tensor(sds_cs):
                 sds_cs = sds_cs.numpy()
@@ -303,19 +303,19 @@ if __name__ == "__main__":
 
     dgmr_model = DGMRWrapper(DGMR_CHECKPOINT_DIR)
 
-    # print("Evaluating Persistence...")
-    # p_metrics, p_results, p_cache = evaluate_model(
-    #     "Persistence", 
-    #     persistence_model, 
-    #     dm.test_dataloader(),
-    #     inference_fn=infer_persistence,
-    #     visualize=True, 
-    #     visualization_indices=[0, 500, 1000, 1500],
-    #     save_dir="./vis/persistence",
-    #     sds_cs_dataset=sds_cs_dataset,
-    #     denormalize=True
-    # )
-    # plot_metrics(p_metrics, model_name="Persistence", save_dir="./vis/persistence")
+    print("Evaluating Persistence...")
+    p_metrics, p_results, p_cache = evaluate_model(
+        "Persistence", 
+        persistence_model, 
+        dm.test_dataloader(),
+        inference_fn=infer_persistence,
+        visualize=True, 
+        visualization_indices=[0, 500, 1000, 1500],
+        save_dir="./vis/persistence",
+        sds_cs_dataset=sds_cs_dataset,
+        denormalize=True
+    )
+    plot_metrics(p_metrics, model_name="Persistence", save_dir="./vis/persistence")
 
     # print("Evaluating EarthFormer...")
     # ef_metrics, ef_results, ef_cache = evaluate_model(
@@ -331,19 +331,19 @@ if __name__ == "__main__":
     # )
     # plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./vis/earthformer")
 
-    print("Evaluating DGMR-SO...")
-    dgmr_metrics, dgmr_results, dgmr_cache = evaluate_model(
-        "DGMR-SO", 
-        dgmr_model, 
-        dm.test_dataloader(),
-        inference_fn=infer_dgmr,
-        visualize=True, 
-        visualization_indices=[0, 500, 1000, 1500],
-        save_dir="./vis/dgmr",
-        sds_cs_dataset=sds_cs_dataset,
-        denormalize=True
-    )
-    plot_metrics(dgmr_metrics, model_name="DGMR-SO", save_dir="./vis/dgmr")
+    # print("Evaluating DGMR-SO...")
+    # dgmr_metrics, dgmr_results, dgmr_cache = evaluate_model(
+    #     "DGMR-SO", 
+    #     dgmr_model, 
+    #     dm.test_dataloader(),
+    #     inference_fn=infer_dgmr,
+    #     visualize=True, 
+    #     visualization_indices=[0, 500, 1000, 1500],
+    #     save_dir="./vis/dgmr",
+    #     sds_cs_dataset=sds_cs_dataset,
+    #     denormalize=True
+    # )
+    # plot_metrics(dgmr_metrics, model_name="DGMR-SO", save_dir="./vis/dgmr")
 
     # print("Plotting combined metrics...")
     # plot_combined_metrics(
