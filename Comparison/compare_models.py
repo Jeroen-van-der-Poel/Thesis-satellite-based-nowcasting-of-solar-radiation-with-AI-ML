@@ -76,6 +76,7 @@ def evaluate_model(
             sds_cs_inputs = np.expand_dims(sds_cs_inputs, axis=0)  
             sds_cs_inputs = np.repeat(sds_cs_inputs, inputs_np.shape[0], axis=0) 
 
+            inputs_np_1 = inputs_np
             inputs_np = inputs_np * sds_cs_inputs
             if preds_np.shape == targets_np.shape == sds_cs_targets.shape:
                 preds_np = preds_np * sds_cs_targets
@@ -122,8 +123,8 @@ def evaluate_model(
                 # if model_name == "Persistence":
                 #     baseline = preds_np[:, t]
                 # else:
-                #     baseline = inputs_np[:, -1] * sds_cs_targets[:, t]
-                baseline = inputs_np[:, -1] 
+                baseline = inputs_np_1[:, -1] * sds_cs_targets[:, t]
+                # baseline = inputs_np[:, -1] 
                 if model_name == "DGMR-SO":
                     baseline_crop = np.array([
                         baseline[b,
@@ -244,11 +245,9 @@ def plot_combined_metrics(metrics_list, model_names, save_dir="./vis/combined"):
 
 
 if __name__ == "__main__":
-    DGMR_CHECKPOINT_DIR = "../DGMR_SO/experiments/solar_nowcasting_v4/"
+    DGMR_CHECKPOINT_DIR = "../DGMR_SO/experiments/solar_nowcasting_v9/"
     EARTHFORMER_CFG = "../EarthFormer/config/train.yml"
-    #EARTHFORMER_CHECKPOINT = "../EarthFormer/experiments/ef_v23/checkpoints/model-epoch=189.ckpt"
-    EARTHFORMER_CHECKPOINT = "../EarthFormer/experiments/ef_v27/checkpoints/model-epoch=001.ckpt"
-
+    EARTHFORMER_CHECKPOINT = "../EarthFormer/experiments/ef_v23/checkpoints/model-epoch=189.ckpt"
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -294,33 +293,33 @@ if __name__ == "__main__":
 
     dgmr_model = DGMRWrapper(DGMR_CHECKPOINT_DIR)
 
-    # print("Evaluating Persistence...")
-    # p_metrics, p_results, p_cache = evaluate_model(
-    #     "Persistence", 
-    #     persistence_model, 
-    #     dm.test_dataloader(),
-    #     inference_fn=infer_persistence,
-    #     visualize=True, 
-    #     visualization_indices=[0, 800, 1250, 1500],
-    #     save_dir="./vis/persistence",
-    #     sds_cs_dataset=sds_cs_dataset,
-    #     denormalize=True
-    # )
-    # plot_metrics(p_metrics, model_name="Persistence", save_dir="./vis/persistence")
-
-    print("Evaluating EarthFormer...")
-    ef_metrics, ef_results, ef_cache = evaluate_model(
-        "EarthFormer", 
-        ef_model, 
+    print("Evaluating Persistence...")
+    p_metrics, p_results, p_cache = evaluate_model(
+        "Persistence", 
+        persistence_model, 
         dm.test_dataloader(),
-        inference_fn=infer_earthformer,
+        inference_fn=infer_persistence,
         visualize=True, 
         visualization_indices=[0, 800, 1250, 1500],
-        save_dir="./vis/earthformer",
+        save_dir="./vis/persistence",
         sds_cs_dataset=sds_cs_dataset,
         denormalize=True
     )
-    plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./vis/earthformer")
+    plot_metrics(p_metrics, model_name="Persistence", save_dir="./vis/persistence")
+
+    # print("Evaluating EarthFormer...")
+    # ef_metrics, ef_results, ef_cache = evaluate_model(
+    #     "EarthFormer", 
+    #     ef_model, 
+    #     dm.test_dataloader(),
+    #     inference_fn=infer_earthformer,
+    #     visualize=True, 
+    #     visualization_indices=[0, 800, 1250, 1500],
+    #     save_dir="./vis/earthformer",
+    #     sds_cs_dataset=sds_cs_dataset,
+    #     denormalize=True
+    # )
+    # plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./vis/earthformer")
 
     # print("Evaluating DGMR-SO...")
     # dgmr_metrics, dgmr_results, dgmr_cache = evaluate_model(
