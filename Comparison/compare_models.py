@@ -233,9 +233,10 @@ def plot_combined_metrics(metrics_list, model_names, save_dir="./vis/combined"):
 
 
 if __name__ == "__main__":
-    DGMR_CHECKPOINT_DIR = "../DGMR_SO/experiments/solar_nowcasting_v9/"
+    DGMR_CHECKPOINT_DIR = "../DGMR_SO/experiments/solar_nowcasting_v7/"
     EARTHFORMER_CFG = "../EarthFormer/config/train.yml"
-    EARTHFORMER_CHECKPOINT = "../EarthFormer/experiments/ef_v23/checkpoints/model-epoch=189.ckpt"
+    # EARTHFORMER_CHECKPOINT = "../EarthFormer/experiments/ef_v23/checkpoints/model-epoch=189.ckpt"
+    EARTHFORMER_CHECKPOINT = "../EarthFormer/experiments/ef_v27/checkpoints/model-epoch=001.ckpt"
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -331,7 +332,7 @@ if __name__ == "__main__":
     )
 
     print("Saving side-by-side comparison visualizations...")
-    comparison_indices = [0, 500, 1000, 1500]
+    comparison_indices = [0, 800, 1250, 1500]
     for idx in comparison_indices:
         inputs_np = ef_cache[idx]["inputs_np"] 
         targets_np = ef_cache[idx]["targets_np"]
