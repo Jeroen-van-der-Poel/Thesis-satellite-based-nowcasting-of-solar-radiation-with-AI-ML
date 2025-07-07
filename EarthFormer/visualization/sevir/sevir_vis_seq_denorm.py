@@ -205,22 +205,14 @@ def visualize_result_vertical(in_seq, target_seq, pred_seq_list: List[np.array],
             a.xaxis.set_ticks([])
             a.yaxis.set_ticks([])
 
-    # plt.subplots_adjust(hspace=0.1, wspace=0.05, top=0.95, bottom=0.05)
+    # Adjust layout and add horizontal colorbar
+    plt.subplots_adjust(hspace=0.1, wspace=0.05, top=0.95, bottom=0.05)
 
-    # cbar_ax = fig.add_axes([0.90, 0.15, 0.015, 0.7])
-    # cb = plt.colorbar(ScalarMappable(norm=Normalize(vmin=SSI_VMIN, vmax=SSI_VMAX),
-    #                                  cmap=jet_with_gray()), cax=cbar_ax)
-    # cb.set_label('SSI Intensity (W/m²)', fontsize=fs)
-    # cb.ax.tick_params(labelsize=fs)
-
-    cbar_ax = fig.add_axes([0.25, 0.03, 0.5, 0.02])  # [left, bottom, width, height]
-    cb = plt.colorbar(
-        ScalarMappable(norm=Normalize(vmin=SSI_VMIN, vmax=SSI_VMAX), cmap=jet_with_gray()),
-        cax=cbar_ax,
-        orientation='horizontal'
-    )
+    cbar_ax = fig.add_axes([0.96, 0.15, 0.015, 0.7])
+    cb = plt.colorbar(ScalarMappable(norm=Normalize(vmin=SSI_VMIN, vmax=SSI_VMAX),
+                                     cmap=jet_with_gray()), cax=cbar_ax)
     cb.set_label('SSI Intensity (W/m²)', fontsize=fs)
-    cb.ax.tick_params(labelsize=15)
+    cb.ax.tick_params(labelsize=fs)
 
     return fig, ax
 
