@@ -208,13 +208,11 @@ def visualize_result_vertical(in_seq, target_seq, pred_seq_list: List[np.array],
     # Adjust layout and add horizontal colorbar
     plt.subplots_adjust(hspace=0.1, wspace=0.05, bottom=0.20)
 
-    cbar_ax = fig.add_axes([0.15, 0.08, 0.7, 0.025])
+    cbar_ax = fig.add_axes([0.90, 0.15, 0.015, 0.7])
     cb = plt.colorbar(ScalarMappable(norm=Normalize(vmin=SSI_VMIN, vmax=SSI_VMAX),
-                                     cmap=jet_with_gray()),
-                      cax=cbar_ax,
-                      orientation='horizontal')
-    cb.set_label('SSI Intensity (W/m²)', fontsize=fs)
-    cb.ax.tick_params(labelsize=fs - 2)
+                                     cmap=jet_with_gray()), cax=cbar_ax)
+    cb.set_label('SSI Intensity (W/m²)', fontsize=12)
+    cb.ax.tick_params(labelsize=10)
 
     return fig, ax
 
@@ -229,7 +227,7 @@ def save_example_vis_results(save_dir, save_prefix, in_seq, target_seq, pred_seq
     os.makedirs(save_dir, exist_ok=True)
     fig_path = os.path.join(save_dir, f'{save_prefix}.png')
 
-    fig, ax = visualize_result_vertical(
+    fig, ax = visualize_result_horizontal(
         in_seq=in_seq,
         target_seq=target_seq,
         pred_seq_list=[pred_seq],

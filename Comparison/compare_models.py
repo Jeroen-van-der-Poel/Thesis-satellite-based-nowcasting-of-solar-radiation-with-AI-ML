@@ -48,12 +48,14 @@ def evaluate_model(
         with torch.no_grad():
             if model_name == "DGMR-SO":
                 preds, targets, preds_cropped, target_cropped, y_coords, x_coords = inference_fn(model, inputs, targets)
-                preds_cropped_np = preds_cropped.detach().cpu().numpy()
-                target_cropped_np = target_cropped.detach().cpu().numpy()
+                preds_cropped_np = preds_cropped.detach().cpu().numpy().transpose(0, 1, 3, 2)
+                target_cropped_np = target_cropped.detach().cpu().numpy().transpose(0, 1, 3, 2)
             else:
                 preds, targets = inference_fn(model, inputs, targets)
 
-        preds_np = preds.detach().cpu().numpy()
+        preds_np = preds.detach().cpu().numpy().transpose(0, 1, 3, 2)
+        inputs_np = inputs.detach().cpu().numpy().transpose(0, 1, 3, 2)
+        targets_np = targets.detach().cpu().numpy().transpose(0, 1, 3, 2)
         T = preds_np.shape[1]
         
         if denormalize and sds_cs_dataset is not None:
