@@ -59,13 +59,11 @@ def plot_hit_miss_fa_all_thresholds(ax, y_true, y_pred):
     ax.imshow(fig, cmap=cmap)
 
 
-def visualize_result_horizontal(
-    in_seq, target_seq, pred_seq_list: List[np.array], label_list: List[str],
-    interval_real_time=10.0, idx=0, plot_stride=2, figsize=(24, 8), fs=10,
-    vis_thresh=THRESHOLDS[2], vis_hits_misses_fas=True
-):
-    in_len = in_seq.shape[1]     # T in NTWHC
-    out_len = target_seq.shape[1]
+def visualize_result_horizontal(in_seq, target_seq, pred_seq_list: List[np.array], label_list: List[str],
+                     interval_real_time=10.0, idx=0, plot_stride=2, figsize=(24, 8), fs=10,
+                     vis_thresh=THRESHOLDS[2], vis_hits_misses_fas=True):
+    in_len = in_seq.shape[-1]
+    out_len = target_seq.shape[-1]
     max_len = max(in_len, out_len)
     ncols = (max_len - 1) // plot_stride + 1
     if vis_hits_misses_fas:
@@ -76,16 +74,14 @@ def visualize_result_horizontal(
     ax[0][0].set_ylabel('Inputs', fontsize=fs)
     for i in range(0, max_len, plot_stride):
         if i < in_len:
-            frame = in_seq[idx, i, :, :, 0].T
-            ax[0][i // plot_stride].imshow(frame, **cmap_dict_auto(frame))
+            ax[0][i // plot_stride].imshow(np.rot90(in_seq[idx, :, :, i]), **cmap_dict_auto(in_seq[idx, :, :, i]))
         else:
             ax[0][i // plot_stride].axis('off')
 
     ax[1][0].set_ylabel('Target', fontsize=fs)
     for i in range(0, max_len, plot_stride):
         if i < out_len:
-            frame = target_seq[idx, i, :, :, 0].T
-            ax[1][i // plot_stride].imshow(frame, **cmap_dict_auto(frame))
+            ax[1][i // plot_stride].imshow(np.rot90(target_seq[idx, :, :, i]), **cmap_dict_auto(target_seq[idx, :, :, i]))
         else:
             ax[1][i // plot_stride].axis('off')
 
@@ -96,12 +92,11 @@ def visualize_result_horizontal(
         for k in range(len(pred_seq_list)):
             for i in range(0, max_len, plot_stride):
                 if i < out_len:
-                    frame_pred = y_preds[k][0, i, :, :, 0].T
-                    frame_target = target_seq[0, i, :, :, 0].T
-
-                    ax[2 + 3 * k][i // plot_stride].imshow(frame_pred, **cmap_dict_auto(frame_pred))
-                    plot_hit_miss_fa(ax[2 + 1 + 3 * k][i // plot_stride], frame_target, frame_pred, vis_thresh)
-                    plot_hit_miss_fa_all_thresholds(ax[2 + 2 + 3 * k][i // plot_stride], frame_target, frame_pred)
+                    pred_img = y_preds[k][0, :, :, i]
+                    tgt_img = target_seq[0, :, :, i]
+                    ax[2 + 3 * k][i // plot_stride].imshow(np.rot90(pred_img), **cmap_dict_auto(pred_img))
+                    plot_hit_miss_fa(ax[2 + 1 + 3 * k][i // plot_stride], tgt_img, pred_img, vis_thresh)
+                    plot_hit_miss_fa_all_thresholds(ax[2 + 2 + 3 * k][i // plot_stride], tgt_img, pred_img)
                 else:
                     ax[2 + 3 * k][i // plot_stride].axis('off')
                     ax[2 + 1 + 3 * k][i // plot_stride].axis('off')
@@ -114,8 +109,7 @@ def visualize_result_horizontal(
         for k in range(len(pred_seq_list)):
             for i in range(0, max_len, plot_stride):
                 if i < out_len:
-                    frame_pred = y_preds[k][0, i, :, :, 0].T
-                    ax[2 + k][i // plot_stride].imshow(frame_pred, **cmap_dict_auto(frame_pred))
+                    ax[2 + k][i // plot_stride].imshow(np.rot90(y_preds[k][0, :, :, i]), **cmap_dict_auto(y_preds[k][0, :, :, i]))
                 else:
                     ax[2 + k][i // plot_stride].axis('off')
             ax[2 + k][0].set_ylabel(label_list[k] + '\nPrediction', fontsize=fs)
@@ -131,6 +125,7 @@ def visualize_result_horizontal(
 
     plt.subplots_adjust(hspace=0.05, wspace=0.05, bottom=0.20)
 
+    # Add shared colorbar
     cbar_ax = fig.add_axes([0.15, 0.10, 0.7, 0.02])
     cb = plt.colorbar(ScalarMappable(norm=Normalize(vmin=SSI_VMIN, vmax=SSI_VMAX),
                                      cmap=jet_with_gray()),
@@ -150,6 +145,7 @@ def visualize_result_horizontal(
                         borderaxespad=0, frameon=False, fontsize='16')
 
     return fig, ax
+
 
 def visualize_result_vertical(in_seq, target_seq, pred_seq_list: List[np.array], label_list: List[str],
                               interval_real_time=10.0, idx=0, plot_stride=2, fs=20,
