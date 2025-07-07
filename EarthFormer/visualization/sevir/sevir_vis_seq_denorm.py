@@ -144,10 +144,69 @@ def visualize_result(in_seq, target_seq, pred_seq_list: List[np.array], label_li
 
     return fig, ax
 
+def visualize_result_vertical(in_seq, target_seq, pred_seq_list: List[np.array], label_list: List[str],
+                              interval_real_time=10.0, idx=0, plot_stride=2, figsize=(8, 24), fs=10,
+                              vis_thresh=THRESHOLDS[2], vis_hits_misses_fas=True):
+    in_len = in_seq.shape[-1]
+    out_len = target_seq.shape[-1]
+    max_len = max(in_len, out_len)
+    nrows = (max_len - 1) // plot_stride + 1
+    if vis_hits_misses_fas:
+        ncols = 2 + 3 * len(pred_seq_list)
+    else:
+        ncols = 2 + len(pred_seq_list)
+
+    fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=figsize)
+
+    if nrows == 1:
+        ax = [ax]
+
+    for i in range(0, max_len, plot_stride):
+        row = i // plot_stride
+
+        if i < in_len:
+            ax[row][0].imshow(in_seq[idx, :, :, i], **cmap_dict_auto(in_seq[idx, :, :, i]))
+        else:
+            ax[row][0].axis('off')
+        if i < out_len:
+            ax[row][1].imshow(target_seq[idx, :, :, i], **cmap_dict_auto(target_seq[idx, :, :, i]))
+        else:
+            ax[row][1].axis('off')
+
+        y_preds = [pred_seq[idx:idx + 1] for pred_seq in pred_seq_list]
+
+        for k in range(len(pred_seq_list)):
+            if i < out_len:
+                ax[row][2 + k].imshow(y_preds[k][0, :, :, i], **cmap_dict_auto(y_preds[k][0, :, :, i]))
+            else:
+                ax[row][2 + k].axis('off')
+
+        ax[row][0].set_ylabel(f'{int(interval_real_time * (i + plot_stride))} Min', fontsize=fs)
+
+    col_labels = ['Input', 'Target'] + [f'{lbl}\nPred' for lbl in label_list]
+    for col, label in enumerate(col_labels):
+        ax[0][col].set_title(label, fontsize=fs)
+
+    for r in ax:
+        for a in r:
+            a.xaxis.set_ticks([])
+            a.yaxis.set_ticks([])
+
+    plt.subplots_adjust(hspace=0.1, wspace=0.05, right=0.88)
+
+    # Colorbar (vertical)
+    cbar_ax = fig.add_axes([0.90, 0.15, 0.015, 0.7])
+    cb = plt.colorbar(ScalarMappable(norm=Normalize(vmin=SSI_VMIN, vmax=SSI_VMAX),
+                                     cmap=jet_with_gray()), cax=cbar_ax)
+    cb.set_label('SSI Intensity (W/m²)', fontsize=12)
+    cb.ax.tick_params(labelsize=10)
+
+    return fig, ax
+
 
 def save_example_vis_results(save_dir, save_prefix, in_seq, target_seq, pred_seq, label,
                               layout='NHWT', interval_real_time=10.0, idx=0,
-                              plot_stride=2, fs=10, norm=None, vis_hits_misses_fas=True):
+                              plot_stride=2, fs=14, norm=None, vis_hits_misses_fas=True):
     in_seq = change_layout_np(in_seq, in_layout=layout).astype(np.float32)
     target_seq = change_layout_np(target_seq, in_layout=layout).astype(np.float32)
     pred_seq = change_layout_np(pred_seq, in_layout=layout).astype(np.float32)
@@ -155,7 +214,7 @@ def save_example_vis_results(save_dir, save_prefix, in_seq, target_seq, pred_seq
     os.makedirs(save_dir, exist_ok=True)
     fig_path = os.path.join(save_dir, f'{save_prefix}.png')
 
-    fig, ax = visualize_result(
+    fig, ax = visualize_result_vertical(
         in_seq=in_seq,
         target_seq=target_seq,
         pred_seq_list=[pred_seq],
@@ -174,7 +233,7 @@ def save_comparison_vis_results(
         save_dir, save_prefix,
         in_seq, target_seq, pred_seq_list, label_list,
         layout='NHWT', interval_real_time: float = 10.0, idx=0,
-        plot_stride=2, fs=10, norm=None, vis_hits_misses_fas=False):
+        plot_stride=2, fs=14, norm=None, vis_hits_misses_fas=False):
     """
     Save visualization of multiple models compared side-by-side.
     
