@@ -74,14 +74,14 @@ def visualize_result_horizontal(in_seq, target_seq, pred_seq_list: List[np.array
     ax[0][0].set_ylabel('Inputs', fontsize=fs)
     for i in range(0, max_len, plot_stride):
         if i < in_len:
-            ax[0][i // plot_stride].imshow(np.rot90(in_seq[idx, :, :, i]), **cmap_dict_auto(in_seq[idx, :, :, i]))
+            ax[0][i // plot_stride].imshow(in_seq[idx, i, :, :, 0], **cmap_dict_auto(in_seq[idx, i, :, :, 0]), aspect='auto')
         else:
             ax[0][i // plot_stride].axis('off')
 
     ax[1][0].set_ylabel('Target', fontsize=fs)
     for i in range(0, max_len, plot_stride):
         if i < out_len:
-            ax[1][i // plot_stride].imshow(np.rot90(target_seq[idx, :, :, i]), **cmap_dict_auto(target_seq[idx, :, :, i]))
+            ax[1][i // plot_stride].imshow(target_seq[idx, :, :, i], **cmap_dict_auto(target_seq[idx, :, :, i]), aspect='auto')
         else:
             ax[1][i // plot_stride].axis('off')
 
@@ -92,11 +92,9 @@ def visualize_result_horizontal(in_seq, target_seq, pred_seq_list: List[np.array
         for k in range(len(pred_seq_list)):
             for i in range(0, max_len, plot_stride):
                 if i < out_len:
-                    pred_img = y_preds[k][0, :, :, i]
-                    tgt_img = target_seq[0, :, :, i]
-                    ax[2 + 3 * k][i // plot_stride].imshow(np.rot90(pred_img), **cmap_dict_auto(pred_img))
-                    plot_hit_miss_fa(ax[2 + 1 + 3 * k][i // plot_stride], tgt_img, pred_img, vis_thresh)
-                    plot_hit_miss_fa_all_thresholds(ax[2 + 2 + 3 * k][i // plot_stride], tgt_img, pred_img)
+                    ax[2 + 3 * k][i // plot_stride].imshow(y_preds[k][0, :, :, i], **cmap_dict_auto(y_preds[k][0, :, :, i]), aspect='auto')
+                    plot_hit_miss_fa(ax[2 + 1 + 3 * k][i // plot_stride], target_seq[0, :, :, i], y_preds[k][0, :, :, i], vis_thresh)
+                    plot_hit_miss_fa_all_thresholds(ax[2 + 2 + 3 * k][i // plot_stride], target_seq[0, :, :, i], y_preds[k][0, :, :, i])
                 else:
                     ax[2 + 3 * k][i // plot_stride].axis('off')
                     ax[2 + 1 + 3 * k][i // plot_stride].axis('off')
@@ -109,7 +107,7 @@ def visualize_result_horizontal(in_seq, target_seq, pred_seq_list: List[np.array
         for k in range(len(pred_seq_list)):
             for i in range(0, max_len, plot_stride):
                 if i < out_len:
-                    ax[2 + k][i // plot_stride].imshow(np.rot90(y_preds[k][0, :, :, i]), **cmap_dict_auto(y_preds[k][0, :, :, i]))
+                    ax[2 + k][i // plot_stride].imshow(y_preds[k][0, :, :, i], **cmap_dict_auto(y_preds[k][0, :, :, i]), aspect='auto')
                 else:
                     ax[2 + k][i // plot_stride].axis('off')
             ax[2 + k][0].set_ylabel(label_list[k] + '\nPrediction', fontsize=fs)
@@ -175,19 +173,19 @@ def visualize_result_vertical(in_seq, target_seq, pred_seq_list: List[np.array],
         row = i // plot_stride
 
         if i < in_len:
-            ax[row][0].imshow(in_seq[idx, :, :, i], **cmap_dict_auto(in_seq[idx, :, :, i]))
+            ax[row][0].imshow(in_seq[idx, i, :, :, 0], **cmap_dict_auto(in_seq[idx, i, :, :, 0]))
         else:
             ax[row][0].axis('off')
 
         if i < out_len:
-            ax[row][1].imshow(target_seq[idx, :, :, i], **cmap_dict_auto(target_seq[idx, :, :, i]))
+            ax[row][1].imshow(target_seq[idx, i, :, :, 0], **cmap_dict_auto(target_seq[idx, i, :, :, 0]))
         else:
             ax[row][1].axis('off')
 
         y_preds = [pred_seq[idx:idx + 1] for pred_seq in pred_seq_list]
         for k in range(len(pred_seq_list)):
             if i < out_len:
-                ax[row][2 + k].imshow(y_preds[k][0, :, :, i], **cmap_dict_auto(y_preds[k][0, :, :, i]))
+                ax[row][2 + k].imshow(y_preds[k][0, i, :, :, 0], **cmap_dict_auto(y_preds[k][0, i, :, :, 0]))
             else:
                 ax[row][2 + k].axis('off')
 
@@ -280,7 +278,7 @@ def save_comparison_vis_results(
     ax[0][0].set_ylabel('Inputs', fontsize=fs)
     for i in range(0, max_len, plot_stride):
         if i < in_len:
-            xt = in_seq[idx, :, :, i]
+            xt = in_seq[idx, i, :, :, 0]
             ax[0][i // plot_stride].imshow(xt, **cmap_dict_auto(xt))
         else:
             ax[0][i // plot_stride].axis('off')

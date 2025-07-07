@@ -38,7 +38,7 @@ def change_layout_np(data,
     elif in_layout == 'NTWHC':
         data = data[:, :, :, :, 0]
         data = np.transpose(data,
-                            axes=(0, 3, 2, 1))
+                            axes=(0, 2, 3, 1))
     elif in_layout == 'TNHW':
         data = np.transpose(data,
                             axes=(1, 2, 3, 0))
