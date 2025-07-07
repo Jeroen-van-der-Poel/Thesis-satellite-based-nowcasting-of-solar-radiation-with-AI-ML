@@ -156,7 +156,7 @@ def visualize_result_vertical(in_seq, target_seq, pred_seq_list: List[np.array],
     else:
         ncols = 2 + len(pred_seq_list)
 
-    fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=figsize)
+    fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=(2.5 * ncols, 2.5 * nrows))
 
     if nrows == 1:
         ax = [ax]
@@ -192,13 +192,15 @@ def visualize_result_vertical(in_seq, target_seq, pred_seq_list: List[np.array],
             a.xaxis.set_ticks([])
             a.yaxis.set_ticks([])
 
-    plt.subplots_adjust(hspace=0.1, wspace=0.05, right=0.88)
+    plt.subplots_adjust(hspace=0.1, wspace=0.05, bottom=0.15)
 
     # Colorbar (vertical)
-    cbar_ax = fig.add_axes([0.90, 0.15, 0.015, 0.7])
+    cbar_ax = fig.add_axes([0.15, 0.08, 0.7, 0.02])
     cb = plt.colorbar(ScalarMappable(norm=Normalize(vmin=SSI_VMIN, vmax=SSI_VMAX),
-                                     cmap=jet_with_gray()), cax=cbar_ax)
-    cb.set_label('SSI Intensity (W/m²)', fontsize=12)
+                                    cmap=jet_with_gray()),
+                    cax=cbar_ax,
+                    orientation='horizontal')
+    cb.set_label('SSI Intensity (W/m²)', fontsize=15)
     cb.ax.tick_params(labelsize=10)
 
     return fig, ax
@@ -206,7 +208,7 @@ def visualize_result_vertical(in_seq, target_seq, pred_seq_list: List[np.array],
 
 def save_example_vis_results(save_dir, save_prefix, in_seq, target_seq, pred_seq, label,
                               layout='NHWT', interval_real_time=10.0, idx=0,
-                              plot_stride=2, fs=14, norm=None, vis_hits_misses_fas=True):
+                              plot_stride=2, fs=15, norm=None, vis_hits_misses_fas=True):
     in_seq = change_layout_np(in_seq, in_layout=layout).astype(np.float32)
     target_seq = change_layout_np(target_seq, in_layout=layout).astype(np.float32)
     pred_seq = change_layout_np(pred_seq, in_layout=layout).astype(np.float32)
