@@ -60,7 +60,7 @@ def plot_hit_miss_fa_all_thresholds(ax, y_true, y_pred):
 
 
 def visualize_result_horizontal(in_seq, target_seq, pred_seq_list: List[np.array], label_list: List[str],
-                     interval_real_time=10.0, idx=0, plot_stride=2, figsize=(24, 8), fs=10,
+                     interval_real_time=10.0, idx=0, plot_stride=2, figsize=(8, 24), fs=10,
                      vis_thresh=THRESHOLDS[2], vis_hits_misses_fas=True):
     in_len = in_seq.shape[-1]
     out_len = target_seq.shape[-1]
@@ -187,10 +187,10 @@ def visualize_result_vertical(in_seq, target_seq, pred_seq_list: List[np.array],
                 ax[row][2 + k].axis('off')
 
         # Left-hand time labels
-        ax[row][0].set_ylabel(f'{int(interval_real_time * (i + plot_stride))} Min', fontsize=fs)
+        # ax[row][0].set_ylabel(f'{int(interval_real_time * (i + plot_stride))} Min', fontsize=fs)
+        ax[row][-1].set_ylabel(f'{int(interval_real_time * (i + plot_stride))} Min', fontsize=fs)
 
-        # Horizontal time labels under right-most column
-        ax[row][-1].set_xlabel(f'{int(interval_real_time * (i + plot_stride))} Min', fontsize=fs, labelpad=10)
+
 
     # Column titles
     col_labels = ['Input', 'Target'] + [f'{lbl}\nPred' for lbl in label_list]

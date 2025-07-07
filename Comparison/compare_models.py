@@ -154,7 +154,7 @@ def evaluate_model(
                 plot_stride=1,
                 vis_hits_misses_fas=False,
                 interval_real_time=15,
-                fs=15
+                fs=20
             )
 
     averages = {
