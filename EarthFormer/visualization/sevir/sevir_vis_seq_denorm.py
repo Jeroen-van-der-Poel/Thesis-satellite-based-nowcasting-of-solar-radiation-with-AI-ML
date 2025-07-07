@@ -162,8 +162,6 @@ def visualize_result_vertical(in_seq, target_seq, pred_seq_list: List[np.array],
     fig_height_per_row = 2.5
     figsize = (fig_width_per_col * ncols, fig_height_per_row * nrows)
 
-    fs = 20
-
     fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=figsize)
     if nrows == 1:
         ax = [ax]
@@ -227,7 +225,7 @@ def save_example_vis_results(save_dir, save_prefix, in_seq, target_seq, pred_seq
     os.makedirs(save_dir, exist_ok=True)
     fig_path = os.path.join(save_dir, f'{save_prefix}.png')
 
-    fig, ax = visualize_result_horizontal(
+    fig, ax = visualize_result_vertical(
         in_seq=in_seq,
         target_seq=target_seq,
         pred_seq_list=[pred_seq],
