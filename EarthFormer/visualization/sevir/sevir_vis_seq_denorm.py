@@ -188,12 +188,14 @@ def visualize_result_vertical(in_seq, target_seq, pred_seq_list: List[np.array],
 
         # Left-hand time labels
         # ax[row][0].set_ylabel(f'{int(interval_real_time * (i + plot_stride))} Min', fontsize=fs)
-        ax[row][-1].set_ylabel(f'{int(interval_real_time * (i + plot_stride))} Min', fontsize=fs)
-
-
+        ax[row][-1].annotate(
+            f'{int(interval_real_time * (i + plot_stride))} Min',
+            xy=(1.05, 0.5), xycoords='axes fraction',
+            fontsize=fs, va='center', ha='left', rotation=0
+        )
 
     # Column titles
-    col_labels = ['Input', 'Target'] + [f'{lbl}\nPred' for lbl in label_list]
+    col_labels = ['Input', 'Target'] + [f'{lbl}\nPrediction' for lbl in label_list]
     for col, label in enumerate(col_labels):
         ax[0][col].set_title(label, fontsize=fs)
 
@@ -203,14 +205,22 @@ def visualize_result_vertical(in_seq, target_seq, pred_seq_list: List[np.array],
             a.xaxis.set_ticks([])
             a.yaxis.set_ticks([])
 
-    # Adjust layout and add horizontal colorbar
-    plt.subplots_adjust(hspace=0.1, wspace=0.05, top=0.95, bottom=0.05)
+    # plt.subplots_adjust(hspace=0.1, wspace=0.05, top=0.95, bottom=0.05)
 
-    cbar_ax = fig.add_axes([0.90, 0.15, 0.015, 0.7])
-    cb = plt.colorbar(ScalarMappable(norm=Normalize(vmin=SSI_VMIN, vmax=SSI_VMAX),
-                                     cmap=jet_with_gray()), cax=cbar_ax)
-    cb.set_label('SSI Intensity (W/m²)', fontsize=12)
-    cb.ax.tick_params(labelsize=10)
+    # cbar_ax = fig.add_axes([0.90, 0.15, 0.015, 0.7])
+    # cb = plt.colorbar(ScalarMappable(norm=Normalize(vmin=SSI_VMIN, vmax=SSI_VMAX),
+    #                                  cmap=jet_with_gray()), cax=cbar_ax)
+    # cb.set_label('SSI Intensity (W/m²)', fontsize=fs)
+    # cb.ax.tick_params(labelsize=fs)
+
+    cbar_ax = fig.add_axes([0.25, 0.03, 0.5, 0.02])  # [left, bottom, width, height]
+    cb = plt.colorbar(
+        ScalarMappable(norm=Normalize(vmin=SSI_VMIN, vmax=SSI_VMAX), cmap=jet_with_gray()),
+        cax=cbar_ax,
+        orientation='horizontal'
+    )
+    cb.set_label('SSI Intensity (W/m²)', fontsize=fs)
+    cb.ax.tick_params(labelsize=15)
 
     return fig, ax
 
