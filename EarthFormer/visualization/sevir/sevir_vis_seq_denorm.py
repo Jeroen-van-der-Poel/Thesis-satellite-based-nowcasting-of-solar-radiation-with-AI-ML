@@ -144,7 +144,6 @@ def visualize_result_horizontal(in_seq, target_seq, pred_seq_list: List[np.array
 
     return fig, ax
 
-
 def visualize_result_vertical(in_seq, target_seq, pred_seq_list: List[np.array], label_list: List[str],
                               interval_real_time=10.0, idx=0, plot_stride=2, fs=20,
                               vis_thresh=THRESHOLDS[2], vis_hits_misses_fas=True):
