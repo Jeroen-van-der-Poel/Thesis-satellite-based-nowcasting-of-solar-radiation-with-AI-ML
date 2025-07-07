@@ -208,7 +208,7 @@ def visualize_result_vertical(in_seq, target_seq, pred_seq_list: List[np.array],
     # Adjust layout and add horizontal colorbar
     plt.subplots_adjust(hspace=0.1, wspace=0.05, top=0.95, bottom=0.05)
 
-    cbar_ax = fig.add_axes([0.96, 0.15, 0.015, 0.7])
+    cbar_ax = fig.add_axes([0.98, 0.15, 0.015, 0.7])
     cb = plt.colorbar(ScalarMappable(norm=Normalize(vmin=SSI_VMIN, vmax=SSI_VMAX),
                                      cmap=jet_with_gray()), cax=cbar_ax)
     cb.set_label('SSI Intensity (W/m²)', fontsize=fs)
