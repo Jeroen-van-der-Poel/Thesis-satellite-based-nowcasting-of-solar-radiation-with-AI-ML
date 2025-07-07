@@ -53,6 +53,7 @@ def evaluate_model(
             else:
                 preds, targets = inference_fn(model, inputs, targets)
 
+        print(f"Batch {idx}: inputs shape {inputs.shape}, targets shape {targets.shape}, preds shape {preds.shape}")
         preds_np = preds.detach().cpu().numpy().transpose(0, 1, 3, 2)
         inputs_np = inputs.detach().cpu().numpy().transpose(0, 1, 3, 2)
         targets_np = targets.detach().cpu().numpy().transpose(0, 1, 3, 2)
