@@ -150,7 +150,7 @@ def evaluate_model(
                 target_seq=targets_np,
                 pred_seq=preds_np,
                 label=model_name,
-                layout="NTHWC",
+                layout="NTWHC",
                 plot_stride=1,
                 vis_hits_misses_fas=False,
                 interval_real_time=15
