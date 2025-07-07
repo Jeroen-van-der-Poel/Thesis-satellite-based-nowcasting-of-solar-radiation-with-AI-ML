@@ -162,7 +162,7 @@ def visualize_result_vertical(in_seq, target_seq, pred_seq_list: List[np.array],
     fig_height_per_row = 2.5
     figsize = (fig_width_per_col * ncols, fig_height_per_row * nrows)
 
-    fs = 16  # font size
+    fs = 20
 
     fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=figsize)
     if nrows == 1:
