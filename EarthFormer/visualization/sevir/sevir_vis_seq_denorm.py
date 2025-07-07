@@ -74,7 +74,7 @@ def visualize_result_horizontal(in_seq, target_seq, pred_seq_list: List[np.array
     ax[0][0].set_ylabel('Inputs', fontsize=fs)
     for i in range(0, max_len, plot_stride):
         if i < in_len:
-            ax[0][i // plot_stride].imshow(in_seq[idx, i, :, :, 0], **cmap_dict_auto(in_seq[idx, i, :, :, 0]), aspect='auto')
+            ax[0][i // plot_stride].imshow(in_seq[idx, :, :, i], **cmap_dict_auto(in_seq[idx, :, :, i]), aspect='auto')
         else:
             ax[0][i // plot_stride].axis('off')
 
@@ -172,19 +172,19 @@ def visualize_result_vertical(in_seq, target_seq, pred_seq_list: List[np.array],
         row = i // plot_stride
 
         if i < in_len:
-            ax[row][0].imshow(in_seq[idx, i, :, :, 0], **cmap_dict_auto(in_seq[idx, i, :, :, 0]))
+            ax[row][0].imshow(in_seq[idx, :, :, i], **cmap_dict_auto(in_seq[idx, :, :, i]))
         else:
             ax[row][0].axis('off')
 
         if i < out_len:
-            ax[row][1].imshow(target_seq[idx, i, :, :, 0], **cmap_dict_auto(target_seq[idx, i, :, :, 0]))
+            ax[row][1].imshow(target_seq[idx, :, :, i], **cmap_dict_auto(target_seq[idx, :, :, i]))
         else:
             ax[row][1].axis('off')
 
         y_preds = [pred_seq[idx:idx + 1] for pred_seq in pred_seq_list]
         for k in range(len(pred_seq_list)):
             if i < out_len:
-                ax[row][2 + k].imshow(y_preds[k][0, i, :, :, 0], **cmap_dict_auto(y_preds[k][0, i, :, :, 0]))
+                ax[row][2 + k].imshow(y_preds[k][0, :, :, i], **cmap_dict_auto(y_preds[k][0, :, :, i]))
             else:
                 ax[row][2 + k].axis('off')
 
@@ -277,7 +277,7 @@ def save_comparison_vis_results(
     ax[0][0].set_ylabel('Inputs', fontsize=fs)
     for i in range(0, max_len, plot_stride):
         if i < in_len:
-            xt = in_seq[idx, i, :, :, 0]
+            xt = in_seq[idx, :, :, i]
             ax[0][i // plot_stride].imshow(xt, **cmap_dict_auto(xt))
         else:
             ax[0][i // plot_stride].axis('off')
