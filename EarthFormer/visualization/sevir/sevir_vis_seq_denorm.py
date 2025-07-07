@@ -59,7 +59,7 @@ def plot_hit_miss_fa_all_thresholds(ax, y_true, y_pred):
     ax.imshow(fig, cmap=cmap)
 
 
-def visualize_result(in_seq, target_seq, pred_seq_list: List[np.array], label_list: List[str],
+def visualize_result_horizontal(in_seq, target_seq, pred_seq_list: List[np.array], label_list: List[str],
                      interval_real_time=10.0, idx=0, plot_stride=2, figsize=(24, 8), fs=10,
                      vis_thresh=THRESHOLDS[2], vis_hits_misses_fas=True):
     in_len = in_seq.shape[-1]
@@ -145,19 +145,26 @@ def visualize_result(in_seq, target_seq, pred_seq_list: List[np.array], label_li
     return fig, ax
 
 def visualize_result_vertical(in_seq, target_seq, pred_seq_list: List[np.array], label_list: List[str],
-                              interval_real_time=10.0, idx=0, plot_stride=2, figsize=(8, 24), fs=10,
+                              interval_real_time=10.0, idx=0, plot_stride=2,
                               vis_thresh=THRESHOLDS[2], vis_hits_misses_fas=True):
     in_len = in_seq.shape[-1]
     out_len = target_seq.shape[-1]
     max_len = max(in_len, out_len)
     nrows = (max_len - 1) // plot_stride + 1
+
     if vis_hits_misses_fas:
         ncols = 2 + 3 * len(pred_seq_list)
     else:
         ncols = 2 + len(pred_seq_list)
 
-    fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=(2.5 * ncols, 2.5 * nrows))
+    # === Figure size scaling ===
+    fig_width_per_col = 3.0
+    fig_height_per_row = 2.5
+    figsize = (fig_width_per_col * ncols, fig_height_per_row * nrows)
 
+    fs = 16  # font size
+
+    fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=figsize)
     if nrows == 1:
         ax = [ax]
 
@@ -168,40 +175,46 @@ def visualize_result_vertical(in_seq, target_seq, pred_seq_list: List[np.array],
             ax[row][0].imshow(in_seq[idx, :, :, i], **cmap_dict_auto(in_seq[idx, :, :, i]))
         else:
             ax[row][0].axis('off')
+
         if i < out_len:
             ax[row][1].imshow(target_seq[idx, :, :, i], **cmap_dict_auto(target_seq[idx, :, :, i]))
         else:
             ax[row][1].axis('off')
 
         y_preds = [pred_seq[idx:idx + 1] for pred_seq in pred_seq_list]
-
         for k in range(len(pred_seq_list)):
             if i < out_len:
                 ax[row][2 + k].imshow(y_preds[k][0, :, :, i], **cmap_dict_auto(y_preds[k][0, :, :, i]))
             else:
                 ax[row][2 + k].axis('off')
 
+        # Left-hand time labels
         ax[row][0].set_ylabel(f'{int(interval_real_time * (i + plot_stride))} Min', fontsize=fs)
 
+        # Horizontal time labels under right-most column
+        ax[row][-1].set_xlabel(f'{int(interval_real_time * (i + plot_stride))} Min', fontsize=fs, labelpad=10)
+
+    # Column titles
     col_labels = ['Input', 'Target'] + [f'{lbl}\nPred' for lbl in label_list]
     for col, label in enumerate(col_labels):
         ax[0][col].set_title(label, fontsize=fs)
 
-    for r in ax:
-        for a in r:
+    # Clean ticks
+    for row_axes in ax:
+        for a in row_axes:
             a.xaxis.set_ticks([])
             a.yaxis.set_ticks([])
 
-    plt.subplots_adjust(hspace=0.1, wspace=0.05, bottom=0.15)
+    # Adjust layout and add horizontal colorbar
+    plt.subplots_adjust(hspace=0.1, wspace=0.05, bottom=0.20)
 
-    # Colorbar (vertical)
-    cbar_ax = fig.add_axes([0.15, 0.08, 0.7, 0.02])
+    cbar_ax = fig.add_axes([0.15, 0.08, 0.7, 0.025])
     cb = plt.colorbar(ScalarMappable(norm=Normalize(vmin=SSI_VMIN, vmax=SSI_VMAX),
-                                    cmap=jet_with_gray()),
-                    cax=cbar_ax,
-                    orientation='horizontal')
-    cb.set_label('SSI Intensity (W/m²)', fontsize=15)
-    cb.ax.tick_params(labelsize=10)
+                                     cmap=jet_with_gray()),
+                      cax=cbar_ax,
+                      orientation='horizontal')
+    cb.set_label('SSI Intensity (W/m²)', fontsize=fs)
+    cb.ax.tick_params(labelsize=fs - 2)
 
     return fig, ax
 
