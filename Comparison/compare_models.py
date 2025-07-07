@@ -71,6 +71,9 @@ def evaluate_model(
             sds_cs_inputs = np.expand_dims(sds_cs_inputs, axis=0)  
             sds_cs_inputs = np.repeat(sds_cs_inputs, inputs_np.shape[0], axis=0) 
 
+            sds_cs_targets = sds_cs_targets.transpose(0, 1, 3, 2, 4)
+            sds_cs_inputs = sds_cs_inputs.transpose(0, 1, 3, 2, 4)
+
             inputs_np_1 = inputs_np
             inputs_np = inputs_np * sds_cs_inputs
             if preds_np.shape == targets_np.shape == sds_cs_targets.shape:
