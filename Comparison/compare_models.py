@@ -196,16 +196,16 @@ def plot_metrics(metrics_dict, model_name="Model", save_dir="./vis"):
         plt.figure()
         plt.plot(time_steps[:len(avg_values)], avg_values, marker='o')
         plt.title(f"{model_name} - {metric.upper()} per 15-min Interval", fontsize=20)
-        plt.xlabel("Time (minutes)", fontsize=18)
+        plt.xlabel("Time (minutes)", fontsize=16)
         if metric == "mae" or metric == "rmse":
-            plt.ylabel(f"{metric.upper()}  (W/m²)", fontsize=18)
+            plt.ylabel(f"{metric.upper()}  (W/m²)", fontsize=14)
         elif metric == "rrmse":
-            plt.ylabel(f"{metric.upper()} (%)", fontsize=18)
+            plt.ylabel(f"{metric.upper()} (%)", fontsize=14)
         else:
-            plt.ylabel(f"{metric.upper()}", fontsize=18)
+            plt.ylabel(f"{metric.upper()}", fontsize=14)
         plt.grid(True)
-        plt.xticks(fontsize=15)
-        plt.yticks(fontsize=15)
+        plt.xticks(fontsize=14)
+        plt.yticks(fontsize=14)
         plt.tight_layout()
         plt.savefig(f'{save_dir}/{metric}_15min.png', bbox_inches='tight')
         plt.show()
