@@ -305,19 +305,19 @@ if __name__ == "__main__":
     # )
     # plot_metrics(p_metrics, model_name="Persistence", save_dir="./bas_vis/persistence")
 
-    # print("Evaluating EarthFormer...")
-    # ef_metrics, ef_results, ef_cache = evaluate_model(
-    #     "EarthFormer", 
-    #     ef_model, 
-    #     dm.test_dataloader(),
-    #     inference_fn=infer_earthformer,
-    #     visualize=True, 
-    #     visualization_indices=[0, 800, 1250, 1500],
-    #     save_dir="./bas_vis/earthformer",
-    #     sds_cs_dataset=sds_cs_dataset,
-    #     denormalize=True
-    # )
-    # plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./bas_vis/earthformer")
+    print("Evaluating EarthFormer...")
+    ef_metrics, ef_results, ef_cache = evaluate_model(
+        "EarthFormer", 
+        ef_model, 
+        dm.test_dataloader(),
+        inference_fn=infer_earthformer,
+        visualize=True, 
+        visualization_indices=[0, 800, 1250, 1500],
+        save_dir="./bas_vis/earthformer",
+        sds_cs_dataset=sds_cs_dataset,
+        denormalize=True
+    )
+    plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./bas_vis/earthformer")
 
     print("Evaluating DGMR-SO...")
     dgmr_metrics, dgmr_results, dgmr_cache = evaluate_model(
