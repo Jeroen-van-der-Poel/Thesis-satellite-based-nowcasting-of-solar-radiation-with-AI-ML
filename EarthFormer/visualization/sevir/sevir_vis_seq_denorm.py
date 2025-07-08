@@ -193,13 +193,13 @@ def visualize_result_vertical(in_seq, target_seq, pred_seq_list: List[np.array],
         ax[row][-1].annotate(
             f'{int(interval_real_time * (i + plot_stride))} Min',
             xy=(1.05, 0.5), xycoords='axes fraction',
-            fontsize=fs, va='center', ha='left', rotation=0
+            fontsize=25, va='center', ha='left', rotation=0
         )
 
     # Column titles
     col_labels = ['Input', 'Target'] + [f'{lbl}\nPrediction' for lbl in label_list]
     for col, label in enumerate(col_labels):
-        ax[0][col].set_title(label, fontsize=25)
+        ax[0][col].set_title(label, fontsize=30)
 
     # Clean ticks
     for row_axes in ax:
@@ -213,10 +213,10 @@ def visualize_result_vertical(in_seq, target_seq, pred_seq_list: List[np.array],
     cbar_ax = fig.add_axes([1.1, 0.15, 0.015, 0.7])
     cb = plt.colorbar(ScalarMappable(norm=Normalize(vmin=SSI_VMIN, vmax=SSI_VMAX),
                                      cmap=jet_with_gray()), cax=cbar_ax)
-    cb.set_label('SSI Intensity (W/m²)', fontsize=16)
-    cb.ax.tick_params(labelsize=14)
-    plt.xticks(fontsize=14)             
-    plt.yticks(fontsize=14) 
+    cb.set_label('SSI Intensity (W/m²)', fontsize=25)
+    cb.ax.tick_params(labelsize=20)
+    plt.xticks(fontsize=20)             
+    plt.yticks(fontsize=20) 
 
     return fig, ax
 
