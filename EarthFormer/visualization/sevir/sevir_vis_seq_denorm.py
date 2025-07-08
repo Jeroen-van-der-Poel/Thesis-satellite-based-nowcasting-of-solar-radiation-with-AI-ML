@@ -159,8 +159,10 @@ def visualize_result_vertical(in_seq, target_seq, pred_seq_list: List[np.array],
 
     # === Figure size scaling ===
     fig_width_per_col = 4.0
+    extra_width_for_cbar = 2.0 
     fig_height_per_row = 2.5
-    figsize = (fig_width_per_col * ncols, fig_height_per_row * nrows)
+    figsize = ((fig_width_per_col * ncols) + extra_width_for_cbar, fig_height_per_row * nrows)
+
 
     fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=figsize)
     if nrows == 1:
