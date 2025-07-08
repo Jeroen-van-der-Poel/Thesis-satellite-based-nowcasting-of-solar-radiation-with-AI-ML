@@ -206,7 +206,7 @@ def visualize_result_vertical(in_seq, target_seq, pred_seq_list: List[np.array],
             a.yaxis.set_ticks([])
 
     # Adjust layout and add horizontal colorbar
-    plt.subplots_adjust(hspace=0.8, wspace=0.07, top=0.20, bottom=0)
+    plt.subplots_adjust(hspace=0.1, wspace=0.05, top=0.95, bottom=0.05)
 
     cbar_ax = fig.add_axes([1.1, 0.15, 0.015, 0.7])
     cb = plt.colorbar(ScalarMappable(norm=Normalize(vmin=SSI_VMIN, vmax=SSI_VMAX),
