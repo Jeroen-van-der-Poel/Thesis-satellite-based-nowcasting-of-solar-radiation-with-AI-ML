@@ -199,7 +199,7 @@ def visualize_result_vertical(in_seq, target_seq, pred_seq_list: List[np.array],
     # Column titles
     col_labels = ['Input', 'Target'] + [f'{lbl}\nPrediction' for lbl in label_list]
     for col, label in enumerate(col_labels):
-        ax[0][col].set_title(label, fontsize=fs)
+        ax[0][col].set_title(label, fontsize=25)
 
     # Clean ticks
     for row_axes in ax:
@@ -213,11 +213,10 @@ def visualize_result_vertical(in_seq, target_seq, pred_seq_list: List[np.array],
     cbar_ax = fig.add_axes([1.1, 0.15, 0.015, 0.7])
     cb = plt.colorbar(ScalarMappable(norm=Normalize(vmin=SSI_VMIN, vmax=SSI_VMAX),
                                      cmap=jet_with_gray()), cax=cbar_ax)
-    cb.set_label('SSI Intensity (W/m²)', fontsize=fs)
-    cb.ax.tick_params(labelsize=fs)
-  
-    plt.xticks(fontsize=fs)             
-    plt.yticks(fontsize=fs) 
+    cb.set_label('SSI Intensity (W/m²)', fontsize=16)
+    cb.ax.tick_params(labelsize=14)
+    plt.xticks(fontsize=14)             
+    plt.yticks(fontsize=14) 
 
     return fig, ax
 
@@ -243,7 +242,7 @@ def save_example_vis_results(save_dir, save_prefix, in_seq, target_seq, pred_seq
         fs=fs,
         vis_hits_misses_fas=vis_hits_misses_fas
     )
-    plt.savefig(fig_path)
+    plt.savefig(fig_path, bbox_inches='tight')
     plt.close(fig)
     plt.close('all')
 

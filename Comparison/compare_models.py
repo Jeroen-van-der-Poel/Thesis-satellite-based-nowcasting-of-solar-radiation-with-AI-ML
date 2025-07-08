@@ -195,7 +195,7 @@ def plot_metrics(metrics_dict, model_name="Model", save_dir="./vis"):
 
         plt.figure()
         plt.plot(time_steps[:len(avg_values)], avg_values, marker='o')
-        plt.title(f"{model_name} - {metric.upper()} per 15-min Interval", fontsize=20)
+        plt.title(f"{model_name} - {metric.upper()} per 15-min Interval", fontsize=18)
         plt.xlabel("Time (minutes)", fontsize=16)
         if metric == "mae" or metric == "rmse":
             plt.ylabel(f"{metric.upper()}  (W/m²)", fontsize=14)
