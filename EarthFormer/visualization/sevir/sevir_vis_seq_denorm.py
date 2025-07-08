@@ -158,7 +158,7 @@ def visualize_result_vertical(in_seq, target_seq, pred_seq_list: List[np.array],
         ncols = 2 + len(pred_seq_list)
 
     # === Figure size scaling ===
-    fig_width_per_col = 3.0
+    fig_width_per_col = 4.0
     fig_height_per_row = 2.5
     figsize = (fig_width_per_col * ncols, fig_height_per_row * nrows)
 
@@ -206,9 +206,9 @@ def visualize_result_vertical(in_seq, target_seq, pred_seq_list: List[np.array],
             a.yaxis.set_ticks([])
 
     # Adjust layout and add horizontal colorbar
-    plt.subplots_adjust(hspace=0.1, wspace=0.05, top=0.95, bottom=0.05)
+    plt.subplots_adjust(hspace=0.8, wspace=0.07, top=0.20, bottom=0)
 
-    cbar_ax = fig.add_axes([0.98, 0.15, 0.015, 0.7])
+    cbar_ax = fig.add_axes([1.1, 0.15, 0.015, 0.7])
     cb = plt.colorbar(ScalarMappable(norm=Normalize(vmin=SSI_VMIN, vmax=SSI_VMAX),
                                      cmap=jet_with_gray()), cax=cbar_ax)
     cb.set_label('SSI Intensity (W/m²)', fontsize=fs)

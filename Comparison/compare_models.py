@@ -79,8 +79,8 @@ def evaluate_model(
                 preds_np = preds_np * sds_cs_targets
                 targets_np = targets_np * sds_cs_targets
                 if model_name == "DGMR-SO":
-                    preds_cropped_np = preds_cropped_np * sds_cs_targets[:, :preds_cropped_np.shape[1], :preds_cropped_np.shape[2]]
-                    target_cropped_np = target_cropped_np * sds_cs_targets[:, :target_cropped_np.shape[1], :target_cropped_np.shape[2]]
+                    preds_cropped_np = preds_cropped_np * sds_cs_targets[:, :, :preds_cropped_np.shape[2], :preds_cropped_np.shape[3], :]
+                    target_cropped_np = target_cropped_np * sds_cs_targets[:, :target_cropped_np.shape[2], :target_cropped_np.shape[3], :]
             else:
                 raise ValueError(f"Shape mismatch between predictions and SDS clear sky targets at index {idx}")
             
