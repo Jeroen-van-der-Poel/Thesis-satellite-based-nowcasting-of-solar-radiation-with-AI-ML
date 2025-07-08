@@ -303,7 +303,7 @@ if __name__ == "__main__":
         sds_cs_dataset=sds_cs_dataset,
         denormalize=True
     )
-    plot_metrics(p_metrics, model_name="Persistence", save_dir="./vis/persistence")
+    plot_metrics(p_metrics, model_name="Persistence", save_dir="./bas_vis/persistence")
 
     print("Evaluating EarthFormer...")
     ef_metrics, ef_results, ef_cache = evaluate_model(
@@ -317,7 +317,7 @@ if __name__ == "__main__":
         sds_cs_dataset=sds_cs_dataset,
         denormalize=True
     )
-    plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./vis/earthformer")
+    plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./bas_vis/earthformer")
 
     print("Evaluating DGMR-SO...")
     dgmr_metrics, dgmr_results, dgmr_cache = evaluate_model(
@@ -331,7 +331,7 @@ if __name__ == "__main__":
         sds_cs_dataset=sds_cs_dataset,
         denormalize=True
     )
-    plot_metrics(dgmr_metrics, model_name="DGMR-SO", save_dir="./vis/dgmr")
+    plot_metrics(dgmr_metrics, model_name="DGMR-SO", save_dir="./bas_vis/dgmr")
 
     print("Plotting combined metrics...")
     plot_combined_metrics(

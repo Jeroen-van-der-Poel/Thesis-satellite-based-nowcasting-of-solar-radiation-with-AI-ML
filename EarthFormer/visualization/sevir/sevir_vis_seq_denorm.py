@@ -199,7 +199,7 @@ def visualize_result_vertical(in_seq, target_seq, pred_seq_list: List[np.array],
     # Column titles
     col_labels = ['Input', 'Target'] + [f'{lbl}\nPrediction' for lbl in label_list]
     for col, label in enumerate(col_labels):
-        ax[0][col].set_title(label, fontsize=30)
+        ax[0][col].set_title(label, fontsize=40)
 
     # Clean ticks
     for row_axes in ax:
@@ -213,10 +213,10 @@ def visualize_result_vertical(in_seq, target_seq, pred_seq_list: List[np.array],
     cbar_ax = fig.add_axes([1.05, 0.15, 0.015, 0.7])
     cb = plt.colorbar(ScalarMappable(norm=Normalize(vmin=SSI_VMIN, vmax=SSI_VMAX),
                                      cmap=jet_with_gray()), cax=cbar_ax)
-    cb.set_label('SSI Intensity (W/m²)', fontsize=25)
-    cb.ax.tick_params(labelsize=20)
-    plt.xticks(fontsize=20)             
-    plt.yticks(fontsize=20) 
+    cb.set_label('SSI Intensity (W/m²)', fontsize=35)
+    cb.ax.tick_params(labelsize=30)
+    plt.xticks(fontsize=30)             
+    plt.yticks(fontsize=30) 
 
     return fig, ax
 
