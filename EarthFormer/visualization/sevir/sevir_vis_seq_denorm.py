@@ -216,6 +216,10 @@ def visualize_result_vertical(in_seq, target_seq, pred_seq_list: List[np.array],
     cb.set_label('SSI Intensity (W/m²)', fontsize=fs)
     cb.ax.tick_params(labelsize=fs)
 
+    cb.ax.tick_params(labelsize=fs)     
+    plt.xticks(fontsize=fs)             
+    plt.yticks(fontsize=fs) 
+
     return fig, ax
 
 
