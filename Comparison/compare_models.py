@@ -299,7 +299,7 @@ if __name__ == "__main__":
         inference_fn=infer_persistence,
         visualize=True, 
         visualization_indices=[0, 800, 1250, 1500],
-        save_dir="./vis/persistence",
+        save_dir="./bas_vis/persistence",
         sds_cs_dataset=sds_cs_dataset,
         denormalize=True
     )
@@ -313,7 +313,7 @@ if __name__ == "__main__":
         inference_fn=infer_earthformer,
         visualize=True, 
         visualization_indices=[0, 800, 1250, 1500],
-        save_dir="./vis/earthformer",
+        save_dir="./bas_vis/earthformer",
         sds_cs_dataset=sds_cs_dataset,
         denormalize=True
     )
@@ -327,7 +327,7 @@ if __name__ == "__main__":
         inference_fn=infer_dgmr,
         visualize=True, 
         visualization_indices=[0, 800, 1250, 1500],
-        save_dir="./vis/dgmr",
+        save_dir="./bas_vis/dgmr",
         sds_cs_dataset=sds_cs_dataset,
         denormalize=True
     )
@@ -337,7 +337,7 @@ if __name__ == "__main__":
     plot_combined_metrics(
         metrics_list=[ef_metrics, dgmr_metrics, p_metrics], 
         model_names=["EarthFormer", "DGMR-SO", "Persistence",], 
-        save_dir="./vis/combined"
+        save_dir="./bas_vis/combined"
     )
 
     print("Saving side-by-side comparison visualizations...")
@@ -351,7 +351,7 @@ if __name__ == "__main__":
         p_preds_np = p_cache[idx]["preds_np"]
 
         save_comparison_vis_results(
-            save_dir="./vis/combined",
+            save_dir="./bas_vis/combined",
             save_prefix=f"comparison_example_{idx:04d}",
             in_seq=inputs_np,
             target_seq=targets_np,
