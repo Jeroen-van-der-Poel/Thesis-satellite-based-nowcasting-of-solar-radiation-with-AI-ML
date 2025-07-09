@@ -48,14 +48,14 @@ def evaluate_model(
         with torch.no_grad():
             if model_name == "DGMR-SO":
                 preds, targets, preds_cropped, target_cropped, y_coords, x_coords = inference_fn(model, inputs, targets)
-                preds_cropped_np = preds_cropped.detach().cpu().numpy().transpose(0, 1, 3, 2, 4)
-                target_cropped_np = target_cropped.detach().cpu().numpy().transpose(0, 1, 3, 2, 4)
+                preds_cropped_np = preds_cropped.detach().cpu().numpy()
+                target_cropped_np = target_cropped.detach().cpu().numpy()
             else:
                 preds, targets = inference_fn(model, inputs, targets)
 
-        preds_np = preds.detach().cpu().numpy().transpose(0, 1, 3, 2, 4)
-        inputs_np = inputs.detach().cpu().numpy().transpose(0, 1, 3, 2, 4)
-        targets_np = targets.detach().cpu().numpy().transpose(0, 1, 3, 2, 4)
+        preds_np = preds.detach().cpu().numpy()
+        inputs_np = inputs.detach().cpu().numpy()
+        targets_np = targets.detach().cpu().numpy()
         T = preds_np.shape[1]
         
         if denormalize and sds_cs_dataset is not None:
@@ -70,19 +70,23 @@ def evaluate_model(
             sds_cs_inputs = np.expand_dims(sds_cs_inputs, axis=0)  
             sds_cs_inputs = np.repeat(sds_cs_inputs, inputs_np.shape[0], axis=0) 
 
-            sds_cs_targets = sds_cs_targets.transpose(0, 1, 3, 2, 4)
-            sds_cs_inputs = sds_cs_inputs.transpose(0, 1, 3, 2, 4)
-
             inputs_np_1 = inputs_np
             inputs_np = inputs_np * sds_cs_inputs
             if preds_np.shape == targets_np.shape == sds_cs_targets.shape:
                 preds_np = preds_np * sds_cs_targets
                 targets_np = targets_np * sds_cs_targets
                 if model_name == "DGMR-SO":
-                    preds_cropped_np = preds_cropped_np * sds_cs_targets[:, :preds_cropped_np.shape[1], :preds_cropped_np.shape[2], :preds_cropped_np.shape[3], :]
-                    target_cropped_np = target_cropped_np * sds_cs_targets[:, :target_cropped_np.shape[1], :target_cropped_np.shape[2], :target_cropped_np.shape[3], :]
+                    preds_cropped_np = preds_cropped_np * sds_cs_targets[:, :preds_cropped_np.shape[1], :preds_cropped_np.shape[2]]
+                    target_cropped_np = target_cropped_np * sds_cs_targets[:, :target_cropped_np.shape[1], :target_cropped_np.shape[2]]
+                    preds_cropped_np = preds_cropped_np.transpose(0, 1, 3, 2, 4)
+                    target_cropped_np = target_cropped_np.transpose(0, 1, 3, 2, 4)
             else:
                 raise ValueError(f"Shape mismatch between predictions and SDS clear sky targets at index {idx}")
+            
+        preds_np = preds_np.transpose(0, 1, 3, 2, 4)
+        inputs_np = inputs_np.transpose(0, 1, 3, 2, 4)
+        inputs_np_1 = inputs_np_1.transpose(0, 1, 3, 2, 4)
+        targets_np = targets_np.transpose(0, 1, 3, 2, 4)
             
         if idx == 0:
             for k in metrics:
@@ -291,47 +295,47 @@ if __name__ == "__main__":
 
     dgmr_model = DGMRWrapper(DGMR_CHECKPOINT_DIR)
 
-    # print("Evaluating Persistence...")
-    # p_metrics, p_results, p_cache = evaluate_model(
-    #     "Persistence", 
-    #     persistence_model, 
-    #     dm.test_dataloader(),
-    #     inference_fn=infer_persistence,
-    #     visualize=True, 
-    #     visualization_indices=[0, 800, 1250, 1500],
-    #     save_dir="./bas_vis/persistence",
-    #     sds_cs_dataset=sds_cs_dataset,
-    #     denormalize=True
-    # )
-    # plot_metrics(p_metrics, model_name="Persistence", save_dir="./bas_vis/persistence")
-
-    print("Evaluating EarthFormer...")
-    ef_metrics, ef_results, ef_cache = evaluate_model(
-        "EarthFormer", 
-        ef_model, 
+    print("Evaluating Persistence...")
+    p_metrics, p_results, p_cache = evaluate_model(
+        "Persistence", 
+        persistence_model, 
         dm.test_dataloader(),
-        inference_fn=infer_earthformer,
+        inference_fn=infer_persistence,
         visualize=True, 
         visualization_indices=[0, 800, 1250, 1500],
-        save_dir="./bas_vis/earthformer",
+        save_dir="./bas_vis/persistence",
         sds_cs_dataset=sds_cs_dataset,
         denormalize=True
     )
-    plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./bas_vis/earthformer")
+    plot_metrics(p_metrics, model_name="Persistence", save_dir="./bas_vis/persistence")
 
-    # print("Evaluating DGMR-SO...")
-    # dgmr_metrics, dgmr_results, dgmr_cache = evaluate_model(
-    #     "DGMR-SO", 
-    #     dgmr_model, 
+    # print("Evaluating EarthFormer...")
+    # ef_metrics, ef_results, ef_cache = evaluate_model(
+    #     "EarthFormer", 
+    #     ef_model, 
     #     dm.test_dataloader(),
-    #     inference_fn=infer_dgmr,
+    #     inference_fn=infer_earthformer,
     #     visualize=True, 
     #     visualization_indices=[0, 800, 1250, 1500],
-    #     save_dir="./bas_vis/dgmr",
+    #     save_dir="./bas_vis/earthformer",
     #     sds_cs_dataset=sds_cs_dataset,
     #     denormalize=True
     # )
-    # plot_metrics(dgmr_metrics, model_name="DGMR-SO", save_dir="./bas_vis/dgmr")
+    # plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./bas_vis/earthformer")
+
+    print("Evaluating DGMR-SO...")
+    dgmr_metrics, dgmr_results, dgmr_cache = evaluate_model(
+        "DGMR-SO", 
+        dgmr_model, 
+        dm.test_dataloader(),
+        inference_fn=infer_dgmr,
+        visualize=True, 
+        visualization_indices=[0, 800, 1250, 1500],
+        save_dir="./bas_vis/dgmr",
+        sds_cs_dataset=sds_cs_dataset,
+        denormalize=True
+    )
+    plot_metrics(dgmr_metrics, model_name="DGMR-SO", save_dir="./bas_vis/dgmr")
 
     # print("Plotting combined metrics...")
     # plot_combined_metrics(
