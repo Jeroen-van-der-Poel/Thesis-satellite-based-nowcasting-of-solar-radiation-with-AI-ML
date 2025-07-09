@@ -244,8 +244,8 @@ if __name__ == "__main__":
     DGMR_CHECKPOINT_DIR = "../DGMR_SO/experiments/solar_nowcasting_v4/"
     EARTHFORMER_CFG = "../EarthFormer/config/train.yml"
     # EARTHFORMER_CHECKPOINT = "../EarthFormer/experiments/ef_v26/checkpoints/model-epoch=024.ckpt"
-    # EARTHFORMER_CHECKPOINT = "../EarthFormer/experiments/ef_v23/checkpoints/model-epoch=189.ckpt"
-    EARTHFORMER_CHECKPOINT = "../EarthFormer/experiments/ef_v27/checkpoints/model-epoch=001.ckpt"
+    EARTHFORMER_CHECKPOINT = "../EarthFormer/experiments/ef_v23/checkpoints/model-epoch=189.ckpt"
+    #EARTHFORMER_CHECKPOINT = "../EarthFormer/experiments/ef_v27/checkpoints/model-epoch=001.ckpt"
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -319,46 +319,46 @@ if __name__ == "__main__":
     )
     plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./bas_vis/earthformer")
 
-    print("Evaluating DGMR-SO...")
-    dgmr_metrics, dgmr_results, dgmr_cache = evaluate_model(
-        "DGMR-SO", 
-        dgmr_model, 
-        dm.test_dataloader(),
-        inference_fn=infer_dgmr,
-        visualize=True, 
-        visualization_indices=[0, 800, 1250, 1500],
-        save_dir="./bas_vis/dgmr",
-        sds_cs_dataset=sds_cs_dataset,
-        denormalize=True
-    )
-    plot_metrics(dgmr_metrics, model_name="DGMR-SO", save_dir="./bas_vis/dgmr")
+    # print("Evaluating DGMR-SO...")
+    # dgmr_metrics, dgmr_results, dgmr_cache = evaluate_model(
+    #     "DGMR-SO", 
+    #     dgmr_model, 
+    #     dm.test_dataloader(),
+    #     inference_fn=infer_dgmr,
+    #     visualize=True, 
+    #     visualization_indices=[0, 800, 1250, 1500],
+    #     save_dir="./bas_vis/dgmr",
+    #     sds_cs_dataset=sds_cs_dataset,
+    #     denormalize=True
+    # )
+    # plot_metrics(dgmr_metrics, model_name="DGMR-SO", save_dir="./bas_vis/dgmr")
 
-    print("Plotting combined metrics...")
-    plot_combined_metrics(
-        metrics_list=[ef_metrics, dgmr_metrics, p_metrics], 
-        model_names=["EarthFormer", "DGMR-SO", "Persistence",], 
-        save_dir="./bas_vis/combined"
-    )
+    # print("Plotting combined metrics...")
+    # plot_combined_metrics(
+    #     metrics_list=[ef_metrics, dgmr_metrics, p_metrics], 
+    #     model_names=["EarthFormer", "DGMR-SO", "Persistence",], 
+    #     save_dir="./bas_vis/combined"
+    # )
 
-    print("Saving side-by-side comparison visualizations...")
-    comparison_indices = [0, 800, 1250, 1500]
-    for idx in comparison_indices:
-        inputs_np = ef_cache[idx]["inputs_np"] 
-        targets_np = ef_cache[idx]["targets_np"]
+    # print("Saving side-by-side comparison visualizations...")
+    # comparison_indices = [0, 800, 1250, 1500]
+    # for idx in comparison_indices:
+    #     inputs_np = ef_cache[idx]["inputs_np"] 
+    #     targets_np = ef_cache[idx]["targets_np"]
 
-        ef_preds_np = ef_cache[idx]["preds_np"]
-        dgmr_preds_np = dgmr_cache[idx]["preds_np"]
-        p_preds_np = p_cache[idx]["preds_np"]
+    #     ef_preds_np = ef_cache[idx]["preds_np"]
+    #     dgmr_preds_np = dgmr_cache[idx]["preds_np"]
+    #     p_preds_np = p_cache[idx]["preds_np"]
 
-        save_comparison_vis_results(
-            save_dir="./bas_vis/combined",
-            save_prefix=f"comparison_example_{idx:04d}",
-            in_seq=inputs_np,
-            target_seq=targets_np,
-            pred_seq_list=[ef_preds_np, dgmr_preds_np, p_preds_np],
-            label_list=["EarthFormer", "DGMR-SO", "Persistence"],
-            layout="NTHWC",
-            interval_real_time=15,
-            plot_stride=1,
-            vis_hits_misses_fas=False
-        )
+    #     save_comparison_vis_results(
+    #         save_dir="./bas_vis/combined",
+    #         save_prefix=f"comparison_example_{idx:04d}",
+    #         in_seq=inputs_np,
+    #         target_seq=targets_np,
+    #         pred_seq_list=[ef_preds_np, dgmr_preds_np, p_preds_np],
+    #         label_list=["EarthFormer", "DGMR-SO", "Persistence"],
+    #         layout="NTHWC",
+    #         interval_real_time=15,
+    #         plot_stride=1,
+    #         vis_hits_misses_fas=False
+    #     )
