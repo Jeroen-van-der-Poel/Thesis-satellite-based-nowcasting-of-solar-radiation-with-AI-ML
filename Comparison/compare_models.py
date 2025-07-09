@@ -87,6 +87,8 @@ def evaluate_model(
         inputs_np = inputs_np.transpose(0, 1, 3, 2, 4)
         inputs_np_1 = inputs_np_1.transpose(0, 1, 3, 2, 4)
         targets_np = targets_np.transpose(0, 1, 3, 2, 4)
+        sds_cs_targets = sds_cs_targets.transpose(0, 1, 3, 2, 4)
+        sds_cs_inputs = sds_cs_inputs.transpose(0, 1, 3, 2, 4)
             
         if idx == 0:
             for k in metrics:
