@@ -331,3 +331,96 @@ def save_comparison_vis_results(
     plt.savefig(fig_path)
     plt.close(fig)
     plt.close('all')
+
+def save_comparison_vis_results_vertical(
+        save_dir, save_prefix,
+        in_seq, target_seq, pred_seq_list, label_list,
+        layout='NHWT', interval_real_time: float = 10.0, idx=0,
+        plot_stride=2, fs=20):
+    """
+    Save vertical visualization of multiple models compared side-by-side.
+
+    Parameters
+    ----------
+    in_seq : np.array (e.g., NHWT layout)
+    target_seq : np.array (NHWT)
+    pred_seq_list : List[np.array]
+        List of prediction arrays for each model
+    label_list : List[str]
+        Corresponding labels (e.g., ["EarthFormer", "DGMR-SO", "Persistence"])
+    """
+    import os
+    import matplotlib.pyplot as plt
+    from matplotlib.colors import Normalize
+    from matplotlib.cm import ScalarMappable
+    from EarthFormer.utils.layout import change_layout_np
+    from .sevir_vis_seq_denorm import jet_with_gray, cmap_dict_auto
+
+    os.makedirs(save_dir, exist_ok=True)
+
+    # Ensure layout is consistent
+    in_seq = change_layout_np(in_seq, in_layout=layout).astype(np.float32)
+    target_seq = change_layout_np(target_seq, in_layout=layout).astype(np.float32)
+    pred_seq_list = [change_layout_np(pred, in_layout=layout).astype(np.float32) for pred in pred_seq_list]
+
+    in_len = in_seq.shape[-1]
+    out_len = target_seq.shape[-1]
+    max_len = max(in_len, out_len)
+    nrows = (max_len - 1) // plot_stride + 1
+    ncols = 2 + len(pred_seq_list)
+
+    fig_width_per_col = 4.0
+    extra_width_for_cbar = 2.0
+    fig_height_per_row = 2.5
+    figsize = ((fig_width_per_col * ncols) + extra_width_for_cbar, fig_height_per_row * nrows)
+
+    fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=figsize)
+
+    for i in range(0, max_len, plot_stride):
+        row = i // plot_stride
+
+        if i < in_len:
+            ax[row][0].imshow(in_seq[idx, :, :, i], **cmap_dict_auto(in_seq[idx, :, :, i]))
+        else:
+            ax[row][0].axis('off')
+
+        if i < out_len:
+            ax[row][1].imshow(target_seq[idx, :, :, i], **cmap_dict_auto(target_seq[idx, :, :, i]))
+        else:
+            ax[row][1].axis('off')
+
+        for k, pred_seq in enumerate(pred_seq_list):
+            if i < out_len:
+                ax[row][2 + k].imshow(pred_seq[idx, :, :, i], **cmap_dict_auto(pred_seq[idx, :, :, i]))
+            else:
+                ax[row][2 + k].axis('off')
+
+        # Time label
+        ax[row][-1].annotate(
+            f'{int(interval_real_time * (i + plot_stride))} Min',
+            xy=(1.05, 0.5), xycoords='axes fraction',
+            fontsize=25, va='center', ha='left', rotation=0
+        )
+
+    # Column headers
+    col_labels = ['Input', 'Target'] + [f'{lbl}\nPrediction' for lbl in label_list]
+    for col, label in enumerate(col_labels):
+        ax[0][col].set_title(label, fontsize=40)
+
+    # Clean up ticks
+    for row_axes in ax:
+        for a in row_axes:
+            a.xaxis.set_ticks([])
+            a.yaxis.set_ticks([])
+
+    # Adjust layout and add colorbar
+    plt.subplots_adjust(hspace=0.1, wspace=0.05, top=0.95, bottom=0.05)
+    cbar_ax = fig.add_axes([1.05, 0.15, 0.015, 0.7])
+    cb = plt.colorbar(ScalarMappable(norm=Normalize(vmin=0.0, vmax=1000.0), cmap=jet_with_gray()), cax=cbar_ax)
+    cb.set_label('SSI Intensity (W/m²)', fontsize=35)
+    cb.ax.tick_params(labelsize=30)
+
+    fig_path = os.path.join(save_dir, f'{save_prefix}.png')
+    plt.savefig(fig_path, bbox_inches='tight')
+    plt.close(fig)
+    plt.close('all')

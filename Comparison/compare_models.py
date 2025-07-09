@@ -127,8 +127,8 @@ def evaluate_model(
                 if model_name == "DGMR-SO":
                     baseline_crop = np.array([
                         baseline[b,
-                                y_coords[b]:y_coords[b] + preds_cropped_np.shape[2],
-                                x_coords[b]:x_coords[b] + preds_cropped_np.shape[3]]
+                                y_coords[b]:y_coords[b] + preds_cropped_np.shape[3],
+                                x_coords[b]:x_coords[b] + preds_cropped_np.shape[2]]
                         for b in range(baseline.shape[0])
                     ])
                     baseline_mask = (baseline_crop > 0)
@@ -297,19 +297,19 @@ if __name__ == "__main__":
 
     dgmr_model = DGMRWrapper(DGMR_CHECKPOINT_DIR)
 
-    print("Evaluating Persistence...")
-    p_metrics, p_results, p_cache = evaluate_model(
-        "Persistence", 
-        persistence_model, 
-        dm.test_dataloader(),
-        inference_fn=infer_persistence,
-        visualize=True, 
-        visualization_indices=[0, 800, 1250, 1500],
-        save_dir="./bas_vis/persistence",
-        sds_cs_dataset=sds_cs_dataset,
-        denormalize=True
-    )
-    plot_metrics(p_metrics, model_name="Persistence", save_dir="./bas_vis/persistence")
+    # print("Evaluating Persistence...")
+    # p_metrics, p_results, p_cache = evaluate_model(
+    #     "Persistence", 
+    #     persistence_model, 
+    #     dm.test_dataloader(),
+    #     inference_fn=infer_persistence,
+    #     visualize=True, 
+    #     visualization_indices=[0, 800, 1250, 1500],
+    #     save_dir="./bas_vis/persistence",
+    #     sds_cs_dataset=sds_cs_dataset,
+    #     denormalize=True
+    # )
+    # plot_metrics(p_metrics, model_name="Persistence", save_dir="./bas_vis/persistence")
 
     # print("Evaluating EarthFormer...")
     # ef_metrics, ef_results, ef_cache = evaluate_model(

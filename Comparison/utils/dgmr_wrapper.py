@@ -6,7 +6,7 @@ import torch
 import numpy as np
 
 class DGMRWrapper:
-    def __init__(self, checkpoint_path, seed=40):
+    def __init__(self, checkpoint_path, seed=30):
         self.model = self._load_model(checkpoint_path)
         self.crop_height = 256
         self.crop_width = 256
