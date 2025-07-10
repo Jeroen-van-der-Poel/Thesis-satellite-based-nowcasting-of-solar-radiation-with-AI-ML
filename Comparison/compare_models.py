@@ -245,7 +245,7 @@ def plot_combined_metrics(metrics_list, model_names, save_dir="./vis/combined"):
 
 
 if __name__ == "__main__":
-    DGMR_CHECKPOINT_DIR = "../DGMR_SO/experiments/solar_nowcasting_v7/"
+    DGMR_CHECKPOINT_DIR = "../DGMR_SO/experiments/solar_nowcasting_v9/"
     EARTHFORMER_CFG = "../EarthFormer/config/train.yml"
     # EARTHFORMER_CHECKPOINT = "../EarthFormer/experiments/ef_v26/checkpoints/model-epoch=024.ckpt"
     EARTHFORMER_CHECKPOINT = "../EarthFormer/experiments/ef_v23/checkpoints/model-epoch=189.ckpt"
@@ -295,19 +295,19 @@ if __name__ == "__main__":
 
     dgmr_model = DGMRWrapper(DGMR_CHECKPOINT_DIR)
 
-    print("Evaluating Persistence...")
-    p_metrics, p_results, p_cache = evaluate_model(
-        "Persistence", 
-        persistence_model, 
-        dm.test_dataloader(),
-        inference_fn=infer_persistence,
-        visualize=True, 
-        visualization_indices=[0, 800, 1250, 1500],
-        save_dir="./bas_vis/persistence",
-        sds_cs_dataset=sds_cs_dataset,
-        denormalize=True
-    )
-    plot_metrics(p_metrics, model_name="Persistence", save_dir="./bas_vis/persistence")
+    # print("Evaluating Persistence...")
+    # p_metrics, p_results, p_cache = evaluate_model(
+    #     "Persistence", 
+    #     persistence_model, 
+    #     dm.test_dataloader(),
+    #     inference_fn=infer_persistence,
+    #     visualize=True, 
+    #     visualization_indices=[0, 800, 1250, 1500],
+    #     save_dir="./bas_vis/persistence",
+    #     sds_cs_dataset=sds_cs_dataset,
+    #     denormalize=True
+    # )
+    # plot_metrics(p_metrics, model_name="Persistence", save_dir="./bas_vis/persistence")
 
     # print("Evaluating EarthFormer...")
     # ef_metrics, ef_results, ef_cache = evaluate_model(
