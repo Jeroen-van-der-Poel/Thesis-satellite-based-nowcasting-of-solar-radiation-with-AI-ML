@@ -69,7 +69,8 @@ def evaluate_model(
             else:
                 preds, targets = inference_fn(model, inputs, targets)
                 if cropping is True:
-                    y_coords, x_coords = crop_coords[idx]
+                    y_coords = [coord[0] for coord in crop_coords[idx]]
+                    x_coords = [coord[1] for coord in crop_coords[idx]]
                     preds = apply_crop_with_coords(preds, y_coords, x_coords)
                     targets = apply_crop_with_coords(targets, y_coords, x_coords)
 

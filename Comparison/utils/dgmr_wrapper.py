@@ -60,9 +60,11 @@ class DGMRWrapper:
         targets_np = targets_tf.numpy()
         target_np_cropped = targets_tf_crop.numpy()
 
+        batch_crop_coords = []
         for i in range(len(y_coords)):
-            self.crop_coords_cache[self.sample_index] = (int(y_coords[i]), int(x_coords[i]))
-            self.sample_index += 1
+            batch_crop_coords.append((int(y_coords[i]), int(x_coords[i])))
+        self.crop_coords_cache[self.sample_index] = batch_crop_coords
+        self.sample_index += 1
 
         return (
             torch.tensor(outputs_np, dtype=torch.float32),
