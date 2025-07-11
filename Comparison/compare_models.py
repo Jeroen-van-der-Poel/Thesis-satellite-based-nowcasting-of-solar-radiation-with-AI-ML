@@ -22,9 +22,6 @@ for gpu in gpus:
     tf.config.experimental.set_memory_growth(gpu, True)
 
 def apply_crop_with_coords(tensor, y_coords, x_coords, crop_height=256, crop_width=256):
-    """
-    Apply cropping to a 5D tensor (B, T, H, W, C) using fixed y/x coords per sample.
-    """
     cropped = []
     for i in range(tensor.shape[0]):
         y = y_coords[i]
@@ -74,9 +71,19 @@ def evaluate_model(
                     preds = apply_crop_with_coords(preds, y_coords, x_coords)
                     targets = apply_crop_with_coords(targets, y_coords, x_coords)
 
-        preds_np = preds.detach().cpu().numpy()
-        inputs_np = inputs.detach().cpu().numpy()
-        targets_np = targets.detach().cpu().numpy()
+        if isinstance(preds, torch.Tensor):
+            preds_np = preds.detach().cpu().numpy()
+        else:
+            preds_np = preds
+        if isinstance(inputs, torch.Tensor):
+            inputs_np = inputs.detach().cpu().numpy()
+        else:
+            inputs_np = inputs
+        if isinstance(targets, torch.Tensor):
+            targets_np = targets.detach().cpu().numpy()
+        else:
+            targets_np = targets
+
         T = preds_np.shape[1]
         
         if denormalize and sds_cs_dataset is not None:
