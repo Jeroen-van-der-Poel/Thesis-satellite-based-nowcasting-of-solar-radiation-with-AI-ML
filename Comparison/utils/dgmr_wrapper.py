@@ -61,7 +61,7 @@ class DGMRWrapper:
         target_np_cropped = targets_tf_crop.numpy()
 
         for i in range(len(y_coords)):
-            self.crop_coords_cache[self.sample_index] = (y_coords[i], x_coords[i])
+            self.crop_coords_cache[self.sample_index] = (int(y_coords[i]), int(x_coords[i]))
             self.sample_index += 1
 
         return (
