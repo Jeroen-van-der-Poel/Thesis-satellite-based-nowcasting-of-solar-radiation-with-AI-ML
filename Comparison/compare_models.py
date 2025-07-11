@@ -100,6 +100,13 @@ def evaluate_model(
 
             inputs_np_1 = inputs_np
             inputs_np = inputs_np * sds_cs_inputs
+
+            if cropping is True:
+                sds_cs_targets = np.stack([
+                    sds_cs_targets[b, :, y_coords[b]:y_coords[b]+256, :]
+                    for b in range(sds_cs_targets.shape[0])
+                ])
+
             if preds_np.shape == targets_np.shape == sds_cs_targets.shape:
                 preds_np = preds_np * sds_cs_targets
                 targets_np = targets_np * sds_cs_targets
@@ -121,6 +128,7 @@ def evaluate_model(
                     preds_cropped_np = preds_np
                     target_cropped_np = targets_np
             else:
+                print(f"Shape mismatch: preds {preds_np.shape}, targets {targets_np.shape}, SDS clear sky targets {sds_cs_targets.shape} at index {idx}")
                 raise ValueError(f"Shape mismatch between predictions and SDS clear sky targets at index {idx}")
             
             
