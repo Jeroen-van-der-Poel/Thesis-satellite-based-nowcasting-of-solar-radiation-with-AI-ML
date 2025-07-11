@@ -100,19 +100,28 @@ def evaluate_model(
 
             inputs_np_1 = inputs_np
             inputs_np = inputs_np * sds_cs_inputs
-            if model_name == "DGMR-SO" or cropping:
-                sds_cs_targets_cropped = np.stack([
-                    sds_cs_targets[b, :, y_coords[b]:y_coords[b]+preds_np.shape[2], x_coords[b]:x_coords[b]+preds_np.shape[3]]
-                    for b in range(preds_np.shape[0])
-                ], axis=0)
-
-                preds_np = preds_np * sds_cs_targets_cropped
-                targets_np = targets_np * sds_cs_targets_cropped
-                preds_cropped_np = preds_np
-                target_cropped_np = targets_np
-            else:
+            if preds_np.shape == targets_np.shape == sds_cs_targets.shape:
                 preds_np = preds_np * sds_cs_targets
                 targets_np = targets_np * sds_cs_targets
+                if model_name == "DGMR-SO":
+                    preds_cropped_np = preds_cropped_np * sds_cs_targets[:, :preds_cropped_np.shape[1], :preds_cropped_np.shape[2]]
+                    target_cropped_np = target_cropped_np * sds_cs_targets[:, :target_cropped_np.shape[1], :target_cropped_np.shape[2]]
+                    preds_cropped_np = preds_cropped_np
+                    target_cropped_np = target_cropped_np
+                if cropping is True:
+                    preds_cropped_np = preds
+                    target_cropped_np = targets
+                    sds_cs_targets_cropped = np.stack([
+                        sds_cs_targets[b, :, y_coords[b]:y_coords[b]+preds.shape[2], x_coords[b]:x_coords[b]+preds.shape[3]]
+                        for b in range(preds.shape[0])
+                    ])
+
+                    preds_np = preds_cropped_np * sds_cs_targets_cropped
+                    targets_np = target_cropped_np * sds_cs_targets_cropped
+                    preds_cropped_np = preds_np
+                    target_cropped_np = targets_np
+            else:
+                raise ValueError(f"Shape mismatch between predictions and SDS clear sky targets at index {idx}")
             
             
         if idx == 0:
@@ -148,18 +157,7 @@ def evaluate_model(
                 metrics["rrmse"][t].append(compute_rrmse(pred_masked, target_masked))
                 metrics["mae"][t].append(compute_mae(pred_masked, target_masked))
 
-                baseline = inputs_np_1[:, -1]
-                if model_name == "DGMR-SO" or cropping:
-                    baseline = np.array([
-                        baseline[b,
-                                y_coords[b]:y_coords[b]+preds_np.shape[2],
-                                x_coords[b]:x_coords[b]+preds_np.shape[3]] *
-                        sds_cs_targets_cropped[b, t]
-                        for b in range(baseline.shape[0])
-                    ])
-                else:
-                    baseline = baseline * sds_cs_targets[:, t]
-
+                baseline = inputs_np_1[:, -1] * sds_cs_targets[:, t]
                 if model_name == "DGMR-SO" or cropping is True:
                     baseline_crop = np.array([
                         baseline[b,
