@@ -102,10 +102,19 @@ def evaluate_model(
             inputs_np = inputs_np * sds_cs_inputs
 
             if cropping is True:
-                sds_cs_targets = np.stack([
-                    sds_cs_targets[b, :, y_coords[b]:y_coords[b]+256, :]
-                    for b in range(sds_cs_targets.shape[0])
-                ])
+                cropped_targets = []
+                for b in range(sds_cs_targets.shape[0]):
+                    y = y_coords[b]
+                    x = x_coords[b]
+                    crop = sds_cs_targets[b, :, y:y+256, x:x+256]
+                    print(f"Crop {b} shape: {crop.shape}")
+                    pad_h = 256 - crop.shape[1]
+                    pad_w = 256 - crop.shape[2]
+                    if pad_h > 0 or pad_w > 0:
+                        crop = np.pad(crop, ((0, 0), (0, pad_h), (0, pad_w)), mode="constant")
+                    cropped_targets.append(crop)
+
+                sds_cs_targets = np.stack(cropped_targets)
 
             if preds_np.shape == targets_np.shape == sds_cs_targets.shape:
                 preds_np = preds_np * sds_cs_targets
@@ -116,15 +125,8 @@ def evaluate_model(
                     preds_cropped_np = preds_cropped_np
                     target_cropped_np = target_cropped_np
                 if cropping is True:
-                    preds_cropped_np = preds
-                    target_cropped_np = targets
-                    sds_cs_targets_cropped = np.stack([
-                        sds_cs_targets[b, :, y_coords[b]:y_coords[b]+preds.shape[2], x_coords[b]:x_coords[b]+preds.shape[3]]
-                        for b in range(preds.shape[0])
-                    ])
-
-                    preds_np = preds_cropped_np * sds_cs_targets_cropped
-                    targets_np = target_cropped_np * sds_cs_targets_cropped
+                    preds_np = preds_np * sds_cs_targets
+                    targets_np = targets_np * sds_cs_targets
                     preds_cropped_np = preds_np
                     target_cropped_np = targets_np
             else:
