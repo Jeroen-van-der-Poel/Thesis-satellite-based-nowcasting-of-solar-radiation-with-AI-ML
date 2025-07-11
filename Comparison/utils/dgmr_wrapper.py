@@ -96,3 +96,10 @@ class DGMRWrapper:
         cropped_labels = tf.concat(cropped_labels, axis=0)
 
         return cropped_inputs, cropped_labels, y_coords, x_coords
+    
+    def save_crop_coords(self, save_path="crop_coords.npy"):
+        """
+        Save the cached crop coordinates to disk.
+        """
+        np.save(save_path, self.crop_coords_cache)
+        print(f"Saved crop coordinates to {save_path}")
