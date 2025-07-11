@@ -11,7 +11,9 @@ class DGMRWrapper:
         self.crop_height = 256
         self.crop_width = 256
         self.lambda_reg = 1
-        self.seed = seed
+        self.seed = seed,
+        self.crop_coords_cache = {},
+        self.sample_index = 0
 
     def _load_model(self, checkpoint_path):
         disc_optimizer = Adam(learning_rate=2E-4, beta_1=0.0, beta_2=0.999)
@@ -57,6 +59,10 @@ class DGMRWrapper:
         outputs_np_cropped = outputs_tf.numpy()
         targets_np = targets_tf.numpy()
         target_np_cropped = targets_tf_crop.numpy()
+
+        for i in range(len(y_coords)):
+            self.crop_coords_cache[self.sample_index] = (y_coords[i], x_coords[i])
+            self.sample_index += 1
 
         return (
             torch.tensor(outputs_np, dtype=torch.float32),
