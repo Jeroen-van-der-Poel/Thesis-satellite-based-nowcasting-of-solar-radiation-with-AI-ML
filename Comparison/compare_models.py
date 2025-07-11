@@ -101,10 +101,10 @@ def evaluate_model(
             inputs_np_1 = inputs_np
             inputs_np = inputs_np * sds_cs_inputs
             if model_name == "DGMR-SO" or cropping:
-                sds_cs_targets_cropped = np.array([
+                sds_cs_targets_cropped = np.stack([
                     sds_cs_targets[b, :, y_coords[b]:y_coords[b]+preds_np.shape[2], x_coords[b]:x_coords[b]+preds_np.shape[3]]
                     for b in range(preds_np.shape[0])
-                ])
+                ], axis=0)
 
                 preds_np = preds_np * sds_cs_targets_cropped
                 targets_np = targets_np * sds_cs_targets_cropped
@@ -159,7 +159,7 @@ def evaluate_model(
                     ])
                 else:
                     baseline = baseline * sds_cs_targets[:, t]
-                    
+
                 if model_name == "DGMR-SO" or cropping is True:
                     baseline_crop = np.array([
                         baseline[b,
