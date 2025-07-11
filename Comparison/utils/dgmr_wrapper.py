@@ -11,8 +11,8 @@ class DGMRWrapper:
         self.crop_height = 256
         self.crop_width = 256
         self.lambda_reg = 1
-        self.seed = seed,
-        self.crop_coords_cache = {},
+        self.seed = seed
+        self.crop_coords_cache = {}
         self.sample_index = 0
 
     def _load_model(self, checkpoint_path):
