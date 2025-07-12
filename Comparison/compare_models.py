@@ -90,7 +90,8 @@ def evaluate_model(
 
             sds_cs_targets = sds_cs[4:]  
             sds_cs_targets = np.expand_dims(sds_cs_targets, axis=0) 
-            sds_cs_targets = np.repeat(sds_cs_targets, preds_np.shape[0], axis=0)  
+            sds_cs_targets = np.repeat(sds_cs_targets, preds_np.shape[0], axis=0)
+            sds_cs_targets_1 = sds_cs_targets
             sds_cs_inputs = sds_cs[:4]
             sds_cs_inputs = np.expand_dims(sds_cs_inputs, axis=0)  
             sds_cs_inputs = np.repeat(sds_cs_inputs, inputs_np.shape[0], axis=0) 
@@ -105,6 +106,8 @@ def evaluate_model(
                     target_cropped_np = target_cropped_np * sds_cs_targets[:, :target_cropped_np.shape[1], :target_cropped_np.shape[2]]
                     preds_cropped_np = preds_cropped_np
                     target_cropped_np = target_cropped_np
+                    preds_np = preds_cropped_np
+                    targets_np =target_cropped_np
             else:
                 raise ValueError(f"Shape mismatch between predictions and SDS clear sky targets at index {idx}")
             
@@ -142,7 +145,7 @@ def evaluate_model(
                 metrics["rrmse"][t].append(compute_rrmse(pred_masked, target_masked))
                 metrics["mae"][t].append(compute_mae(pred_masked, target_masked))
 
-                baseline = inputs_np_1[:, -1] * sds_cs_targets[:, t]
+                baseline = inputs_np_1[:, -1] * sds_cs_targets_1[:, t]
                 if model_name == "DGMR-SO" or cropping:
                     baseline_crop = np.array([
                         baseline[b,
@@ -398,5 +401,4 @@ if __name__ == "__main__":
             layout="NTHWC",
             interval_real_time=15,
             plot_stride=1,
-            vis_hits_misses_fas=False
         )
