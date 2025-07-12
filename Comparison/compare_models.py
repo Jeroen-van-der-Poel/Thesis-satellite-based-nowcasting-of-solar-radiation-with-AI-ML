@@ -30,7 +30,9 @@ def evaluate_model(
     visualization_indices=None,
     save_dir="./vis",
     sds_cs_dataset=None,
-    denormalize=False
+    denormalize=False,
+    cropping = False,
+    crop_coords = None
 ):
     os.makedirs(save_dir, exist_ok=True)
     if visualization_indices is None:
@@ -52,6 +54,29 @@ def evaluate_model(
                 target_cropped_np = target_cropped.detach().cpu().numpy()
             else:
                 preds, targets = inference_fn(model, inputs, targets)
+                if cropping:
+                    if len(crop_coords) != len(dm.test_dataloader()):
+                        raise ValueError("Mismatch in number of batches and saved crop coordinates.")
+                    batch_coords = crop_coords.get(idx, None)
+                    if batch_coords is None:
+                        raise ValueError(f"No crop coords for batch {idx}")
+                    preds_cropped = []
+                    targets_cropped = []
+                    y_coords_batch = []
+                    x_coords_batch = []
+
+                    for b, (y, x) in enumerate(batch_coords):
+                        preds_cropped.append(preds[b, :, y:y+256, x:x+256])
+                        targets_cropped.append(targets[b, :, y:y+256, x:x+256])
+                        y_coords_batch.append(y)
+                        x_coords_batch.append(x)
+
+                    preds_cropped = torch.stack(preds_cropped)
+                    targets_cropped = torch.stack(targets_cropped)
+                    y_coords = y_coords_batch
+                    x_coords = x_coords_batch
+                    preds_cropped_np = preds_cropped.detach().cpu().numpy()
+                    target_cropped_np = targets_cropped.detach().cpu().numpy()
 
         preds_np = preds.detach().cpu().numpy()
         inputs_np = inputs.detach().cpu().numpy()
@@ -75,7 +100,7 @@ def evaluate_model(
             if preds_np.shape == targets_np.shape == sds_cs_targets.shape:
                 preds_np = preds_np * sds_cs_targets
                 targets_np = targets_np * sds_cs_targets
-                if model_name == "DGMR-SO":
+                if model_name == "DGMR-SO" or cropping:
                     preds_cropped_np = preds_cropped_np * sds_cs_targets[:, :preds_cropped_np.shape[1], :preds_cropped_np.shape[2]]
                     target_cropped_np = target_cropped_np * sds_cs_targets[:, :target_cropped_np.shape[1], :target_cropped_np.shape[2]]
                     preds_cropped_np = preds_cropped_np
@@ -97,7 +122,7 @@ def evaluate_model(
                 pred = preds_np[:, t]
                 target = targets_np[:, t]
 
-                if model_name == "DGMR-SO":
+                if model_name == "DGMR-SO" or cropping:
                     preds_cropped_np = np.clip(preds_cropped_np, 0, None)
                     target_cropped_np = np.clip(target_cropped_np, 0, None)
                     pred_crop = preds_cropped_np[:, t]
@@ -118,7 +143,7 @@ def evaluate_model(
                 metrics["mae"][t].append(compute_mae(pred_masked, target_masked))
 
                 baseline = inputs_np_1[:, -1] * sds_cs_targets[:, t]
-                if model_name == "DGMR-SO":
+                if model_name == "DGMR-SO" or cropping:
                     baseline_crop = np.array([
                         baseline[b,
                                 y_coords[b]:y_coords[b] + preds_cropped_np.shape[2],
@@ -308,9 +333,14 @@ if __name__ == "__main__":
         visualization_indices=[0, 800, 1250, 1500],
         save_dir="./bas_vis/dgmr",
         sds_cs_dataset=sds_cs_dataset,
-        denormalize=True
+        denormalize=True,
+        cropping = False,
+        crop_coords = None
     )
     plot_metrics(dgmr_metrics, model_name="DGMR-SO", save_dir="./bas_vis/dgmr")
+    dgmr_model.save_crop_coords("crop_coords.npy")
+
+    crop_coords = np.load("crop_coords.npy", allow_pickle=True).item()
 
     print("Evaluating Persistence...")
     p_metrics, p_results, p_cache = evaluate_model(
@@ -322,7 +352,9 @@ if __name__ == "__main__":
         visualization_indices=[0, 800, 1250, 1500],
         save_dir="./bas_vis/persistence",
         sds_cs_dataset=sds_cs_dataset,
-        denormalize=True
+        denormalize=True,
+        cropping = True,
+        crop_coords = crop_coords
     )
     plot_metrics(p_metrics, model_name="Persistence", save_dir="./bas_vis/persistence")
 
@@ -336,7 +368,9 @@ if __name__ == "__main__":
         visualization_indices=[0, 800, 1250, 1500],
         save_dir="./bas_vis/earthformer",
         sds_cs_dataset=sds_cs_dataset,
-        denormalize=True
+        denormalize=True,
+        cropping = True,
+        crop_coords = crop_coords
     )
     plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./bas_vis/earthformer")
 
