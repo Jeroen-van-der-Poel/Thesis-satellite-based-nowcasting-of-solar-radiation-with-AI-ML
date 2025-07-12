@@ -150,9 +150,6 @@ def evaluate_model(
                                 x_coords[b]:x_coords[b] + preds_cropped_np.shape[3]]
                         for b in range(baseline.shape[0])
                     ])
-                    for b in range(baseline.shape[0]):
-                        print(f"Crop origin for sample {b}: (y={y_coords[b]}, x={x_coords[b]})")
-                        print(f"Crop shape: {preds_cropped_np.shape[2:]} | Baseline shape: {baseline[b].shape}")
                     baseline_mask = (baseline_crop > 0)
                     baseline_masked = baseline_crop[baseline_mask]
                 else:
