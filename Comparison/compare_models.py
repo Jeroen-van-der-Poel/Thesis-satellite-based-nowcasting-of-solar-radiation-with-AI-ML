@@ -107,7 +107,7 @@ def evaluate_model(
                     preds_cropped_np = preds_cropped_np
                     target_cropped_np = target_cropped_np
                     preds_np = preds_cropped_np
-                    targets_np =target_cropped_np
+                    targets_np = target_cropped_np
             else:
                 raise ValueError(f"Shape mismatch between predictions and SDS clear sky targets at index {idx}")
             
@@ -146,12 +146,12 @@ def evaluate_model(
                 metrics["mae"][t].append(compute_mae(pred_masked, target_masked))
 
                 baseline = inputs_np_1[:, -1] * sds_cs_targets_1[:, t]
+                # print("Baseline shape:", baseline.shape)
+                # print("Pred_cropped shape:", preds_cropped_np.shape)
                 if model_name == "DGMR-SO" or cropping:
-                    baseline_crop = np.array([
-                        baseline[b,
-                                y_coords[b]:y_coords[b] + preds_cropped_np.shape[2],
-                                x_coords[b]:x_coords[b] + preds_cropped_np.shape[3]]
-                        for b in range(baseline.shape[0])
+                    baseline_crop = np.stack([
+                        baseline[b, y:y+256, x:x+256]
+                        for b, (y, x) in enumerate(zip(y_coords, x_coords))
                     ])
                     baseline_mask = (baseline_crop > 0)
                     baseline_masked = baseline_crop[baseline_mask]
@@ -262,8 +262,8 @@ def plot_combined_metrics(metrics_list, model_names, save_dir="./vis/combined"):
             avg_values = [np.nanmean(v) if len(v) > 0 else np.nan for v in values]
             plt.plot(time_steps[:len(avg_values)], avg_values, marker='o', label=name)
 
-        plt.title(f"{metric.upper()} per 15-min Interval")
-        plt.xlabel("Time (minutes)")
+        plt.title(f"{metric.upper()} per 15-min Interval", fontsize=18)
+        plt.xlabel("Time (minutes)", fontsize=16)
         if metric == "mae" or metric == "rmse":
             plt.ylabel(f"{metric.upper()}  (W/m²)")
         elif metric == "rrmse":
@@ -271,6 +271,8 @@ def plot_combined_metrics(metrics_list, model_names, save_dir="./vis/combined"):
         else:
             plt.ylabel(f"{metric.upper()}")
         plt.grid(True)
+        plt.xticks(fontsize=14)
+        plt.yticks(fontsize=14)
         plt.legend()
         plt.tight_layout()
         plt.savefig(f'{save_dir}/{metric}_combined.png', bbox_inches='tight')
@@ -382,8 +384,8 @@ if __name__ == "__main__":
 
     print("Plotting combined metrics...")
     plot_combined_metrics(
-        metrics_list=[ef_metrics, dgmr_metrics, p_metrics], 
-        model_names=["EarthFormer", "DGMR-SO", "Persistence",], 
+        metrics_list=[dgmr_metrics, ef_metrics, p_metrics], 
+        model_names=["DGMR-SO", "EarthFormer", "Persistence"], 
         save_dir="./bas_vis/combined"
     )
 
