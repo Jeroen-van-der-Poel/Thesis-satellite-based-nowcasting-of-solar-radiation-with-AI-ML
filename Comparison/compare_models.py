@@ -160,6 +160,12 @@ def evaluate_model(
                     baseline_masked = baseline[baseline_mask]
                 metrics["fs"][t].append(compute_forecast_skill(pred_masked, target_masked, baseline_masked))
 
+                if cropping:
+                    diff = np.abs(pred_masked - baseline_masked)
+                    print("Max difference:", np.max(diff))
+                    print("Mean difference:", np.mean(diff))
+                    print("FS:", compute_forecast_skill(pred_masked, target_masked, baseline_masked))
+
             except Exception as e:
                 # print(f"Metric error at t={t}, batch={idx}: {e}")
                 for k in metrics:
