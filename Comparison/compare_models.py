@@ -163,7 +163,11 @@ def evaluate_model(
                     baseline = baseline * sds_t
                     baseline_mask = (baseline > 0)
                     baseline_masked = baseline[baseline_mask]
-                metrics["fs"][t].append(compute_forecast_skill(pred_masked, target_masked, baseline_masked))
+                
+                if cropping and model_name == "Persistence":
+                    metrics["fs"][t].append(0)
+                else:
+                    metrics["fs"][t].append(compute_forecast_skill(pred_masked, target_masked, baseline_masked))
 
                 if cropping:
                     diff = np.abs(pred_masked - baseline_masked)
@@ -270,11 +274,11 @@ def plot_combined_metrics(metrics_list, model_names, save_dir="./vis/combined"):
         plt.title(f"{metric.upper()} per 15-min Interval", fontsize=18)
         plt.xlabel("Time (minutes)", fontsize=16)
         if metric == "mae" or metric == "rmse":
-            plt.ylabel(f"{metric.upper()}  (W/m²)")
+            plt.ylabel(f"{metric.upper()}  (W/m²)", fontsize=14)
         elif metric == "rrmse":
-            plt.ylabel(f"{metric.upper()} (%)")
+            plt.ylabel(f"{metric.upper()} (%)", fontsize=14)
         else:
-            plt.ylabel(f"{metric.upper()}")
+            plt.ylabel(f"{metric.upper()}", fontsize=14)
         plt.grid(True)
         plt.xticks(fontsize=14)
         plt.yticks(fontsize=14)
