@@ -153,6 +153,8 @@ def evaluate_model(
                     ])
                     if model_name == "Persistence":
                         baseline_mask = (pred_crop > 0) & (target_crop > 0) & (baseline_crop > 0)
+                        pred_masked = pred_crop[baseline_crop]
+                        target_masked = target_crop[baseline_mask]
                     else:
                         baseline_mask = (baseline_crop > 0)
                     baseline_masked = baseline_crop[baseline_mask]
@@ -161,11 +163,11 @@ def evaluate_model(
                     baseline_masked = baseline[baseline_mask]
                 metrics["fs"][t].append(compute_forecast_skill(pred_masked, target_masked, baseline_masked))
 
-                # if cropping:
-                #     diff = np.abs(pred_masked - baseline_masked)
-                #     print("Max difference:", np.max(diff))
-                #     print("Mean difference:", np.mean(diff))
-                #     print("FS:", compute_forecast_skill(pred_masked, target_masked, baseline_masked))
+                if cropping:
+                    diff = np.abs(pred_masked - baseline_masked)
+                    print("Max difference:", np.max(diff))
+                    print("Mean difference:", np.mean(diff))
+                    print("FS:", compute_forecast_skill(pred_masked, target_masked, baseline_masked))
 
             except Exception as e:
                 # print(f"Metric error at t={t}, batch={idx}: {e}")
