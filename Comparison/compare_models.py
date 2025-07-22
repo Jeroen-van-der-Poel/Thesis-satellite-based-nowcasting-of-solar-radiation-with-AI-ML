@@ -145,20 +145,22 @@ def evaluate_model(
                 metrics["rrmse"][t].append(compute_rrmse(pred_masked, target_masked))
                 metrics["mae"][t].append(compute_mae(pred_masked, target_masked))
 
-                baseline = inputs_np_1[:, -1] * sds_cs_targets_1[:, t]
+                baseline = inputs_np_1[:, -1]
+                sds_t = sds_cs_targets[:, t]
                 if model_name == "DGMR-SO" or cropping:
                     baseline_crop = np.stack([
                         baseline[b, y:y+256, x:x+256]
                         for b, (y, x) in enumerate(zip(y_coords, x_coords))
                     ])
-                    if model_name == "Persistence":
-                        baseline_mask = (pred_crop > 0) & (target_crop > 0) & (baseline_crop > 0)
-                        pred_masked = pred_crop[baseline_crop]
-                        target_masked = target_crop[baseline_mask]
-                    else:
-                        baseline_mask = (baseline_crop > 0)
+                    sds_cropped = np.stack([
+                        sds_t[b, y:y+256, x:x+256]
+                        for b, (y, x) in enumerate(zip(y_coords, x_coords))
+                    ])
+                    baseline_crop = baseline_crop * sds_cropped
+                    baseline_mask = (baseline_crop > 0)
                     baseline_masked = baseline_crop[baseline_mask]
                 else:
+                    baseline = baseline * sds_t
                     baseline_mask = (baseline > 0)
                     baseline_masked = baseline[baseline_mask]
                 metrics["fs"][t].append(compute_forecast_skill(pred_masked, target_masked, baseline_masked))
