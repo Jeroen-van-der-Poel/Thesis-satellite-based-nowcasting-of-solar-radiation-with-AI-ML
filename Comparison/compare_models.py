@@ -106,8 +106,8 @@ def evaluate_model(
                     target_cropped_np = target_cropped_np * sds_cs_targets[:, :target_cropped_np.shape[1], :target_cropped_np.shape[2]]
                     preds_cropped_np = preds_cropped_np
                     target_cropped_np = target_cropped_np
-                    preds_np = preds_cropped_np
-                    targets_np = target_cropped_np
+                    # preds_np = preds_cropped_np
+                    # targets_np = target_cropped_np
             else:
                 raise ValueError(f"Shape mismatch between predictions and SDS clear sky targets at index {idx}")
             
@@ -281,7 +281,7 @@ def plot_combined_metrics(metrics_list, model_names, save_dir="./vis/combined"):
 
 
 if __name__ == "__main__":
-    DGMR_CHECKPOINT_DIR = "../DGMR_SO/experiments/solar_nowcasting_v11/"
+    DGMR_CHECKPOINT_DIR = "../DGMR_SO/experiments/solar_nowcasting_v9/"
     EARTHFORMER_CFG = "../EarthFormer/config/train.yml"
     # EARTHFORMER_CHECKPOINT = "../EarthFormer/experiments/ef_v26/checkpoints/model-epoch=024.ckpt"
     EARTHFORMER_CHECKPOINT = "../EarthFormer/experiments/ef_v23/checkpoints/model-epoch=189.ckpt"
