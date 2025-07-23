@@ -91,7 +91,7 @@ def evaluate_model(
             sds_cs_targets = sds_cs[4:]  
             sds_cs_targets = np.expand_dims(sds_cs_targets, axis=0) 
             sds_cs_targets = np.repeat(sds_cs_targets, preds_np.shape[0], axis=0)
-            sds_cs_targets_1 = sds_cs_targets
+            # sds_cs_targets_1 = sds_cs_targets
             sds_cs_inputs = sds_cs[:4]
             sds_cs_inputs = np.expand_dims(sds_cs_inputs, axis=0)  
             sds_cs_inputs = np.repeat(sds_cs_inputs, inputs_np.shape[0], axis=0) 
@@ -164,16 +164,7 @@ def evaluate_model(
                     baseline_mask = (baseline > 0)
                     baseline_masked = baseline[baseline_mask]
                 
-                if cropping and model_name == "Persistence":
-                    metrics["fs"][t].append(0)
-                else:
-                    metrics["fs"][t].append(compute_forecast_skill(pred_masked, target_masked, baseline_masked))
-
-                if cropping:
-                    diff = np.abs(pred_masked - baseline_masked)
-                    print("Max difference:", np.max(diff))
-                    print("Mean difference:", np.mean(diff))
-                    print("FS:", compute_forecast_skill(pred_masked, target_masked, baseline_masked))
+                metrics["fs"][t].append(compute_forecast_skill(pred_masked, target_masked, baseline_masked))
 
             except Exception as e:
                 # print(f"Metric error at t={t}, batch={idx}: {e}")
@@ -290,7 +281,7 @@ def plot_combined_metrics(metrics_list, model_names, save_dir="./vis/combined"):
 
 
 if __name__ == "__main__":
-    DGMR_CHECKPOINT_DIR = "../DGMR_SO/experiments/solar_nowcasting_v7/"
+    DGMR_CHECKPOINT_DIR = "../DGMR_SO/experiments/solar_nowcasting_v9/"
     EARTHFORMER_CFG = "../EarthFormer/config/train.yml"
     # EARTHFORMER_CHECKPOINT = "../EarthFormer/experiments/ef_v26/checkpoints/model-epoch=024.ckpt"
     EARTHFORMER_CHECKPOINT = "../EarthFormer/experiments/ef_v23/checkpoints/model-epoch=189.ckpt"
@@ -359,63 +350,63 @@ if __name__ == "__main__":
 
     crop_coords = np.load("crop_coords.npy", allow_pickle=True).item()
 
-    print("Evaluating Persistence...")
-    p_metrics, p_results, p_cache = evaluate_model(
-        "Persistence", 
-        persistence_model, 
-        dm.test_dataloader(),
-        inference_fn=infer_persistence,
-        visualize=True, 
-        visualization_indices=[0, 800, 1250, 1500],
-        save_dir="./bas_vis/persistence",
-        sds_cs_dataset=sds_cs_dataset,
-        denormalize=True,
-        cropping = True,
-        crop_coords = crop_coords
-    )
-    plot_metrics(p_metrics, model_name="Persistence", save_dir="./bas_vis/persistence")
+    # print("Evaluating Persistence...")
+    # p_metrics, p_results, p_cache = evaluate_model(
+    #     "Persistence", 
+    #     persistence_model, 
+    #     dm.test_dataloader(),
+    #     inference_fn=infer_persistence,
+    #     visualize=True, 
+    #     visualization_indices=[0, 800, 1250, 1500],
+    #     save_dir="./bas_vis/persistence",
+    #     sds_cs_dataset=sds_cs_dataset,
+    #     denormalize=True,
+    #     cropping = True,
+    #     crop_coords = crop_coords
+    # )
+    # plot_metrics(p_metrics, model_name="Persistence", save_dir="./bas_vis/persistence")
 
-    print("Evaluating EarthFormer...")
-    ef_metrics, ef_results, ef_cache = evaluate_model(
-        "EarthFormer", 
-        ef_model, 
-        dm.test_dataloader(),
-        inference_fn=infer_earthformer,
-        visualize=True, 
-        visualization_indices=[0, 800, 1250, 1500],
-        save_dir="./bas_vis/earthformer",
-        sds_cs_dataset=sds_cs_dataset,
-        denormalize=True,
-        cropping = True,
-        crop_coords = crop_coords
-    )
-    plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./bas_vis/earthformer")
+    # print("Evaluating EarthFormer...")
+    # ef_metrics, ef_results, ef_cache = evaluate_model(
+    #     "EarthFormer", 
+    #     ef_model, 
+    #     dm.test_dataloader(),
+    #     inference_fn=infer_earthformer,
+    #     visualize=True, 
+    #     visualization_indices=[0, 800, 1250, 1500],
+    #     save_dir="./bas_vis/earthformer",
+    #     sds_cs_dataset=sds_cs_dataset,
+    #     denormalize=True,
+    #     cropping = True,
+    #     crop_coords = crop_coords
+    # )
+    # plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./bas_vis/earthformer")
 
-    print("Plotting combined metrics...")
-    plot_combined_metrics(
-        metrics_list=[dgmr_metrics, ef_metrics, p_metrics], 
-        model_names=["DGMR-SO", "EarthFormer", "Persistence"], 
-        save_dir="./bas_vis/combined"
-    )
+    # print("Plotting combined metrics...")
+    # plot_combined_metrics(
+    #     metrics_list=[dgmr_metrics, ef_metrics, p_metrics], 
+    #     model_names=["DGMR-SO", "EarthFormer", "Persistence"], 
+    #     save_dir="./bas_vis/combined"
+    # )
 
-    print("Saving side-by-side comparison visualizations...")
-    comparison_indices = [0, 800, 1250, 1500]
-    for idx in comparison_indices:
-        inputs_np = ef_cache[idx]["inputs_np"] 
-        targets_np = ef_cache[idx]["targets_np"]
+    # print("Saving side-by-side comparison visualizations...")
+    # comparison_indices = [0, 800, 1250, 1500]
+    # for idx in comparison_indices:
+    #     inputs_np = ef_cache[idx]["inputs_np"] 
+    #     targets_np = ef_cache[idx]["targets_np"]
 
-        ef_preds_np = ef_cache[idx]["preds_np"]
-        dgmr_preds_np = dgmr_cache[idx]["preds_np"]
-        p_preds_np = p_cache[idx]["preds_np"]
+    #     ef_preds_np = ef_cache[idx]["preds_np"]
+    #     dgmr_preds_np = dgmr_cache[idx]["preds_np"]
+    #     p_preds_np = p_cache[idx]["preds_np"]
 
-        save_comparison_vis_results_vertical(
-            save_dir="./bas_vis/combined",
-            save_prefix=f"comparison_example_{idx:04d}",
-            in_seq=inputs_np,
-            target_seq=targets_np,
-            pred_seq_list=[dgmr_preds_np, ef_preds_np, p_preds_np],
-            label_list=["DGMR-SO", "EarthFormer", "Persistence"],
-            layout="NTHWC",
-            interval_real_time=15,
-            plot_stride=1,
-        )
+    #     save_comparison_vis_results_vertical(
+    #         save_dir="./bas_vis/combined",
+    #         save_prefix=f"comparison_example_{idx:04d}",
+    #         in_seq=inputs_np,
+    #         target_seq=targets_np,
+    #         pred_seq_list=[dgmr_preds_np, ef_preds_np, p_preds_np],
+    #         label_list=["DGMR-SO", "EarthFormer", "Persistence"],
+    #         layout="NTHWC",
+    #         interval_real_time=15,
+    #         plot_stride=1,
+    #     )
