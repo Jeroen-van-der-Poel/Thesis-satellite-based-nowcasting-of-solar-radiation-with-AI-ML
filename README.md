@@ -1,9 +1,9 @@
 # Satellite-based Nowcasting of Solar Radiation with AI/ML
 
-This repository contains code and a data pipeline for experimenting with state-of-the-art deep learning models for short-term solar radiation nowcasting, using geostationary satellite images. It includes implementations and training workflows for both **DGMR-SO** and **Earthformer** architectures.
+This repository contains code and a data pipeline for experimenting with deep learning models for short-term solar radiation nowcasting, using geostationary satellite images. It includes implementations and training workflows for both **DGMR-SO** and **Earthformer** architectures.
 
 ## Raw Data Preperation
-Inside the ```/RawData``` folder of this repository, you'll find the script used to prepare the raw satellite data with the region of choice. Furthermore this folder contains the dataset class used to prepare the rolling windows.
+Inside the ```/RawData``` folder of this repository, you will find the script used to prepare the raw satellite data. Furthermore this folder contains the dataset class used to prepare the rolling windows.
 
 #### msgcpp_reduce_subset.py
 Creates a geographic subset of the original data, focusing on a specific region that includes the Netherlands, Belgium, France, England, and parts of neighboring countries.  
