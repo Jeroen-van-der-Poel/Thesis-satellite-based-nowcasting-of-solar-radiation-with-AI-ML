@@ -331,22 +331,22 @@ if __name__ == "__main__":
 
     dgmr_model = DGMRWrapper(DGMR_CHECKPOINT_DIR)
 
-    print("Evaluating DGMR-SO...")
-    dgmr_metrics, dgmr_results, dgmr_cache = evaluate_model(
-        "DGMR-SO", 
-        dgmr_model, 
-        dm.test_dataloader(),
-        inference_fn=infer_dgmr,
-        visualize=True, 
-        visualization_indices=[0, 800, 1250, 1500],
-        save_dir="./bas_vis/dgmr",
-        sds_cs_dataset=sds_cs_dataset,
-        denormalize=True,
-        cropping = False,
-        crop_coords = None
-    )
-    plot_metrics(dgmr_metrics, model_name="DGMR-SO", save_dir="./bas_vis/dgmr")
-    dgmr_model.save_crop_coords("crop_coords.npy")
+    # print("Evaluating DGMR-SO...")
+    # dgmr_metrics, dgmr_results, dgmr_cache = evaluate_model(
+    #     "DGMR-SO", 
+    #     dgmr_model, 
+    #     dm.test_dataloader(),
+    #     inference_fn=infer_dgmr,
+    #     visualize=True, 
+    #     visualization_indices=[0, 800, 1250, 1500],
+    #     save_dir="./bas_vis/dgmr",
+    #     sds_cs_dataset=sds_cs_dataset,
+    #     denormalize=True,
+    #     cropping = False,
+    #     crop_coords = None
+    # )
+    # plot_metrics(dgmr_metrics, model_name="DGMR-SO", save_dir="./bas_vis/dgmr")
+    # dgmr_model.save_crop_coords("crop_coords.npy")
 
     crop_coords = np.load("crop_coords.npy", allow_pickle=True).item()
 
@@ -366,21 +366,21 @@ if __name__ == "__main__":
     # )
     # plot_metrics(p_metrics, model_name="Persistence", save_dir="./bas_vis/persistence")
 
-    # print("Evaluating EarthFormer...")
-    # ef_metrics, ef_results, ef_cache = evaluate_model(
-    #     "EarthFormer", 
-    #     ef_model, 
-    #     dm.test_dataloader(),
-    #     inference_fn=infer_earthformer,
-    #     visualize=True, 
-    #     visualization_indices=[0, 800, 1250, 1500],
-    #     save_dir="./bas_vis/earthformer",
-    #     sds_cs_dataset=sds_cs_dataset,
-    #     denormalize=True,
-    #     cropping = True,
-    #     crop_coords = crop_coords
-    # )
-    # plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./bas_vis/earthformer")
+    print("Evaluating EarthFormer...")
+    ef_metrics, ef_results, ef_cache = evaluate_model(
+        "EarthFormer", 
+        ef_model, 
+        dm.test_dataloader(),
+        inference_fn=infer_earthformer,
+        visualize=True, 
+        visualization_indices=[0, 800, 1250, 1500],
+        save_dir="./bas_vis/earthformer",
+        sds_cs_dataset=sds_cs_dataset,
+        denormalize=True,
+        cropping = False,
+        crop_coords = crop_coords
+    )
+    plot_metrics(ef_metrics, model_name="EarthFormer", save_dir="./bas_vis/earthformer")
 
     # print("Plotting combined metrics...")
     # plot_combined_metrics(
