@@ -56,37 +56,19 @@ python data_preperation_tfr.py
 ```
 Update the script with the correct input/output paths and match the height and width to your selected geographic region.
 
-##### check_tfrecords.py
-A diagnostic and data validation script for checking the integrity and quality of the datasets stored in TFRecord format.  
-This script performs the following:
-- File corruption detection. 
-- Dark frame analysis. Checks the first 8 frames (4 input + 4 target) of each sample for excessively dark pixels.
-- NaN/Inf/all-zero detection.
-- Shape validation.
-- Pixel distribution histogram.
- 
-Usage:  
-```
-python check_tfrecord.py
-```
 
 #### Step 3. Data augmentation
 After the data processing and quality control, the ```data_pipleine.py``` file is eventually used by the models to make use of the TFRecord datasets. 
 It performs:
 - Random cropping.
 - Flipping (horizontal & vertical).
-- Normalization.
-- Any other augmentations described in the report.
+- Contrast adjustements.
 
 ### Training
 Before training an instance of DGMR-SO, make sure the train, validation and test sets are in designated folders in the /Data directory. Furthermore, make sure you are in the DGMR-SO directory and have created an virtual environment desribed in the section above.    
 Afterwards typ the following command in the console:  
 ```
 python train.py
-```
-Or on EUMETSAT: 
-```
-sudo -E /home/'user'/miniforge3/envs/dgmr_env/bin/python3 train.py
 ```
 
 This command will execute the full training process for 500.000 steps (or otherwise defined in the train.yml). There is a high change the full 500.00 steps are not necessary. We recommend the use of tensorboard to watch and evaluate the training process closely.  
@@ -138,10 +120,6 @@ Afterwards typ the following command in the console:
 ```
 python train.py --gpu 1 --cfg config/train.yml --ckpt_name last.ckpt --save "version name"
 ```
-Or on EUMETSAT: 
-```
-sudo -E /home/'user'/miniforge3/envs/ef_env/bin/python3 train.py --gpu 1 --cfg config/train.yml --ckpt_name last.ckpt --save "version name"
-```
 
 This command will execute the full training process on the dataset. We recommend the use of tensorboard to watch and evaluate the training process closely.  
 When working on a EUMETSAT Virtual Machine and you wat to run tensorboard locally, make sure you connect to the VM as follows:  
@@ -154,7 +132,7 @@ tensorboard --logdir='directory_to_train_logs' --port=6006 --host=localhost
 ```
 
 ## Comparision
-To compare DGMR-SO, EarthFormer and Persistence, we created a evaluation script which evaluates all models on the metrics defined in the report. Furthermore, it generates the images produced and saves them as PNGs.
+To compare DGMR-SO, EarthFormer and a persistence model, we created a script which evaluates all models on the metrics defined in the report. Furthermore, it generates image predictions and metric plots and saves them as PNGs.
 
 ### Installation
 !IMPORTANT make sure conda, cuda and cuDNN are avaialble/downloaded!  
@@ -179,9 +157,8 @@ For Virtual Machine on EUMETSAT, follow these steps: https://confluence.ecmwf.in
  After these steps you should be able the execute the next steps.
 
 ### Execution
-Make sure the path in the ```compare_models.py``` script are correclty defined. Afterwards run:  
+Make sure the paths in the ```compare_models.py``` script are correclty defined. Afterwards run:  
 ``` 
 python compare_models.py
 ```  
-The images and metric scores will be saved in the /vis folder.
-
+The images and metric scores will be saved in a designated folder.
