@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --account=cseduimc030
-#SBATCH --partition=csedu
-#SBATCH --qos=csedu-large
+#SBATCH --account=das
+#SBATCH --partition=das
+#SBATCH --qos=das-large
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=56G
 #SBATCH --gres=gpu:5
