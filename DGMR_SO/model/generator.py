@@ -10,15 +10,8 @@ import tensorflow._api.v2.compat.v1 as tf
 import sonnet as snt
 
 class Generator(snt.Module):
-    """Generator for the proposed model."""
-
     def __init__(self, lead_time=240, time_delta=15):
         tf.print("Debugging: Generator initialization has started")
-        """Constructor.
-        Args:
-          lead_time: last lead time for the generator to predict. Default: 90 min.
-          time_delta: time step between predictions. Default: 5 min.
-        """
         super().__init__(name=None)
         self._cond_stack = ConditioningStack()
         self._sampler = Sampler(lead_time, time_delta)
@@ -26,28 +19,15 @@ class Generator(snt.Module):
         tf.print("Debugging: Generator has been initialized")
 
     def __call__(self, inputs, is_training=True):
-        """Connect to a graph.
-        Args:
-          inputs: a batch of inputs on the shape [batch_size, time, h, w, 1].
-        Returns:
-          predictions: a batch of predictions in the form
-            [batch_size, num_lead_times, h, w, 1].
-        """
-        
-        # tf.print("call generator")
-
         _, _, height, width, _ = inputs.shape.as_list()
         initial_states = self._cond_stack(inputs, is_training=is_training)
         predictions = self._sampler(initial_states, [height, width], is_training=is_training)
         return predictions
 
     def get_variables(self):
-        """Get all variables of the module."""
         pass
 
 class ConditioningStack(snt.Module):
-    """Conditioning Stack for the Generator."""
-
     def __init__(self):
         super().__init__(name=None)
         self._block1 = discriminator.DBlock(output_channels=48, downsample=True)
@@ -85,8 +65,6 @@ class ConditioningStack(snt.Module):
 
 # sampler makes predictions of 16 future radiation images
 class Sampler(snt.Module):
-    """Sampler for the Generator."""
-
     def __init__(self, lead_time=90, time_delta=5):
         super().__init__(name=None)
         self._num_predictions = lead_time // time_delta
@@ -166,8 +144,6 @@ class Sampler(snt.Module):
         return tf.stack(hs, axis=1)
 
 class GBlock(snt.Module):
-    """Residual generator block without upsampling."""
-
     def __init__(self, output_channels, sn_eps=0.0001):
         super().__init__(name=None)
         self._conv1_3x3 = layers.SNConv2D(output_channels, kernel_size=3, sn_eps=sn_eps)
@@ -197,8 +173,6 @@ class GBlock(snt.Module):
         return h + sc
 
 class UpsampleGBlock(snt.Module):
-    """Upsampling residual generator block."""
-
     def __init__(self, output_channels, sn_eps=0.0001):
         super().__init__(name=None)
         self._conv_1x1 = layers.SNConv2D(output_channels, kernel_size=1, sn_eps=sn_eps)
@@ -224,14 +198,7 @@ class UpsampleGBlock(snt.Module):
         return h + sc
 
 class ConvGRU(snt.Module):
-    """A ConvGRU implementation."""
-
     def __init__(self, kernel_size=3, sn_eps=0.0001, num_channels=768):
-        """Constructor.
-        Args:
-          kernel_size: kernel size of the convolutions. Default: 3.
-          sn_eps: constant for spectral normalization. Default: 1e-4.
-        """
         super().__init__()
         self._kernel_size = kernel_size
         self._sn_eps = sn_eps
@@ -262,9 +229,7 @@ class ConvGRU(snt.Module):
         return out, new_state
 
 def time_apply(func, inputs):
-    """Apply function func on each element of inputs along the time axis."""
     return layers.ApplyAlongAxis2(func, axis=1)(inputs)
 
 def batch_apply(func, inputs):
-    """Apply function func on each element of inputs along the batch axis."""
     return layers.ApplyAlongAxis2(func, axis=0)(inputs)

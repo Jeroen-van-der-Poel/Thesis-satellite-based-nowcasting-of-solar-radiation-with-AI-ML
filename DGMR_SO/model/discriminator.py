@@ -7,8 +7,6 @@ import tensorflow._api.v2.compat.v1 as tf
 import sonnet as snt
 
 class Discriminator(snt.Module):
-    """Discriminator."""
-
     def __init__(self):
         super().__init__(name=None)
         # Number of random time steps for the spatial discriminator.
@@ -54,23 +52,9 @@ class Discriminator(snt.Module):
         return tf.concat([sd_out, td_out], 1)
 
 class DBlock(snt.Module):
-    """Convolutional residual block."""
-
     def __init__(self, output_channels, kernel_size=3, downsample=True,
                  pre_activation=True, conv=layers.SNConv2D,
                  pooling=layers.downsample_avg_pool, activation=tf.nn.relu):
-        """Constructor for the D blocks of the DVD-GAN.
-        Args:
-          output_channels: Integer number of channels in the second convolution, and
-            number of channels in the residual 1x1 convolution module.
-          kernel_size: Integer kernel size of the convolutions.
-          downsample: Boolean: shall we use the average pooling layer?
-          pre_activation: Boolean: shall we apply pre-activation to inputs?
-          conv: TF module, either layers.Conv2D or a wrapper with spectral
-            normalisation layers.SNConv2D.
-          pooling: Average pooling layer. Default: layers.downsample_avg_pool.
-          activation: Activation at optional preactivation and first conv layers.
-        """
         super().__init__(name=None)
         self._output_channels = output_channels
         self._kernel_size = kernel_size
@@ -83,12 +67,6 @@ class DBlock(snt.Module):
         self._activation = activation
 
     def __call__(self, inputs, is_training=True):
-        """Build the DBlock.
-        Args:
-          inputs: a tensor with a complete observation [b, 256, 256, 1]
-        Returns:
-          A tensor with discriminator loss scalars [b].
-        """
         h0 = inputs
 
         # Pre-activation.
@@ -119,8 +97,6 @@ class DBlock(snt.Module):
         return h2 + sc
 
 class SpatialDiscriminator(snt.Module):
-    """Spatial Discriminator."""
-
     def __init__(self):
         super().__init__(name=None)
         self._block1 = DBlock(output_channels=48, pre_activation=False)
@@ -134,12 +110,6 @@ class SpatialDiscriminator(snt.Module):
         self._linear = layers.Linear(output_size=1)
 
     def __call__(self, frames, is_training=True):
-        """Build the spatial discriminator.
-        Args:
-          frames: a tensor with a complete observation [b, n, 128, 128, 1].
-        Returns:
-          A tensor with discriminator loss scalars [b].
-        """
         b, n, h, w, c = frames.shape.as_list()
         # Process each of the n inputs independently.
         frames = tf.reshape(frames, [b * n, h, w, c])
@@ -169,8 +139,6 @@ class SpatialDiscriminator(snt.Module):
         return output
 
 class TemporalDiscriminator(snt.Module):
-    """Temporal Discriminator."""
-
     def __init__(self):
         super().__init__(name=None)
         self._block1 = DBlock(output_channels=48, conv=layers.SNConv3D, pooling=layers.downsample_avg_pool3d, pre_activation=False)
@@ -183,12 +151,6 @@ class TemporalDiscriminator(snt.Module):
         self._linear = layers.Linear(output_size=1)
 
     def __call__(self, frames, is_training=True):
-        """Build the temporal discriminator.
-        Args:
-          frames: a tensor with a complete observation [b, ts, 128, 128, 1]
-        Returns:
-          A tensor with discriminator loss scalars [b].
-        """
         b, ts, hs, ws, cs = frames.shape.as_list()
         # Process each of the ti inputs independently.
         frames = tf.reshape(frames, [b * ts, hs, ws, cs])

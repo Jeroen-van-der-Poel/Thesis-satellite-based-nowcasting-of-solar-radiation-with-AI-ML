@@ -34,8 +34,6 @@ class DGMR(tf.keras.Model):
         train_writer = callbacks[0]
         ckpt_manager = callbacks[1]
         ckpt = callbacks[2]
-        # tf.profiler.experimental.start(callbacks[3])
-        #tf.profiler.experimental.start('logs/profiler')
 
         disc_loss_l = []
         gen_loss_l = []
@@ -48,7 +46,6 @@ class DGMR(tf.keras.Model):
         num_batches = self.global_step
 
         for step in range(steps):
-            # with tf.profiler.experimental.Trace('train', step_num=step, _r=1):
             tf.print(f"step is: {step} out of {steps}")
             batch_inputs1, batch_targets1, targ_mask1 = next(dataset_aug)
             batch_targets1 = batch_targets1[:, :, :, :, :]
@@ -70,8 +67,6 @@ class DGMR(tf.keras.Model):
                 batch_inputs1, batch_targets1, targ_mask1, batch_inputs2, batch_targets2, targ_mask2, batch_inputs3,
                 batch_targets3, targ_mask3, batch_inputs4, batch_targets4, targ_mask4)
 
-            #tf.print("Debugging: before run")
-            # Loss
             disc_loss_l.append(disc_loss)
             gen_loss_l.append(gen_loss)
 
@@ -99,7 +94,6 @@ class DGMR(tf.keras.Model):
                         tf.summary.image("predicted image", pred_img, max_outputs=16, step=step)
 
             if step and (step % 3000 == 0):
-                # dataset_val = data_val.take(200)
                 dataset_val_eva = iter(data_val)
 
                 rmse_1 = []
@@ -174,11 +168,7 @@ class DGMR(tf.keras.Model):
                     tf.summary.scalar("Gen_loss", gen_loss, step=step)
                     tf.summary.scalar("Disc_loss", disc_loss, step=step)
 
-        #tf.profiler.experimental.stop()
-
         return gen_loss_l, disc_loss_l
-
-    # (input_signature=[tf.TensorSpec(shape=[2, 4, 256, 256, 1], dtype=tf.float32), tf.TensorSpec(shape=[2, 2, 256, 256, 1], dtype=tf.float32)])
 
     def random_crop_images(self,target_data, label_data, crop_height, crop_width):
         target_shape = tf.shape(target_data)
@@ -222,19 +212,16 @@ class DGMR(tf.keras.Model):
         return array_mean
 
     def r_evaluation(self, batch_inputs2, batch_targets2):
-        # batch_targets2,predict_labels = self.data_process(batch_inputs2,batch_targets2)
         r_metric_train = np.corrcoef(batch_targets2, batch_inputs2)[0, 1]
         return r_metric_train
 
     def mae_evaluation(self, batch_inputs2, batch_targets2):
-        # batch_targets2,predict_labels = self.data_process(batch_inputs2,batch_targets2)
         error = np.mean(np.abs(batch_inputs2 - batch_targets2))
         return error
 
     def rmse_evaluation(self, obs, sim):
         obs = obs.flatten()
         sim = sim.flatten()
-        # obs, sim = self.maskarray(obs, sim)
 
         return np.sqrt(np.mean((obs - sim) ** 2))
 
@@ -354,7 +341,6 @@ class DGMR(tf.keras.Model):
             return tf.constant(-1.0), tf.constant(-1.0)
 
     def disc_step(self, batch_inputs, batch_targets, targ_mask, is_training=True):
-        #tf.print("Debugging: disc_step: ", "Disc step has started", str(datetime.datetime.now()))
         with tf.GradientTape() as disc_tape:
             batch_predictions = self.generator_obj(batch_inputs, is_training=is_training)
 
@@ -373,7 +359,7 @@ class DGMR(tf.keras.Model):
 
     def gen_step(self, batch_inputs, batch_targets, targ_mask, is_training=True):
         with tf.GradientTape() as gen_tape:
-            num_samples_per_input = 1  # FIXME it was 6.
+            num_samples_per_input = 1 
             gen_samples = [self.generator_obj(batch_inputs, is_training=is_training)
                            for _ in range(num_samples_per_input)]
 
@@ -397,15 +383,6 @@ class DGMR(tf.keras.Model):
         return gen_loss
 
 def grid_cell_regularizer(generated_samples, batch_targets):
-    """Grid cell regularizer.
-
-    Args:
-      generated_samples: Tensor of size [n_samples, batch_size, 16, 400, 256, 1].
-      batch_targets: Tensor of size [batch_size, 16, 400, 256, 1].
-
-    Returns:
-      loss: A tensor of shape [batch_size].
-    """
     gen_mean = tf.reduce_mean(generated_samples, axis=0)
     weights = tf.clip_by_value(batch_targets, 0.0, 0.1)
     loss = tf.reduce_mean(tf.math.abs(gen_mean - batch_targets)*weights)

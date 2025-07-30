@@ -8,8 +8,6 @@ import tensorflow._api.v2.compat.v1 as tf
 import sonnet as snt
 
 class LatentCondStack(snt.Module):
-    """Latent Conditioning Stack for the Sampler."""
-
     def __init__(self):
         super().__init__(name=None)
         self._conv1 = layers.SNConv2D(output_channels=8, kernel_size=3)
@@ -41,17 +39,7 @@ class LatentCondStack(snt.Module):
         return z
 
 class LBlock(snt.Module):
-    """Residual block for the Latent Stack."""
-
     def __init__(self, output_channels, input_channels, kernel_size=3, conv=layers.Conv2D, activation=tf.nn.relu):
-        """Constructor for the D blocks of the DVD-GAN.
-        Args:
-          output_channels: Integer number of channels in convolution operations in
-            the main branch, and number of channels in the output of the block.
-          kernel_size: Integer kernel size of the convolutions. Default: 3.
-          conv: TF module. Default: layers.Conv2D.
-          activation: Activation before the conv. layers. Default: tf.nn.relu.
-        """
         super().__init__(name=None)
         self._output_channels = output_channels
         self._input_channels = input_channels
@@ -62,13 +50,6 @@ class LBlock(snt.Module):
         self._activation = activation
 
     def __call__(self, inputs):
-        """Build the LBlock.
-        Args:
-          inputs: a tensor with a complete observation [N 256 256 1]
-        Returns:
-          A tensor with discriminator loss scalars [B].
-        """
-
         # Stack of two conv. layers and nonlinearities that increase the number of channels.
         h0 = self._activation(inputs)
         h1 = self._conv1(h0)
@@ -87,8 +68,6 @@ class LBlock(snt.Module):
         return h2 + sc
 
 def attention_einsum(q, k, v):
-    """Apply the attention operator to tensors of shape [h, w, c]."""
-
     # Reshape 3D tensors to 2D tensor with first dimension L = h x w.
     k = tf.reshape(k, [-1, k.shape[-1]])  # [h, w, c] -> [L, c]
     v = tf.reshape(v, [-1, v.shape[-1]])  # [h, w, c] -> [L, c]
@@ -101,10 +80,7 @@ def attention_einsum(q, k, v):
     return out
 
 class Attention(snt.Module):
-    """Attention module."""
-
     def __init__(self, num_channels, ratio_kq=8, ratio_v=8, conv=layers.Conv2D):
-        """Constructor."""
         super().__init__(name=None)
         self._num_channels = num_channels
         self._ratio_kq = ratio_kq

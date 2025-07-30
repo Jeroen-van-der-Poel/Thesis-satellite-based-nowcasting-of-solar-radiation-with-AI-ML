@@ -7,9 +7,9 @@ class Loss_hing_disc():
     def __call__(self, score_generated, score_real):
         """Discriminator hinge loss."""
         l1 = tf.nn.relu(1. - score_real)
-        loss = tf.reduce_mean(l1)  # , axis=list(range(1, len(l1.shape)))
+        loss = tf.reduce_mean(l1) 
         l2 = tf.nn.relu(1. + score_generated)
-        loss += tf.reduce_mean(l2)  # , axis=list(range(1, len(l2.shape)))
+        loss += tf.reduce_mean(l2)  
         tf.print("Debugging: Disc Loss: ", loss)
         return loss
 
@@ -21,6 +21,6 @@ class Loss_hing_gen():
         """Generator hinge loss."""
         loss = - \
             tf.reduce_mean(
-                score_generated)  # ,axis=list(range(1, len(score_generated.shape)))
+                score_generated) 
         tf.print("Debugging, Gen Loss: ", loss)
         return loss
